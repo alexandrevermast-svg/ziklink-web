@@ -1,0 +1,26 @@
+// components/LogoutButton.tsx
+"use client";
+
+import { createClient } from "../lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+export default function LogoutButton() {
+  const supabase = createClient();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  const handleLogout = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Erreur de déconnexion :", error);
+      // Gérer l'erreur (afficher un toast, etc.)
+    } else {
+      router.push("/login"); // Redirige vers la page de connexion
+      router.refresh(); // Rafraîchit la page pour nettoyer l'état de l'authentification
+    }
+    setLoading(false);
+  }
+}
+  
