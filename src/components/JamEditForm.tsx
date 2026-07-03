@@ -73,68 +73,188 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+return (
+  <form onSubmit={handleSubmit} className="space-y-6">
+
+    {/* Informations */}
+    <div className="zik-card p-5 space-y-5">
       <div>
-        <label className="text-sm font-medium">Titre</label>
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
-      </div>
-      <div>
-        <label className="text-sm font-medium">Description</label>
-        <Textarea value={description} onChange={(e) => setDescription(e.target.value)} required />
-      </div>
-      <div className="grid grid-cols-3 gap-4 items-end">
-        <div className="col-span-1">
-          <label className="text-sm font-medium">Date</label>
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-        </div>
-        <div>
-          <label className="text-sm font-medium">Début</label>
-          <Input type="time" value={startHour} onChange={(e) => setStartHour(e.target.value)} required />
-        </div>
-        <div>
-          <label className="text-sm font-medium">Fin <span className="text-gray-400 font-normal">(optionnel)</span></label>
-          <Input type="time" value={endHour} onChange={(e) => setEndHour(e.target.value)} />
-        </div>
+        <label className="block text-sm font-medium text-zik-text mb-2">
+          Titre
+        </label>
+        <Input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          className="zik-input"
+        />
       </div>
 
-      {/* Ouverture */}
-      <div className="flex items-center justify-between rounded-lg border border-gray-200 p-4">
-        <div className="flex items-center gap-3">
-          {isOpen ? <Unlock className="h-5 w-5 text-green-500" /> : <Lock className="h-5 w-5 text-orange-500" />}
-          <div>
-            <p className="text-sm font-medium">{isOpen ? "Jam ouverte" : "Sur approbation"}</p>
-            <p className="text-xs text-gray-500">
-              {isOpen ? "Tout le monde peut rejoindre librement" : "Tu devras accepter chaque participant"}
-            </p>
-          </div>
-        </div>
-        <Switch checked={isOpen} onCheckedChange={setIsOpen} />
+      <div>
+        <label className="block text-sm font-medium text-zik-text mb-2">
+          Description
+        </label>
+
+        <Textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+          className="zik-input min-h-28 resize-none"
+        />
       </div>
 
-      {/* Carte */}
-      <div>
-        <label className="text-sm font-medium mb-2 block">Lieu (cliquez sur la carte pour modifier)</label>
-        <div className="h-64 rounded-lg border border-gray-300 overflow-hidden" style={{ position: "relative", zIndex: 0 }}>
-          <LocationPickerMap
-            center={location}
-            selectedLocation={selectedLocation}
-            onLocationChange={({ lat, lng, address }) => {
-              setSelectedLocation({ lat, lng });
-              setLocation({ lat, lng, address });
-            }}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <div>
+          <label className="block text-sm font-medium text-zik-text mb-2">
+            Date
+          </label>
+
+          <Input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+            className="zik-input"
           />
         </div>
-        {location.address && <p className="text-sm text-gray-600 mt-2">📍 {location.address}</p>}
+
+        <div>
+          <label className="block text-sm font-medium text-zik-text mb-2">
+            Début
+          </label>
+
+          <Input
+            type="time"
+            value={startHour}
+            onChange={(e) => setStartHour(e.target.value)}
+            required
+            className="zik-input"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-zik-text mb-2">
+            Fin
+            <span className="ml-2 text-zik-muted font-normal">
+              (optionnel)
+            </span>
+          </label>
+
+          <Input
+            type="time"
+            value={endHour}
+            onChange={(e) => setEndHour(e.target.value)}
+            className="zik-input"
+          />
+        </div>
+
+      </div>
+    </div>
+
+    {/* Ouverture */}
+    <div className="zik-card zik-card-accent p-5 flex items-center justify-between">
+
+      <div className="flex items-center gap-4">
+
+        <div
+          className={`h-10 w-10 rounded-full flex items-center justify-center ${
+            isOpen
+              ? "bg-zik-emerald/15 text-zik-emerald"
+              : "bg-zik-orange/15 text-zik-orange"
+          }`}
+        >
+          {isOpen ? (
+            <Unlock className="h-5 w-5" />
+          ) : (
+            <Lock className="h-5 w-5" />
+          )}
+        </div>
+
+        <div>
+          <p className="font-medium text-zik-text">
+            {isOpen ? "Jam ouverte" : "Sur approbation"}
+          </p>
+
+          <p className="text-sm text-zik-muted mt-1">
+            {isOpen
+              ? "Tout le monde peut rejoindre librement."
+              : "Tu devras accepter chaque participant."}
+          </p>
+        </div>
+
       </div>
 
-      {error && <div className="text-red-600 text-sm">{error}</div>}
-      <div className="flex gap-2 justify-end">
-        <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>Annuler</Button>
-        <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
-          {isLoading ? "Enregistrement..." : "Enregistrer les modifications"}
-        </Button>
+      <Switch
+        checked={isOpen}
+        onCheckedChange={setIsOpen}
+      />
+
+    </div>
+
+    {/* Carte */}
+    <div className="zik-card p-5">
+
+      <label className="block text-sm font-medium text-zik-text mb-3">
+        Lieu
+      </label>
+
+      <p className="text-sm text-zik-muted mb-4">
+        Clique sur la carte pour modifier l'emplacement de la jam.
+      </p>
+
+      <div
+        className="h-64 rounded-xl overflow-hidden border border-zik-border"
+        style={{ position: "relative", zIndex: 0 }}
+      >
+        <LocationPickerMap
+          center={location}
+          selectedLocation={selectedLocation}
+          onLocationChange={({ lat, lng, address }) => {
+            setSelectedLocation({ lat, lng });
+            setLocation({ lat, lng, address });
+          }}
+        />
       </div>
-    </form>
-  );
+
+      {location.address && (
+        <div className="mt-4 flex items-center gap-2 text-sm text-zik-muted">
+          <span className="text-zik-purple">📍</span>
+          {location.address}
+        </div>
+      )}
+
+    </div>
+
+    {error && (
+      <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-zik-red">
+        {error}
+      </div>
+    )}
+
+    <div className="flex justify-end gap-3 pt-2">
+
+      <Button
+        type="button"
+        onClick={onClose}
+        disabled={isLoading}
+        className="zik-btn-secondary"
+      >
+        Annuler
+      </Button>
+
+      <Button
+        type="submit"
+        disabled={isLoading}
+        className="zik-btn-primary"
+      >
+        {isLoading
+          ? "Enregistrement..."
+          : "Enregistrer les modifications"}
+      </Button>
+
+    </div>
+
+  </form>
+);
 }

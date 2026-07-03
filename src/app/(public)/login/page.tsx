@@ -14,10 +14,10 @@ export default function LoginPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // ── Mode : 'login' | 'signup' ──────────────────────────────────────────
+  // Mode : 'login' | 'signup'
   const [mode, setMode] = useState<'login' | 'signup'>('login');
 
-  // ── Connexion Email/Password ───────────────────────────────────────────
+  // Connexion Email/Password
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
@@ -35,7 +35,6 @@ export default function LoginPage() {
           email,
           password,
           options: {
-            // Redirige vers l'onboarding après confirmation email (si activé)
             emailRedirectTo: `${location.origin}/onboarding`,
           },
         });
@@ -56,7 +55,7 @@ export default function LoginPage() {
     }
   };
 
-  // ── Connexion Google ──────────────────────────────────────────────────
+  // Connexion Google
   const handleGoogleSignIn = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -71,24 +70,24 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-linear-to-br from-blue-50 via-white to-purple-50">
-      <div className="w-full max-w-md space-y-4 border border-gray-200 p-6 rounded-2xl bg-white shadow-lg">
+    <main className="min-h-screen flex items-center justify-center p-4 bg-zik-bg">
+      <div className="w-full max-w-md space-y-4 border border-zik-border p-6 rounded-2xl bg-zik-card shadow-lg">
 
         {/* Logo / Titre */}
         <div className="text-center mb-2">
-          <h1 className="text-3xl font-bold text-blue-600 tracking-tight">Ziklink 🎸</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-3xl font-bold text-zik-purple tracking-tight">Ziklink 🎸</h1>
+          <p className="text-sm text-zik-muted mt-1">
             {mode === 'login' ? 'Content de te revoir !' : 'Rejoins la communauté !'}
           </p>
         </div>
 
         {/* Toggle Login / Signup */}
-        <div className="flex rounded-xl bg-gray-100 p-1">
+        <div className="flex rounded-xl bg-zik-card/50 p-1">
           <button
             type="button"
             onClick={() => { setMode('login'); setErrorMsg(null); setSuccessMsg(null); }}
             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-              mode === 'login' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              mode === 'login' ? 'bg-zik-card text-zik-text shadow-sm' : 'text-zik-muted hover:text-zik-text'
             }`}
           >
             Se connecter
@@ -97,7 +96,7 @@ export default function LoginPage() {
             type="button"
             onClick={() => { setMode('signup'); setErrorMsg(null); setSuccessMsg(null); }}
             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-              mode === 'signup' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              mode === 'signup' ? 'bg-zik-card text-zik-text shadow-sm' : 'text-zik-muted hover:text-zik-text'
             }`}
           >
             S'inscrire
@@ -107,9 +106,9 @@ export default function LoginPage() {
         {/* Formulaire Email/Password */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm mb-1 text-gray-700">Email</label>
+            <label className="block text-sm mb-1 text-zik-text">Email</label>
             <input
-              className="border w-full p-2.5 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+              className="border w-full p-2.5 rounded-xl focus:ring-2 focus:ring-zik-purple/50 focus:border-zik-purple outline-none text-sm bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -120,9 +119,9 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm mb-1 text-gray-700">Mot de passe</label>
+            <label className="block text-sm mb-1 text-zik-text">Mot de passe</label>
             <input
-              className="border w-full p-2.5 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+              className="border w-full p-2.5 rounded-xl focus:ring-2 focus:ring-zik-purple/50 focus:border-zik-purple outline-none text-sm bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -133,19 +132,19 @@ export default function LoginPage() {
           </div>
 
           {errorMsg && (
-            <p className="text-red-600 text-sm text-center bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            <p className="text-zik-red text-sm text-center bg-zik-red/10 border border-zik-red/30 rounded-lg px-3 py-2">
               {errorMsg}
             </p>
           )}
           {successMsg && (
-            <p className="text-green-600 text-sm text-center bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+            <p className="text-zik-emerald text-sm text-center bg-zik-emerald/10 border border-zik-emerald/30 rounded-lg px-3 py-2">
               {successMsg}
             </p>
           )}
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors font-medium text-sm"
+            className="w-full bg-zik-purple text-white py-2.5 rounded-xl hover:bg-zik-indigo disabled:opacity-50 transition-colors font-medium text-sm"
             disabled={loading}
           >
             {loading
@@ -157,15 +156,15 @@ export default function LoginPage() {
 
         {/* Séparateur */}
         <div className="relative flex items-center py-2">
-          <div className="grow border-t border-gray-200" />
-          <span className="shrink mx-4 text-gray-400 text-xs font-medium">OU</span>
-          <div className="grow border-t border-gray-200" />
+          <div className="grow border-t border-zik-border" />
+          <span className="shrink mx-4 text-zik-muted text-xs font-medium">OU</span>
+          <div className="grow border-t border-zik-border" />
         </div>
 
         {/* Bouton Google */}
         <button
           onClick={handleGoogleSignIn}
-          className="w-full bg-white border border-gray-300 text-gray-800 py-2.5 rounded-xl flex items-center justify-center gap-2.5 hover:bg-gray-50 transition-colors font-medium text-sm"
+          className="w-full bg-zik-card border border-zik-border text-zik-text py-2.5 rounded-xl flex items-center justify-center gap-2.5 hover:bg-zik-card-hover transition-colors font-medium text-sm"
         >
           <svg className="w-5 h-5" viewBox="0 0 48 48">
             <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>

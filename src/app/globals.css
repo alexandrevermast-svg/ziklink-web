@@ -1,47 +1,217 @@
 @import "tailwindcss";
 
-.conversation-list {
-  display: grid;
-  gap: 1rem;
+/* ── Thème Tailwind 4 (classes bg-zik-*, text-zik-*, etc.) ── */
+@theme {
+  --color-zik-bg:         #0E0B16;
+  --color-zik-card:       #1A1628;
+  --color-zik-card-hover: #211D30;
+  --color-zik-purple:     #C084FC;
+  --color-zik-indigo:     #818CF8;
+  --color-zik-emerald:    #34D399;
+  --color-zik-orange:     #FB923C;
+  --color-zik-red:        #F87171;
+  --color-zik-text:       #F1F0F6;
+  --color-zik-muted:      rgba(255,255,255,0.40);
+  --color-zik-subtle:     rgba(255,255,255,0.15);
+  --color-zik-border:     rgba(255,255,255,0.06);
+  --color-zik-border-md:  rgba(255,255,255,0.12);
 }
 
-.conversation-item {
-  transition: transform 0.2s, box-shadow 0.2s;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  background: white;
-  border: 1px solid #e5e7eb;
+/* ── Variables CSS natives ───────────────────────── */
+:root {
+  --zik-bg:          #0E0B16;
+  --zik-card:        #1A1628;
+  --zik-card-hover:  #211D30;
+  --zik-border:      rgba(255, 255, 255, 0.06);
+  --zik-border-md:   rgba(255, 255, 255, 0.12);
+  --zik-purple:      #C084FC;
+  --zik-indigo:      #818CF8;
+  --zik-emerald:     #34D399;
+  --zik-orange:      #FB923C;
+  --zik-red:         #F87171;
+  --zik-text:        #F1F0F6;
+  --zik-muted:       rgba(255, 255, 255, 0.40);
+  --zik-subtle:      rgba(255, 255, 255, 0.15);
 }
 
-.conversation-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+/* ── Base ────────────────────────────────────────── */
+body {
+  background-color: var(--zik-bg);
+  color: var(--zik-text);
+  -webkit-font-smoothing: antialiased;
 }
 
-[data-radix-popper-content-wrapper],
-[role="dialog"] {
-  z-index: 9999 !important;
+/* ── Carte standard ──────────────────────────────── */
+.zik-card {
+  background: var(--zik-card);
+  border: 1px solid var(--zik-border);
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.15s ease;
+}
+.zik-card:hover { background: var(--zik-card-hover); }
+
+/* Bande latérale signature */
+.zik-card-accent::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #C084FC 0%, #818CF8 100%);
+  border-radius: 3px 0 0 3px;
 }
 
-[data-radix-dialog-overlay] {
-  z-index: 9998 !important;
-}
-[data-radix-dialog-overlay] {
-  z-index: 9998 !important;
-  position: fixed !important;
-}
-
-[data-radix-dialog-content] {
-  z-index: 9999 !important;
-  position: fixed !important;
-}
-.leaflet-pane,
-.leaflet-top,
-.leaflet-bottom {
-  z-index: 1 !important;
+/* ── Texte dégradé (logo) ────────────────────────── */
+.zik-gradient-text {
+  background: linear-gradient(90deg, #C084FC 0%, #818CF8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* Leaflet z-index abaissé */
+/* ── Badges pilules ──────────────────────────────── */
+.zik-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.zik-badge-open    { background: rgba(52,211,153,0.12);  color: #34D399; }
+.zik-badge-closed  { background: rgba(251,146,60,0.12);  color: #FB923C; }
+.zik-badge-jam     { background: rgba(192,132,252,0.12); color: #C084FC; }
+.zik-badge-concert { background: rgba(251,146,60,0.12);  color: #FB923C; }
+.zik-badge-group   { background: rgba(129,140,248,0.12); color: #818CF8; }
+.zik-badge-direct  { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5); }
+.zik-badge-pending { background: rgba(251,191,36,0.12);  color: #FBBF24; }
+
+/* ── Inputs ──────────────────────────────────────── */
+.zik-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--zik-border-md);
+  border-radius: 10px;
+  color: var(--zik-text);
+  padding: 10px 14px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+.zik-input::placeholder { color: var(--zik-muted); }
+.zik-input:focus        { border-color: var(--zik-purple); }
+.zik-input textarea,
+textarea.zik-input {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.zik-input[type="date"],
+.zik-input[type="time"] {
+  color-scheme: dark;
+}
+/* ── Boutons ─────────────────────────────────────── */
+.zik-btn-primary {
+  background: linear-gradient(135deg, #C084FC 0%, #818CF8 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.zik-btn-primary:hover  { opacity: 0.9; }
+.zik-btn-primary:active { opacity: 0.8; }
+.zik-btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.zik-btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--zik-text);
+  border: 1px solid var(--zik-border-md);
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.zik-btn-secondary:hover    { background: rgba(255,255,255,0.10); }
+.zik-btn-secondary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.zik-btn-ghost-danger {
+  background: transparent;
+  color: var(--zik-red);
+  border: 1px solid rgba(248,113,113,0.25);
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.zik-btn-ghost-danger:hover { background: rgba(248,113,113,0.08); }
+
+/* ── Filtres / tabs pills ────────────────────────── */
+.zik-filter {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  background: rgba(255,255,255,0.05);
+  color: var(--zik-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.zik-filter:hover        { color: var(--zik-text); background: rgba(255,255,255,0.08); }
+.zik-filter.active,
+.zik-filter[data-active="true"] {
+  background: rgba(192,132,252,0.15);
+  color: var(--zik-purple);
+  border-color: rgba(192,132,252,0.30);
+}
+
+/* ── Avatar initiales ────────────────────────────── */
+.zik-avatar {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  flex-shrink: 0;
+  background: rgba(192,132,252,0.15);
+  color: var(--zik-purple);
+}
+
+/* ── Diviseur ────────────────────────────────────── */
+.zik-divider {
+  border: none;
+  border-top: 1px solid var(--zik-border);
+  margin: 0;
+}
+
+/* ── Scrollbar ───────────────────────────────────── */
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 4px; }
+
+/* ── Conservation de vos règles existantes ───────── */
+
+/* Leaflet z-index (conservé tel quel) */
 .leaflet-pane,
 .leaflet-tile,
 .leaflet-marker-icon,
@@ -51,24 +221,45 @@
 .leaflet-map-pane canvas,
 .leaflet-zoom-box,
 .leaflet-image-layer,
-.leaflet-layer {
-  z-index: 1 !important;
-}
-
-.leaflet-control {
-  z-index: 2 !important;
-}
-
+.leaflet-layer       { z-index: 1 !important; }
+.leaflet-control     { z-index: 2 !important; }
 .leaflet-top,
-.leaflet-bottom {
-  z-index: 2 !important;
-}
+.leaflet-bottom      { z-index: 2 !important; }
 
-/* Radix Dialog au-dessus de tout */
+/* Radix Dialog (conservé et nettoyé des doublons) */
+[data-radix-popper-content-wrapper],
+[role="dialog"]        { z-index: 9999 !important; }
 [data-radix-dialog-overlay] {
   z-index: 100 !important;
+  position: fixed !important;
 }
-
 [data-radix-dialog-content] {
   z-index: 101 !important;
+  position: fixed !important;
+}
+/* Contrôles Leaflet thème sombre */
+.leaflet-control-zoom a {
+  background: #1A1628 !important;
+  color: rgba(255,255,255,0.6) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+.leaflet-control-zoom a:hover {
+  background: #211D30 !important;
+  color: #C084FC !important;
+}
+.leaflet-popup-content-wrapper {
+  background: #1A1628 !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+  color: #F1F0F6 !important;
+}
+.leaflet-popup-tip {
+  background: #1A1628 !important;
+}
+.leaflet-popup-close-button {
+  color: rgba(255,255,255,0.4) !important;
+}
+.leaflet-popup-close-button:hover {
+  color: #C084FC !important;
 }

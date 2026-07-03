@@ -8,7 +8,8 @@ import type { EventMarker } from "@/components/EventMap";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
-  loading: () => <div className="h-52 bg-gray-100 animate-pulse rounded-xl" />,
+  // ✅ Loading avec ton thème
+  loading: () => <div className="h-52 bg-zik-card animate-pulse rounded-xl" />,
 });
 
 interface JamSession {
@@ -43,7 +44,7 @@ export default function HomePage() {
 
     const todayEnd = new Date(today.getTime() + 86400000).toISOString();
 
-    // Jams du jour — requête publique, pas besoin d'être connecté
+    // Jams du jour
     const { data: jamsData } = await supabase
       .from("jam_sessions").select("id, title, start_time, location, is_open, created_by")
       .gte("start_time", today.toISOString())
@@ -51,7 +52,7 @@ export default function HomePage() {
       .order("start_time", { ascending: true });
     setJams(jamsData ?? []);
 
-    // Participants — uniquement si connecté et qu'il y a des jams
+    // Participants
     if (user && jamsData && jamsData.length > 0) {
       const ids = jamsData.map((j) => j.id);
       const { data: partData } = await supabase
@@ -64,7 +65,7 @@ export default function HomePage() {
       setParticipantsMap(map);
     }
 
-    // Concerts du jour — requête publique
+    // Concerts du jour
     const { data: concertsData } = await supabase
       .from("concerts").select("id, title, artist, start_time, location")
       .gte("start_time", today.toISOString())
@@ -72,7 +73,7 @@ export default function HomePage() {
       .order("start_time", { ascending: true });
     setConcerts(concertsData ?? []);
 
-    // Intérêts — uniquement si connecté et qu'il y a des concerts
+    // Intérêts
     if (user && concertsData && concertsData.length > 0) {
       const ids = concertsData.map((c) => c.id);
       const { data: intData } = await supabase
@@ -100,7 +101,7 @@ export default function HomePage() {
       if (!pos) return [];
       return [{
         id: jam.id, title: jam.title, start_time: jam.start_time,
-        lat: pos.lat, lng: pos.lng, type: "jam",
+        lat: pos.lat, lng: pos.lng, type: "jam" as const,
         is_open: jam.is_open,
         isParticipant: (participantsMap[jam.id] ?? []).includes(currentUserId ?? ""),
         isCreator: jam.created_by === currentUserId,
@@ -111,7 +112,7 @@ export default function HomePage() {
       if (!pos) return [];
       return [{
         id: concert.id, title: concert.title, start_time: concert.start_time,
-        lat: pos.lat, lng: pos.lng, type: "concert",
+        lat: pos.lat, lng: pos.lng, type: "concert" as const,
         artist: concert.artist,
         isInterested: myInterests.has(concert.id),
       }];
@@ -125,19 +126,21 @@ export default function HomePage() {
     <div className="flex flex-col gap-4 p-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Aujourd'hui</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {isLoading ? "Chargement..." : totalToday === 0
-              ? "Aucun événement prévu aujourd'hui"
-              : `${jams.length} jam${jams.length > 1 ? "s" : ""} · ${concerts.length} concert${concerts.length > 1 ? "s" : ""}`
+          {/* ✅ Titre et sous-titre adaptés */}
+          <h1 className="text-xl font-bold text-zik-text">Aujourd'hui</h1>
+          <p className="text-sm text-zik-muted mt-0.5">
+            {isLoading ? "Chargement..." :
+              totalToday === 0 ? "Aucun événement prévu aujourd'hui" :
+              `${jams.length} jam${jams.length > 1 ? "s" : ""} · ${concerts.length} concert${concerts.length > 1 ? "s" : ""}`
             }
           </p>
         </div>
-        {/* Bouton connexion si non connecté */}
+        {/* ✅ Bouton connexion adapté */}
         {!isLoading && !currentUserId && (
           <button
             onClick={() => router.push("/login")}
-            className="text-xs font-medium text-blue-600 border border-blue-200 px-3 py-1.5 rounded-full hover:bg-blue-50 transition-colors">
+            className="text-xs font-medium text-zik-purple border border-zik-purple/30 px-3 py-1.5 rounded-full hover:bg-zik-purple/10 transition-colors"
+          >
             Se connecter
           </button>
         )}
@@ -145,7 +148,8 @@ export default function HomePage() {
 
       {/* Carte */}
       {isLoading ? (
-        <div className="h-52 bg-gray-100 animate-pulse rounded-xl" />
+        // ✅ Loading adapté
+        <div className="h-52 bg-zik-card animate-pulse rounded-xl" />
       ) : (
         <EventMap
           markers={markers}
@@ -159,33 +163,44 @@ export default function HomePage() {
       {/* Liste rapide */}
       {!isLoading && totalToday > 0 && (
         <div className="space-y-2">
+          {/* ✅ Jams adaptées */}
           {jams.map((jam) => (
             <div key={jam.id}
               onClick={() => router.push(`/events/jams/${jam.id}`)}
-              className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50/30 cursor-pointer transition-all active:scale-[0.99]">
-              <span className="shrink-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white shadow-sm" />
+              className="flex items-center gap-3 p-3 rounded-lg border border-zik-border hover:border-zik-emerald/30 hover:bg-zik-emerald/5 cursor-pointer transition-all active:scale-[0.99]"
+            >
+              {/* ✅ Indicateur de jam adapté */}
+              <span className="shrink-0 w-2.5 h-2.5 rounded-full bg-zik-emerald border-2 border-zik-bg shadow-sm" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">{jam.title}</p>
-                <p className="text-xs text-gray-500">
+                {/* ✅ Titre et heure adaptés */}
+                <p className="text-sm font-semibold text-zik-text truncate">{jam.title}</p>
+                <p className="text-xs text-zik-muted">
                   {new Date(jam.start_time).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
                 </p>
               </div>
-              <span className="text-xs text-green-600 font-medium shrink-0">Jam 🎸</span>
+              {/* ✅ Badge "Jam" adapté */}
+              <span className="text-xs text-zik-emerald font-medium shrink-0">Jam 🎸</span>
             </div>
           ))}
+
+          {/* ✅ Concerts adaptés */}
           {concerts.map((concert) => (
             <div key={concert.id}
               onClick={() => router.push(`/events/concerts/${concert.id}`)}
-              className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-red-300 hover:bg-red-50/30 cursor-pointer transition-all active:scale-[0.99]">
-              <span className="shrink-0 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-white shadow-sm" />
+              className="flex items-center gap-3 p-3 rounded-lg border border-zik-border hover:border-zik-red/30 hover:bg-zik-red/5 cursor-pointer transition-all active:scale-[0.99]"
+            >
+              {/* ✅ Indicateur de concert adapté */}
+              <span className="shrink-0 w-2.5 h-2.5 rounded-full bg-zik-red border-2 border-zik-bg shadow-sm" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">{concert.title}</p>
-                <p className="text-xs text-gray-500">
-                  {concert.artist && <span className="text-blue-600 font-medium">{concert.artist} · </span>}
+                {/* ✅ Titre et artiste adaptés */}
+                <p className="text-sm font-semibold text-zik-text truncate">{concert.title}</p>
+                <p className="text-xs text-zik-muted">
+                  {concert.artist && <span className="text-zik-purple font-medium">{concert.artist} · </span>}
                   {new Date(concert.start_time).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
                 </p>
               </div>
-              <span className="text-xs text-red-500 font-medium shrink-0">Concert 🎤</span>
+              {/* ✅ Badge "Concert" adapté */}
+              <span className="text-xs text-zik-red font-medium shrink-0">Concert 🎤</span>
             </div>
           ))}
         </div>

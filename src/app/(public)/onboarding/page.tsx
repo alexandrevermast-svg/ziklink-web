@@ -10,8 +10,7 @@ import {
   Check, ArrowLeft, Sparkles
 } from 'lucide-react';
 
-// ── Config ────────────────────────────────────────────────────────────────
-
+// Config
 const INSTRUMENTS = [
   { key: 'chant',    label: 'Chant',    emoji: '🎤' },
   { key: 'guitare',  label: 'Guitare',  emoji: '🎸' },
@@ -23,8 +22,7 @@ const INSTRUMENTS = [
 
 const TOTAL_STEPS = 4;
 
-// ── Progress bar ─────────────────────────────────────────────────────────
-
+// Progress bar
 function ProgressBar({ step }: { step: number }) {
   return (
     <div className="flex gap-1.5 w-full">
@@ -32,15 +30,13 @@ function ProgressBar({ step }: { step: number }) {
         <div
           key={i}
           className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-            i < step ? 'bg-blue-600' : i === step ? 'bg-blue-300' : 'bg-gray-200'
+            i < step ? 'bg-zik-purple' : i === step ? 'bg-zik-purple/50' : 'bg-zik-card/30'
           }`}
         />
       ))}
     </div>
   );
 }
-
-// ── Steps ─────────────────────────────────────────────────────────────────
 
 // Étape 0 : Pseudo
 function StepUsername({
@@ -50,21 +46,26 @@ function StepUsername({
     <div className="flex flex-col gap-6">
       <div className="text-center">
         <div className="text-5xl mb-4">👋</div>
-        <h1 className="text-2xl font-bold text-gray-900">Bienvenue sur Ziklink !</h1>
-        <p className="text-gray-500 mt-2 text-sm">Commence par choisir ton nom d'utilisateur.<br />C'est comme ça que les autres musiciens te trouveront.</p>
+        <h1 className="text-2xl font-bold text-zik-text">Bienvenue sur Ziklink !</h1>
+        <p className="text-zik-muted mt-2 text-sm">
+          Commence par choisir ton nom d'utilisateur.<br />
+          C'est comme ça que les autres musiciens te trouveront.
+        </p>
       </div>
       <div>
-        <label className="text-sm font-medium text-gray-700 mb-1.5 block">Ton pseudo *</label>
+        <label className="text-sm font-medium text-zik-text mb-1.5 block">Ton pseudo *</label>
         <Input
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Ex: guitare_hero42"
           maxLength={30}
           autoFocus
-          className={error ? 'border-red-300 focus:ring-red-300' : ''}
+          className={`bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50 ${
+            error ? 'border-zik-red/50 focus:ring-zik-red/50' : ''
+          }`}
         />
-        {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-        <p className="text-xs text-gray-400 mt-1">{value.length}/30 caractères · lettres, chiffres et _</p>
+        {error && <p className="text-xs text-zik-red mt-1">{error}</p>}
+        <p className="text-xs text-zik-muted mt-1">{value.length}/30 caractères · lettres, chiffres et _</p>
       </div>
     </div>
   );
@@ -78,8 +79,11 @@ function StepInstruments({
     <div className="flex flex-col gap-6">
       <div className="text-center">
         <div className="text-5xl mb-4">🎸</div>
-        <h1 className="text-2xl font-bold text-gray-900">Quels instruments tu joues ?</h1>
-        <p className="text-gray-500 mt-2 text-sm">Sélectionne tout ce qui te correspond.<br />Tu pourras modifier ça plus tard.</p>
+        <h1 className="text-2xl font-bold text-zik-text">Quels instruments tu joues ?</h1>
+        <p className="text-zik-muted mt-2 text-sm">
+          Sélectionne tout ce qui te correspond.<br />
+          Tu pourras modifier ça plus tard.
+        </p>
       </div>
       <div className="grid grid-cols-2 gap-3">
         {INSTRUMENTS.map((inst) => {
@@ -91,19 +95,19 @@ function StepInstruments({
               onClick={() => onToggle(inst.key)}
               className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all active:scale-[0.97] ${
                 active
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-200 bg-white text-gray-600 hover:border-blue-200 hover:bg-blue-50/30'
+                  ? 'border-zik-purple bg-zik-purple/10 text-zik-purple'
+                  : 'border-zik-border bg-zik-card text-zik-muted hover:border-zik-purple/50 hover:bg-zik-card-hover'
               }`}
             >
               <span className="text-2xl shrink-0">{inst.emoji}</span>
               <span className="font-semibold text-sm">{inst.label}</span>
-              {active && <Check className="h-4 w-4 ml-auto shrink-0 text-blue-600" />}
+              {active && <Check className="h-4 w-4 ml-auto shrink-0 text-zik-purple" />}
             </button>
           );
         })}
       </div>
       {selected.length === 0 && (
-        <p className="text-xs text-center text-gray-400">Tu peux aussi passer cette étape et compléter plus tard.</p>
+        <p className="text-xs text-center text-zik-muted">Tu peux aussi passer cette étape et compléter plus tard.</p>
       )}
     </div>
   );
@@ -121,32 +125,37 @@ function StepLocation({
     <div className="flex flex-col gap-6">
       <div className="text-center">
         <div className="text-5xl mb-4">📍</div>
-        <h1 className="text-2xl font-bold text-gray-900">Où tu jams ?</h1>
-        <p className="text-gray-500 mt-2 text-sm">Ta ville permet aux autres musiciens de te trouver près de chez eux.</p>
+        <h1 className="text-2xl font-bold text-zik-text">Où tu jams ?</h1>
+        <p className="text-zik-muted mt-2 text-sm">
+          Ta ville permet aux autres musiciens de te trouver près de chez eux.
+        </p>
       </div>
       <div className="space-y-4">
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5 text-gray-400" /> Ville
+          <label className="text-sm font-medium text-zik-text mb-1.5 flex items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5 text-zik-purple" /> Ville
           </label>
           <Input
             value={city}
             onChange={(e) => onCityChange(e.target.value)}
             placeholder="Ex: Paris, Lyon, Marseille..."
             autoFocus
+            className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1.5 block">Présente-toi <span className="text-gray-400 font-normal">(optionnel)</span></label>
+          <label className="text-sm font-medium text-zik-text mb-1.5 block">
+            Présente-toi <span className="text-zik-muted font-normal">(optionnel)</span>
+          </label>
           <textarea
             value={bio}
             onChange={(e) => onBioChange(e.target.value)}
             placeholder="Ex: Guitariste depuis 10 ans, fan de blues et de rock..."
             rows={3}
             maxLength={280}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none outline-none focus:ring-2 focus:ring-blue-300 transition-all"
+            className="w-full border-zik-border rounded-xl px-3 py-2.5 text-sm resize-none outline-none bg-zik-card text-zik-text placeholder:text-zik-muted focus:ring-2 focus:ring-zik-purple/50 transition-all"
           />
-          <p className="text-xs text-gray-400 text-right mt-0.5">{bio.length}/280</p>
+          <p className="text-xs text-zik-muted text-right mt-0.5">{bio.length}/280</p>
         </div>
       </div>
     </div>
@@ -168,8 +177,10 @@ function StepPhoto({
     <div className="flex flex-col gap-6">
       <div className="text-center">
         <div className="text-5xl mb-4">📸</div>
-        <h1 className="text-2xl font-bold text-gray-900">Mets une photo de profil</h1>
-        <p className="text-gray-500 mt-2 text-sm">Optionnel, mais ça aide les autres à te reconnaître !</p>
+        <h1 className="text-2xl font-bold text-zik-text">Mets une photo de profil</h1>
+        <p className="text-zik-muted mt-2 text-sm">
+          Optionnel, mais ça aide les autres à te reconnaître !
+        </p>
       </div>
 
       <div className="flex flex-col items-center gap-4">
@@ -178,19 +189,19 @@ function StepPhoto({
             <img
               src={avatarPreview}
               alt="preview"
-              className="h-28 w-28 rounded-full object-cover border-4 border-white shadow-lg"
+              className="h-28 w-28 rounded-full object-cover border-4 border-zik-bg shadow-lg"
             />
           ) : (
-            <div className="h-28 w-28 rounded-full bg-linear-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-3xl font-bold border-4 border-white shadow-lg">
+            <div className="h-28 w-28 rounded-full bg-linear-to-br from-zik-purple to-zik-indigo flex items-center justify-center text-white text-3xl font-bold border-4 border-zik-bg shadow-lg">
               {initials}
             </div>
           )}
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="absolute bottom-0 right-0 h-9 w-9 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors"
+            className="absolute bottom-0 right-0 h-9 w-9 rounded-full bg-zik-card border border-zik-border shadow-md flex items-center justify-center hover:bg-zik-card-hover transition-colors"
           >
-            <Camera className="h-4 w-4 text-gray-600" />
+            <Camera className="h-4 w-4 text-zik-muted" />
           </button>
           <input
             ref={fileRef}
@@ -204,7 +215,7 @@ function StepPhoto({
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+          className="text-sm font-medium text-zik-purple hover:text-zik-indigo transition-colors"
         >
           {avatarPreview ? 'Changer la photo' : 'Choisir une photo'}
         </button>
@@ -218,28 +229,28 @@ function StepSuccess({ username }: { username: string }) {
   return (
     <div className="flex flex-col items-center gap-6 text-center py-4">
       <div className="relative">
-        <div className="h-20 w-20 rounded-full bg-linear-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-lg">
+        <div className="h-20 w-20 rounded-full bg-linear-to-br from-zik-emerald to-zik-purple flex items-center justify-center shadow-lg">
           <Sparkles className="h-10 w-10 text-white" />
         </div>
       </div>
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">C'est parti, {username} ! 🎸</h1>
-        <p className="text-gray-500 mt-2 text-sm leading-relaxed">
+        <h1 className="text-2xl font-bold text-zik-text">C'est parti, {username} ! 🎸</h1>
+        <p className="text-zik-muted mt-2 text-sm leading-relaxed">
           Ton profil est prêt.<br />
           Découvre les jams près de chez toi, crée les tiennes,<br />
           rejoins des groupes et connecte-toi avec d'autres musiciens.
         </p>
       </div>
-      <div className="flex flex-col gap-2 w-full text-sm text-gray-400">
-        <div className="flex items-center gap-2 bg-gray-50 rounded-xl p-3">
+      <div className="flex flex-col gap-2 w-full text-sm text-zik-muted">
+        <div className="flex items-center gap-2 bg-zik-card/50 rounded-xl p-3">
           <span className="text-lg">🗺️</span>
           <span>Trouve des jams sur la carte de l'accueil</span>
         </div>
-        <div className="flex items-center gap-2 bg-gray-50 rounded-xl p-3">
+        <div className="flex items-center gap-2 bg-zik-card/50 rounded-xl p-3">
           <span className="text-lg">🎸</span>
           <span>Crée ta première jam depuis l'onglet Events</span>
         </div>
-        <div className="flex items-center gap-2 bg-gray-50 rounded-xl p-3">
+        <div className="flex items-center gap-2 bg-zik-card/50 rounded-xl p-3">
           <span className="text-lg">👥</span>
           <span>Rejoins ou crée un groupe depuis l'onglet Groupe</span>
         </div>
@@ -248,8 +259,7 @@ function StepSuccess({ username }: { username: string }) {
   );
 }
 
-// ── Page principale ───────────────────────────────────────────────────────
-
+// Page principale
 export default function OnboardingPage() {
   const supabase = createClient();
   const router = useRouter();
@@ -348,14 +358,14 @@ export default function OnboardingPage() {
   const isLastStep = step === TOTAL_STEPS - 1;
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm bg-white rounded-3xl shadow-xl overflow-hidden">
+    <div className="min-h-screen bg-zik-bg flex items-center justify-center p-4">
+      <div className="w-full max-w-sm bg-zik-card rounded-3xl shadow-xl overflow-hidden">
         {!isDone ? (
           <>
             {/* Barre de progression */}
             <div className="px-6 pt-6 pb-2">
               <ProgressBar step={step} />
-              <p className="text-xs text-gray-400 mt-2 text-right">
+              <p className="text-xs text-zik-muted mt-2 text-right">
                 Étape {step + 1} / {TOTAL_STEPS}
               </p>
             </div>
@@ -388,7 +398,7 @@ export default function OnboardingPage() {
               {step > 0 ? (
                 <button
                   onClick={() => setStep((s) => s - 1)}
-                  className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-700 transition-colors"
+                  className="flex items-center gap-1 text-sm text-zik-muted hover:text-zik-text transition-colors"
                 >
                   <ArrowLeft className="h-4 w-4" /> Retour
                 </button>
@@ -398,7 +408,7 @@ export default function OnboardingPage() {
                 <Button
                   onClick={handleFinish}
                   disabled={isSaving}
-                  className="bg-blue-600 hover:bg-blue-700 px-6"
+                  className="bg-zik-purple hover:bg-zik-indigo px-6"
                 >
                   {isSaving
                     ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Création...</>
@@ -408,7 +418,7 @@ export default function OnboardingPage() {
               ) : (
                 <Button
                   onClick={handleNext}
-                  className="bg-blue-600 hover:bg-blue-700 px-6"
+                  className="bg-zik-purple hover:bg-zik-indigo px-6"
                 >
                   Suivant <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
@@ -420,7 +430,7 @@ export default function OnboardingPage() {
               <div className="text-center pb-4">
                 <button
                   onClick={isLastStep ? handleFinish : handleNext}
-                  className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-xs text-zik-muted hover:text-zik-text transition-colors"
                 >
                   Passer cette étape →
                 </button>
@@ -433,7 +443,7 @@ export default function OnboardingPage() {
             <StepSuccess username={username} />
             <Button
               onClick={handleGoToApp}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-base py-3 h-auto"
+              className="w-full bg-zik-purple hover:bg-zik-indigo text-base py-3 h-auto"
             >
               Découvrir Ziklink 🎸
             </Button>

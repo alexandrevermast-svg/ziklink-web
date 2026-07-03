@@ -30,19 +30,30 @@ function Modal({ open, onClose, title, description, children }: ModalProps) {
 
   return createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: 99999 }} aria-modal="true" role="dialog">
-      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)" }} onClick={onClose} />
+      {/* ✅ Remplace le fond blanc par ton thème */}
+      <div style={{ position: "absolute", inset: 0, background: "rgba(14, 11, 22, 0.8)" }} onClick={onClose} />
       <div style={{
         position: "absolute", top: "50%", left: "50%",
-        transform: "translate(-50%, -50%)", background: "white",
-        borderRadius: "12px", padding: "24px", width: "min(90vw, 640px)",
-        maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+        transform: "translate(-50%, -50%)",
+        background: "var(--zik-card)",  // ✅ Utilise ta variable CSS
+        borderRadius: "12px",
+        padding: "24px",
+        width: "min(90vw, 640px)",
+        maxHeight: "90vh",
+        overflowY: "auto",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+        color: "var(--zik-text)",  // ✅ Texte selon ton thème
       }}>
         <div className="flex items-start justify-between mb-2">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">{title}</h2>
-            {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
+            {/* ✅ Remplace text-gray-900 par ta classe ou variable */}
+            <h2 className="text-xl font-bold text-zik-text">{title}</h2>
+            {description && <p className="text-sm text-zik-muted mt-1">{description}</p>}
           </div>
-          <button onClick={onClose} className="ml-4 p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+          <button
+            onClick={onClose}
+            className="ml-4 p-1 rounded hover:bg-zik-card-hover text-zik-muted hover:text-zik-text transition-colors"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -60,11 +71,11 @@ export default function EventsTab() {
   return (
     <Tabs defaultValue="jams" className="w-full">
       <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="jams">
+        <TabsTrigger value="jams" className="text-zik-text">
           <Users className="mr-2 h-4 w-4" />
           Jams
         </TabsTrigger>
-        <TabsTrigger value="concerts">
+        <TabsTrigger value="concerts" className="text-zik-text">
           <Mic2 className="mr-2 h-4 w-4" />
           Concerts
         </TabsTrigger>
@@ -74,8 +85,14 @@ export default function EventsTab() {
       <TabsContent value="jams">
         <div className="flex flex-col gap-4 pt-4 px-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-700">Jams à venir</h2>
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => setIsJamModalOpen(true)}>
+            {/* ✅ Remplace text-gray-700 par text-zik-text */}
+            <h2 className="text-base font-semibold text-zik-text">Jams à venir</h2>
+            {/* ✅ Remplace bg-blue-600 par une classe personnalisée ou une variable */}
+            <Button
+              size="sm"
+              className="bg-zik-purple hover:bg-zik-indigo text-white"
+              onClick={() => setIsJamModalOpen(true)}
+            >
               <Plus className="mr-1.5 h-4 w-4" /> Ajouter une jam
             </Button>
           </div>
@@ -87,23 +104,41 @@ export default function EventsTab() {
       <TabsContent value="concerts">
         <div className="flex flex-col gap-4 pt-4 px-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-700">Concerts à venir</h2>
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => setIsConcertModalOpen(true)}>
+            <h2 className="text-base font-semibold text-zik-text">Concerts à venir</h2>
+            <Button
+              size="sm"
+              className="bg-zik-purple hover:bg-zik-indigo text-white"
+              onClick={() => setIsConcertModalOpen(true)}
+            >
               <Plus className="mr-1.5 h-4 w-4" /> Ajouter un concert
             </Button>
           </div>
           <ConcertList />
-        </div>
-      </TabsContent>
+          </div>
+        </TabsContent>
 
-      <Modal open={isJamModalOpen} onClose={() => setIsJamModalOpen(false)}
-        title="Créer une nouvelle jam" description="Remplissez le formulaire pour ajouter une nouvelle jam.">
-        <JamCreationForm onSuccess={() => setIsJamModalOpen(false)} onClose={() => setIsJamModalOpen(false)} />
+      <Modal
+        open={isJamModalOpen}
+        onClose={() => setIsJamModalOpen(false)}
+        title="Créer une nouvelle jam"
+        description="Remplissez le formulaire pour ajouter une nouvelle jam."
+      >
+        <JamCreationForm
+          onSuccess={() => setIsJamModalOpen(false)}
+          onClose={() => setIsJamModalOpen(false)}
+        />
       </Modal>
 
-      <Modal open={isConcertModalOpen} onClose={() => setIsConcertModalOpen(false)}
-        title="Créer un concert" description="Remplissez le formulaire pour ajouter un concert.">
-        <ConcertCreationForm onSuccess={() => setIsConcertModalOpen(false)} onClose={() => setIsConcertModalOpen(false)} />
+      <Modal
+        open={isConcertModalOpen}
+        onClose={() => setIsConcertModalOpen(false)}
+        title="Créer un concert"
+        description="Remplissez le formulaire pour ajouter un concert."
+      >
+        <ConcertCreationForm
+          onSuccess={() => setIsConcertModalOpen(false)}
+          onClose={() => setIsConcertModalOpen(false)}
+        />
       </Modal>
     </Tabs>
   );

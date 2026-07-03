@@ -55,13 +55,13 @@ export default function GroupCreationForm({ onSuccess, onClose }: GroupCreationF
       }
 
       const { data: groupId, error } = await supabase.rpc('create_group', {
-  p_name: name.trim(),
-  p_bio: bio.trim() || null,
-  p_city: city.trim() || null,
-  p_genre: genre || null,
-  p_avatar_url: avatarUrl,
-});
-  
+        p_name: name.trim(),
+        p_bio: bio.trim() || null,
+        p_city: city.trim() || null,
+        p_genre: genre || null,
+        p_avatar_url: avatarUrl,
+      });
+
       onSuccess?.(groupId);
     } catch {
       setError("Une erreur s'est produite");
@@ -72,60 +72,104 @@ export default function GroupCreationForm({ onSuccess, onClose }: GroupCreationF
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Avatar du groupe */}
       <div className="flex flex-col items-center gap-2">
         <label className="relative cursor-pointer group">
           {avatarPreview ? (
-            <img src={avatarPreview} alt="preview" className="h-20 w-20 rounded-2xl object-cover border-2 border-gray-200" />
+            // ✅ Bordure adaptée à ton thème
+            <img src={avatarPreview} alt="preview" className="h-20 w-20 rounded-2xl object-cover border-2 border-zik-border" />
           ) : (
-            <div className="h-20 w-20 rounded-2xl bg-linear-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold">
+            // ✅ Dégradé adapté à ton thème
+            <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-zik-purple to-zik-indigo flex items-center justify-center text-white text-2xl font-bold">
               {name ? name.slice(0, 2).toUpperCase() : '🎸'}
             </div>
           )}
+          {/* ✅ Overlay et icône adaptés */}
           <div className="absolute inset-0 rounded-2xl bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <Camera className="h-6 w-6 text-white" />
           </div>
           <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
         </label>
-        <p className="text-xs text-gray-400">Photo du groupe (optionnel)</p>
+        {/* ✅ Texte adapté */}
+        <p className="text-xs text-zik-muted">Photo du groupe (optionnel)</p>
       </div>
 
+      {/* Nom du groupe */}
       <div>
-        <label className="text-sm font-medium text-gray-700 mb-1 block">Nom du groupe <span className="text-red-400">*</span></label>
-        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Les Vieux Fourneaux" required />
+        <label className="text-sm font-medium text-zik-text mb-1 block">
+          Nom du groupe <span className="text-zik-red">*</span>
+        </label>
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Ex: Les Vieux Fourneaux"
+          required
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+        />
       </div>
 
+      {/* Description */}
       <div>
-        <label className="text-sm font-medium text-gray-700 mb-1 block">Description</label>
-        <textarea value={bio} onChange={(e) => setBio(e.target.value)}
-          placeholder="Parlez de votre groupe, de votre style..." rows={3} maxLength={280}
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none outline-none focus:ring-2 focus:ring-blue-300 transition-all" />
-        <p className="text-xs text-gray-400 text-right mt-0.5">{bio.length}/280</p>
+        <label className="text-sm font-medium text-zik-text mb-1 block">Description</label>
+        <textarea
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          placeholder="Parlez de votre groupe, de votre style..."
+          rows={3}
+          maxLength={280}
+          className="w-full border-zik-border rounded-lg px-3 py-2 text-sm resize-none outline-none bg-zik-card text-zik-text placeholder:text-zik-muted focus:ring-2 focus:ring-zik-purple transition-all"
+        />
+        {/* ✅ Compteur adapté */}
+        <p className="text-xs text-zik-muted text-right mt-0.5">{bio.length}/280</p>
       </div>
 
+      {/* Ville + Genre */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5 text-gray-400" /> Ville
+          <label className="text-sm font-medium text-zik-text mb-1 flex items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5 text-zik-purple" /> Ville
           </label>
-          <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Ex: Paris" />
+          <Input
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            placeholder="Ex: Paris"
+            className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+          />
         </div>
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-1.5">
-            <Music2 className="h-3.5 w-3.5 text-gray-400" /> Genre
+          <label className="text-sm font-medium text-zik-text mb-1 flex items-center gap-1.5">
+            <Music2 className="h-3.5 w-3.5 text-zik-purple" /> Genre
           </label>
-          <select value={genre} onChange={(e) => setGenre(e.target.value)}
-            className="w-full border border-gray-200 rounded-md text-sm px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 mt-0.5">
+          <select
+            value={genre}
+            onChange={(e) => setGenre(e.target.value)}
+            className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple mt-0.5"
+          >
             <option value="">Sélectionner...</option>
             {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
           </select>
         </div>
       </div>
 
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {/* Erreur */}
+      {error && <p className="text-zik-red text-sm">{error}</p>}
 
+      {/* Boutons */}
       <div className="flex gap-2 justify-end pt-1">
-        <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>Annuler</Button>
-        <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onClose}
+          disabled={isLoading}
+          className="border-zik-border text-zik-text hover:bg-zik-card-hover hover:text-zik-text"
+        >
+          Annuler
+        </Button>
+        <Button
+          type="submit"
+          className="bg-zik-purple hover:bg-zik-indigo text-white disabled:opacity-50"
+          disabled={isLoading}
+        >
           {isLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Création...</> : 'Créer le groupe'}
         </Button>
       </div>

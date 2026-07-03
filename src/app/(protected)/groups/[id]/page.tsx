@@ -37,7 +37,8 @@ function GroupAvatar({ group, size = 'md' }: { group: Pick<Group, 'name' | 'avat
   return group.avatar_url ? (
     <img src={group.avatar_url} alt={group.name} className={`${cls} rounded-2xl object-cover shrink-0`} />
   ) : (
-    <div className={`${cls} rounded-2xl bg-linear-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold shrink-0`}>
+    // ✅ Dégradé adapté à ton thème
+    <div className={`${cls} rounded-2xl bg-gradient-to-br from-zik-purple to-zik-indigo flex items-center justify-center text-white font-bold shrink-0`}>
       {initials}
     </div>
   );
@@ -49,7 +50,8 @@ function MemberAvatar({ profile, size = 'md' }: { profile: Profile | null; size?
   return profile?.avatar_url ? (
     <img src={profile.avatar_url} alt={profile.username ?? ''} className={`${cls} rounded-full object-cover shrink-0`} />
   ) : (
-    <div className={`${cls} rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold shrink-0`}>
+    // ✅ Fond adapté à ton thème
+    <div className={`${cls} rounded-full bg-zik-purple flex items-center justify-center text-white font-semibold shrink-0`}>
       {initials}
     </div>
   );
@@ -64,19 +66,38 @@ function Modal({ open, onClose, title, children }: {
     document.addEventListener('keydown', h);
     return () => document.removeEventListener('keydown', h);
   }, [open, onClose]);
+
   if (!open) return null;
+
   return createPortal(
     <div style={{ position: 'fixed', inset: 0, zIndex: 99999 }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={onClose} />
+      {/* ✅ Overlay adapté */}
+      <div
+        style={{ position: 'absolute', inset: 0, background: 'rgba(14, 11, 22, 0.8)' }}
+        onClick={onClose}
+      />
       <div style={{
         position: 'absolute', top: '50%', left: '50%',
-        transform: 'translate(-50%, -50%)', background: 'white',
-        borderRadius: '12px', padding: '24px', width: 'min(90vw, 560px)',
-        maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        transform: 'translate(-50%, -50%)',
+        background: 'var(--zik-card)',
+        borderRadius: '12px',
+        padding: '24px',
+        width: 'min(90vw, 560px)',
+        maxHeight: '90vh',
+        overflowY: 'auto',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+        color: 'var(--zik-text)',
       }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">{title}</h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 text-gray-400"><X className="h-5 w-5" /></button>
+          {/* ✅ Titre adapté */}
+          <h2 className="text-xl font-bold text-zik-text">{title}</h2>
+          {/* ✅ Bouton de fermeture adapté */}
+          <button
+            onClick={onClose}
+            className="p-1 rounded hover:bg-zik-card-hover text-zik-muted hover:text-zik-text transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
         {children}
       </div>
@@ -126,6 +147,7 @@ export default function GroupDetailPage() {
   const pendingMembers = members.filter((m) => m.status === 'pending');
   const confirmedMembers = members.filter((m) => m.status !== 'pending');
 
+  // ✅ Récupération des données
   const fetchAll = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setCurrentUserId(user?.id ?? null);
@@ -187,6 +209,7 @@ export default function GroupDetailPage() {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
+  // ✅ Fonctions d'action
   const handleContactGroup = async () => {
     if (!currentUserId) { router.push('/login'); return; }
     setIsContactingGroup(true);
@@ -239,7 +262,6 @@ export default function GroupDetailPage() {
     setIsSending(false);
   };
 
-  // ✅ Rejoindre : toujours en attente d'approbation
   const handleJoin = async () => {
     if (!currentUserId) return;
     setIsJoining(true);
@@ -254,13 +276,11 @@ export default function GroupDetailPage() {
     await fetchAll();
   };
 
-  // ✅ Approuver une demande
   const handleApprove = async (userId: string) => {
     await supabase.rpc('approve_group_member', { p_group_id: id, p_user_id: userId });
     await fetchAll();
   };
 
-  // ✅ Refuser une demande / retirer un membre
   const handleRemoveMember = async (userId: string) => {
     await supabase.from('group_members').delete().eq('group_id', id).eq('user_id', userId);
     await fetchAll();
@@ -316,7 +336,6 @@ export default function GroupDetailPage() {
     const { data: profileData } = await supabase.from('profiles').select('id').eq('username', inviteUsername.trim()).single();
     if (!profileData) { setInviteResult('notfound'); return; }
     if (members.some((m) => m.user_id === profileData.id)) { setInviteResult('already'); return; }
-    // Une invitation par un admin ajoute directement en confirmed
     await supabase.from('group_members').insert({ group_id: id, user_id: profileData.id, role: 'member', status: 'confirmed' });
     if (conversationId) {
       await supabase.from('conversation_participants')
@@ -334,41 +353,53 @@ export default function GroupDetailPage() {
     if (convId) router.push(`/messages/${convId}`);
   };
 
+  // ✅ Loading skeleton adapté
   if (isLoading) return (
     <div className="flex flex-col gap-4 p-4">
-      <div className="h-8 w-24 bg-gray-100 animate-pulse rounded" />
-      <div className="h-32 bg-gray-100 animate-pulse rounded-xl" />
-      <div className="h-48 bg-gray-100 animate-pulse rounded-xl" />
+      <div className="h-8 w-24 bg-zik-card animate-pulse rounded" />
+      <div className="h-32 bg-zik-card animate-pulse rounded-xl" />
+      <div className="h-48 bg-zik-card animate-pulse rounded-xl" />
     </div>
   );
 
   if (!group) return (
-    <div className="p-4 text-center text-gray-500">
+    <div className="p-4 text-center text-zik-muted">
       <p>Groupe introuvable.</p>
-      <Button variant="outline" className="mt-4" onClick={() => router.back()}>Retour</Button>
+      <Button variant="outline" className="mt-4 border-zik-border text-zik-text hover:bg-zik-card-hover" onClick={() => router.back()}>
+        Retour
+      </Button>
     </div>
   );
 
   return (
     <div className="flex flex-col pb-24">
       {/* Header */}
-      <div className="px-4 pt-4 pb-4 border-b border-gray-100">
+      <div className="px-4 pt-4 pb-4 border-b border-zik-border">
         <div className="flex items-center justify-between mb-4">
-          <button onClick={() => router.back()} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1.5 text-sm text-zik-muted hover:text-zik-text transition-colors"
+          >
             <ArrowLeft className="h-4 w-4" /> Retour
           </button>
           <div className="flex gap-2">
             {isAdmin && (
-              <Button size="sm" variant="outline"
-                className="text-xs flex items-center gap-1.5 border-gray-200 text-gray-600 hover:border-purple-300 hover:text-purple-600"
-                onClick={() => setIsEditOpen(true)}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs flex items-center gap-1.5 border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
+                onClick={() => setIsEditOpen(true)}
+              >
                 <Pencil className="h-3.5 w-3.5" /> Modifier
               </Button>
             )}
             {isAdmin && (
-              <Button size="sm" variant="outline"
-                className="text-xs flex items-center gap-1.5 border-red-200 text-red-500 hover:border-red-400 hover:text-red-600 hover:bg-red-50"
-                onClick={() => setShowDeleteConfirm(true)}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs flex items-center gap-1.5 border-zik-red/30 text-zik-red hover:border-zik-red hover:text-zik-red hover:bg-zik-red/10"
+                onClick={() => setShowDeleteConfirm(true)}
+              >
                 <Trash2 className="h-3.5 w-3.5" /> Supprimer
               </Button>
             )}
@@ -379,68 +410,104 @@ export default function GroupDetailPage() {
           <div className="relative shrink-0">
             <GroupAvatar group={group} size="lg" />
             {isAdmin && (
-              <button onClick={() => fileInputRef.current?.click()} disabled={isUploadingAvatar}
-                className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center hover:bg-gray-50 transition-colors">
-                {isUploadingAvatar ? <Loader2 className="h-3.5 w-3.5 animate-spin text-gray-400" /> : <Camera className="h-3.5 w-3.5 text-gray-500" />}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingAvatar}
+                className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-zik-card border border-zik-border shadow flex items-center justify-center hover:bg-zik-card-hover transition-colors"
+              >
+                {isUploadingAvatar ?
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-zik-muted" /> :
+                  <Camera className="h-3.5 w-3.5 text-zik-muted" />
+                }
               </button>
             )}
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold text-gray-900 truncate">{group.name}</h1>
+            <h1 className="text-2xl font-bold text-zik-text truncate">{group.name}</h1>
             <div className="flex flex-wrap gap-2 mt-1">
-              {group.genre && <span className="text-xs bg-purple-100 text-purple-700 font-medium px-2.5 py-0.5 rounded-full">{group.genre}</span>}
-              {group.city && <span className="flex items-center gap-1 text-xs text-gray-500"><MapPin className="h-3 w-3" />{group.city}</span>}
-              <span className="flex items-center gap-1 text-xs text-gray-500">
-                <Users className="h-3 w-3" />{confirmedMembers.length} membre{confirmedMembers.length > 1 ? 's' : ''}
+              {group.genre && (
+                <span className="text-xs bg-zik-purple/10 text-zik-purple font-medium px-2.5 py-0.5 rounded-full">
+                  {group.genre}
+                </span>
+              )}
+              {group.city && (
+                <span className="flex items-center gap-1 text-xs text-zik-muted">
+                  <MapPin className="h-3 w-3" />{group.city}
+                </span>
+              )}
+              <span className="flex items-center gap-1 text-xs text-zik-muted">
+                <Users className="h-3 w-3" />
+                {confirmedMembers.length} membre{confirmedMembers.length > 1 ? 's' : ''}
               </span>
             </div>
-            {group.bio && <p className="text-sm text-gray-600 mt-2 leading-relaxed">{group.bio}</p>}
+            {group.bio && (
+              <p className="text-sm text-zik-muted mt-2 leading-relaxed">{group.bio}</p>
+            )}
           </div>
         </div>
 
-        {/* Boutons d'action selon le statut */}
+        {/* Boutons d'action */}
         <div className="flex gap-2 mt-4 flex-wrap">
           {!isMember && !isPendingMember && currentUserId && (
             <>
-              <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-xs" onClick={handleJoin} disabled={isJoining}>
-                {isJoining
-                  ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Envoi...</>
-                  : <><UserPlus className="h-3.5 w-3.5 mr-1.5" /> Demander à rejoindre</>
+              <Button
+                size="sm"
+                className="bg-zik-purple hover:bg-zik-indigo text-xs"
+                onClick={handleJoin}
+                disabled={isJoining}
+              >
+                {isJoining ?
+                  <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Envoi...</> :
+                  <><UserPlus className="h-3.5 w-3.5 mr-1.5" /> Demander à rejoindre</>
                 }
               </Button>
-              <Button size="sm" variant="outline"
-                className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50"
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs border-zik-border text-zik-text hover:bg-zik-card-hover"
                 onClick={handleContactGroup}
-                disabled={isContactingGroup}>
-                {isContactingGroup
-                  ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Ouverture...</>
-                  : <><Mail className="h-3.5 w-3.5 mr-1.5" /> Contacter le groupe</>
+                disabled={isContactingGroup}
+              >
+                {isContactingGroup ?
+                  <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Ouverture...</> :
+                  <><Mail className="h-3.5 w-3.5 mr-1.5" /> Contacter le groupe</>
                 }
               </Button>
             </>
           )}
           {isPendingMember && (
-            <span className="text-xs text-orange-600 font-medium px-3 py-1.5 bg-orange-50 rounded-full">⏳ Demande en attente d'approbation</span>
+            <span className="text-xs text-zik-orange font-medium px-3 py-1.5 bg-zik-orange/10 rounded-full">
+              ⏳ Demande en attente d'approbation
+            </span>
           )}
           {!currentUserId && (
-            <Button size="sm" variant="outline"
-              className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50"
-              onClick={() => router.push('/login')}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs border-zik-border text-zik-text hover:bg-zik-card-hover"
+              onClick={() => router.push('/login')}
+            >
               <Mail className="h-3.5 w-3.5 mr-1.5" /> Contacter le groupe
             </Button>
           )}
           {isMember && !isAdmin && (
-            <Button size="sm" variant="outline"
-              className="text-xs border-gray-200 text-gray-500 hover:border-red-200 hover:text-red-500"
-              onClick={handleLeave}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs border-zik-border text-zik-muted hover:border-zik-red hover:text-zik-red"
+              onClick={handleLeave}
+            >
               Quitter le groupe
             </Button>
           )}
           {isAdmin && (
-            <Button size="sm" variant="outline"
-              className="text-xs border-purple-200 text-purple-600 hover:bg-purple-50"
-              onClick={() => setIsInviteOpen(true)}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs border-zik-purple/30 text-zik-purple hover:bg-zik-purple/10"
+              onClick={() => setIsInviteOpen(true)}
+            >
               <UserPlus className="h-3.5 w-3.5 mr-1.5" /> Inviter
             </Button>
           )}
@@ -450,17 +517,29 @@ export default function GroupDetailPage() {
       {/* Onglets */}
       <Tabs defaultValue="members" className="flex-1 flex flex-col">
         <TabsList className="grid grid-cols-3 mx-4 mt-3 shrink-0">
-          <TabsTrigger value="members">
+          <TabsTrigger value="members" className="text-zik-text">
             Membres
-            <span className="ml-1.5 bg-blue-100 text-blue-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">{confirmedMembers.length}</span>
+            {confirmedMembers.length > 0 && (
+              <span className="ml-1.5 bg-zik-purple/10 text-zik-purple text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                {confirmedMembers.length}
+              </span>
+            )}
           </TabsTrigger>
-          <TabsTrigger value="events">
+          <TabsTrigger value="events" className="text-zik-text">
             Événements
-            {events.length > 0 && <span className="ml-1.5 bg-blue-100 text-blue-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">{events.length}</span>}
+            {events.length > 0 && (
+              <span className="ml-1.5 bg-zik-purple/10 text-zik-purple text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                {events.length}
+              </span>
+            )}
           </TabsTrigger>
-          <TabsTrigger value="chat">
+          <TabsTrigger value="chat" className="text-zik-text">
             Chat
-            {messages.length > 0 && <span className="ml-1.5 bg-blue-100 text-blue-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">{messages.length}</span>}
+            {messages.length > 0 && (
+              <span className="ml-1.5 bg-zik-purple/10 text-zik-purple text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                {messages.length}
+              </span>
+            )}
           </TabsTrigger>
         </TabsList>
 
@@ -468,19 +547,35 @@ export default function GroupDetailPage() {
         <TabsContent value="members" className="px-4 py-3 space-y-2">
           {isAdmin && pendingMembers.length > 0 && (
             <div className="mb-3">
-              <p className="text-xs font-semibold text-orange-600 uppercase tracking-wide mb-2">En attente · {pendingMembers.length}</p>
+              <p className="text-xs font-semibold text-zik-orange uppercase tracking-wide mb-2">
+                En attente · {pendingMembers.length}
+              </p>
               <div className="space-y-2">
                 {pendingMembers.map((m) => (
-                  <div key={m.user_id} className="flex items-center justify-between gap-2 p-3 rounded-lg bg-orange-50 border border-orange-100">
+                  <div
+                    key={m.user_id}
+                    className="flex items-center justify-between gap-2 p-3 rounded-lg bg-zik-orange/10 border border-zik-orange/20"
+                  >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <MemberAvatar profile={m.profile} />
-                      <span className="text-sm font-medium text-gray-800 truncate">{m.profile?.username ?? 'Inconnu'}</span>
+                      <span className="text-sm font-medium text-zik-text truncate">
+                        {m.profile?.username ?? 'Inconnu'}
+                      </span>
                     </div>
                     <div className="flex gap-1.5 shrink-0">
-                      <Button size="sm" className="h-7 text-xs bg-green-600 hover:bg-green-700 px-2" onClick={() => handleApprove(m.user_id)}>
+                      <Button
+                        size="sm"
+                        className="h-7 text-xs bg-zik-emerald hover:bg-zik-emerald/80 px-2"
+                        onClick={() => handleApprove(m.user_id)}
+                      >
                         <Check className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="sm" variant="outline" className="h-7 text-xs border-red-200 text-red-600 hover:bg-red-50 px-2" onClick={() => handleRemoveMember(m.user_id)}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs border-zik-red/30 text-zik-red hover:bg-zik-red/10 px-2"
+                        onClick={() => handleRemoveMember(m.user_id)}
+                      >
                         <X className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -491,35 +586,62 @@ export default function GroupDetailPage() {
           )}
 
           {confirmedMembers.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">Aucun membre pour l'instant</p>
+            <p className="text-sm text-zik-muted text-center py-6">Aucun membre pour l'instant</p>
           ) : confirmedMembers.map((m) => {
             const isCreator = m.user_id === group.created_by;
             const isAdminMember = m.role === 'admin';
             return (
-              <div key={m.user_id} className={`flex items-center gap-3 p-3 rounded-xl border ${isAdminMember ? 'bg-purple-50 border-purple-100' : 'bg-gray-50 border-gray-100'}`}>
+              <div
+                key={m.user_id}
+                className={`flex items-center gap-3 p-3 rounded-xl border ${
+                  isAdminMember
+                    ? 'bg-zik-purple/10 border-zik-purple/20'
+                    : 'bg-zik-card/50 border-zik-border'
+                }`}
+              >
                 <MemberAvatar profile={m.profile} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{m.profile?.username ?? 'Inconnu'}</p>
+                  <p className="text-sm font-semibold text-zik-text truncate">
+                    {m.profile?.username ?? 'Inconnu'}
+                  </p>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    {isCreator && <span className="flex items-center gap-0.5 text-xs text-blue-500"><Crown className="h-3 w-3" /> Créateur</span>}
-                    {isAdminMember && !isCreator && <span className="flex items-center gap-0.5 text-xs text-purple-500"><ShieldCheck className="h-3 w-3" /> Admin</span>}
+                    {isCreator && (
+                      <span className="flex items-center gap-0.5 text-xs text-zik-indigo">
+                        <Crown className="h-3 w-3" /> Créateur
+                      </span>
+                    )}
+                    {isAdminMember && !isCreator && (
+                      <span className="flex items-center gap-0.5 text-xs text-zik-purple">
+                        <ShieldCheck className="h-3 w-3" /> Admin
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   {m.user_id !== currentUserId && (
-                    <button onClick={() => handleOpenDM(m.user_id)}
-                      className="h-7 w-7 flex items-center justify-center rounded-full text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors">
+                    <button
+                      onClick={() => handleOpenDM(m.user_id)}
+                      className="h-7 w-7 flex items-center justify-center rounded-full text-zik-muted hover:text-zik-purple hover:bg-zik-purple/10 transition-colors"
+                    >
                       <MessageCircle className="h-3.5 w-3.5" />
                     </button>
                   )}
                   {isAdmin && m.user_id !== currentUserId && !isCreator && (
                     <>
-                      <button onClick={() => handleToggleAdmin(m.user_id, m.role)}
-                        className={`h-7 w-7 flex items-center justify-center rounded-full transition-colors ${isAdminMember ? 'text-purple-500 hover:bg-purple-50' : 'text-gray-300 hover:text-purple-500 hover:bg-purple-50'}`}>
+                      <button
+                        onClick={() => handleToggleAdmin(m.user_id, m.role)}
+                        className={`h-7 w-7 flex items-center justify-center rounded-full transition-colors ${
+                          isAdminMember
+                            ? 'text-zik-purple hover:bg-zik-purple/10'
+                            : 'text-zik-muted hover:text-zik-purple hover:bg-zik-purple/10'
+                        }`}
+                      >
                         <ShieldCheck className="h-3.5 w-3.5" />
                       </button>
-                      <button onClick={() => handleRemoveMember(m.user_id)}
-                        className="h-7 w-7 flex items-center justify-center rounded-full text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors">
+                      <button
+                        onClick={() => handleRemoveMember(m.user_id)}
+                        className="h-7 w-7 flex items-center justify-center rounded-full text-zik-muted hover:text-zik-red hover:bg-zik-red/10 transition-colors"
+                      >
                         <X className="h-3.5 w-3.5" />
                       </button>
                     </>
@@ -534,36 +656,60 @@ export default function GroupDetailPage() {
         <TabsContent value="events" className="px-4 py-3">
           {events.length === 0 ? (
             <div className="text-center py-8">
-              <CalendarDays className="h-10 w-10 text-gray-200 mx-auto mb-3" />
-              <p className="text-sm text-gray-400 mb-3">Aucun événement organisé par ce groupe</p>
+              <CalendarDays className="h-10 w-10 text-zik-muted mx-auto mb-3" />
+              <p className="text-sm text-zik-muted mb-3">Aucun événement organisé par ce groupe</p>
               {isMember && (
                 <div className="flex gap-2 justify-center flex-wrap">
-                  <Button size="sm" variant="outline" className="text-xs" onClick={() => router.push('/events')}>🎸 Organiser une jam</Button>
-                  <Button size="sm" variant="outline" className="text-xs" onClick={() => router.push('/events')}>🎤 Ajouter un concert</Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs border-zik-border text-zik-text hover:bg-zik-card-hover"
+                    onClick={() => router.push('/events')}
+                  >
+                    🎸 Organiser une jam
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs border-zik-border text-zik-text hover:bg-zik-card-hover"
+                    onClick={() => router.push('/events')}
+                  >
+                    🎤 Ajouter un concert
+                  </Button>
                 </div>
               )}
             </div>
           ) : (
             <div className="space-y-2">
               {events.map((event) => (
-                <button key={`${event.type}-${event.id}`}
+                <button
+                  key={`${event.type}-${event.id}`}
                   onClick={() => router.push(`/events/${event.type === 'jam' ? 'jams' : 'concerts'}/${event.id}`)}
-                  className={`w-full flex items-center justify-between gap-3 p-3 rounded-xl border bg-gray-50 transition-all text-left ${
-                    event.type === 'jam' ? 'border-gray-100 hover:border-blue-200 hover:bg-blue-50/30' : 'border-gray-100 hover:border-red-200 hover:bg-red-50/30'
-                  }`}>
+                  className={`w-full flex items-center justify-between gap-3 p-3 rounded-xl border transition-all text-left ${
+                    event.type === 'jam'
+                      ? 'bg-zik-card/50 border-zik-border hover:border-zik-purple/30 hover:bg-zik-purple/5'
+                      : 'bg-zik-card/50 border-zik-border hover:border-zik-red/30 hover:bg-zik-red/5'
+                  }`}
+                >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className="text-base shrink-0">{event.type === 'jam' ? '🎸' : '🎤'}</span>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{event.title}</p>
-                      {event.type === 'concert' && event.artist && <p className="text-xs text-blue-600 font-medium truncate">{event.artist}</p>}
-                      <p className="text-xs text-gray-400">{formatDate(event.start_time)}</p>
+                      <p className="text-sm font-semibold text-zik-text truncate">{event.title}</p>
+                      {event.type === 'concert' && event.artist && (
+                        <p className="text-xs text-zik-purple font-medium truncate">{event.artist}</p>
+                      )}
+                      <p className="text-xs text-zik-muted">{formatDate(event.start_time)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${event.type === 'jam' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                      event.type === 'jam'
+                        ? 'bg-zik-emerald/10 text-zik-emerald'
+                        : 'bg-zik-red/10 text-zik-red'
+                    }`}>
                       {event.type === 'jam' ? 'Jam' : 'Concert'}
                     </span>
-                    <ChevronRight className="h-4 w-4 text-gray-300" />
+                    <ChevronRight className="h-4 w-4 text-zik-muted" />
                   </div>
                 </button>
               ))}
@@ -571,43 +717,61 @@ export default function GroupDetailPage() {
           )}
         </TabsContent>
 
-        {/* CHAT INTERNE (membres uniquement) */}
+        {/* CHAT */}
         <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden px-0 py-0 min-h-100">
           {!conversationId ? (
-            <div className="flex-1 flex items-center justify-center text-sm text-gray-400 p-4">Le chat sera disponible prochainement.</div>
+            <div className="flex-1 flex items-center justify-center text-sm text-zik-muted p-4">
+              Le chat sera disponible prochainement.
+            </div>
           ) : !isMember && !isAdmin ? (
-            <div className="flex-1 flex flex-col items-center justify-center gap-3 text-sm text-gray-400 p-4 text-center">
+            <div className="flex-1 flex flex-col items-center justify-center gap-3 text-sm text-zik-muted p-4 text-center">
               <p>Ce chat est réservé aux membres du groupe 💬</p>
               {currentUserId && !isPendingMember && (
-                <Button size="sm" variant="outline"
-                  className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50"
-                  onClick={handleContactGroup} disabled={isContactingGroup}>
-                  {isContactingGroup
-                    ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Ouverture...</>
-                    : <><Mail className="h-3.5 w-3.5 mr-1.5" /> Contacter le groupe</>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs border-zik-border text-zik-text hover:bg-zik-card-hover"
+                  onClick={handleContactGroup}
+                  disabled={isContactingGroup}
+                >
+                  {isContactingGroup ?
+                    <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Ouverture...</> :
+                    <><Mail className="h-3.5 w-3.5 mr-1.5" /> Contacter le groupe</>
                   }
                 </Button>
               )}
               {isPendingMember && (
-                <span className="text-xs text-orange-600 font-medium">⏳ Demande en attente d'approbation</span>
+                <span className="text-xs text-zik-orange font-medium">
+                  ⏳ Demande en attente d'approbation
+                </span>
               )}
             </div>
           ) : (
             <>
               <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
                 {messages.length === 0 ? (
-                  <p className="text-sm text-gray-400 text-center py-8">Pas encore de messages — lancez la discussion ! 🎸</p>
+                  <p className="text-sm text-zik-muted text-center py-8">
+                    Pas encore de messages — lancez la discussion ! 🎸
+                  </p>
                 ) : messages.map((msg) => {
                   const isMe = msg.user_id === currentUserId;
                   return (
                     <div key={msg.id} className={`flex gap-2.5 ${isMe ? 'flex-row-reverse' : ''}`}>
                       {!isMe && <MemberAvatar profile={msg.profile} size="sm" />}
                       <div className={`max-w-[75%] flex flex-col gap-0.5 ${isMe ? 'items-end' : 'items-start'}`}>
-                        {!isMe && <span className="text-xs text-gray-500 ml-0.5">{msg.profile?.username ?? 'Inconnu'}</span>}
-                        <div className={`px-3 py-2 rounded-2xl text-sm ${isMe ? 'bg-blue-600 text-white rounded-tr-sm' : 'bg-gray-100 text-gray-800 rounded-tl-sm'}`}>
+                        {!isMe && (
+                          <span className="text-xs text-zik-muted ml-0.5">
+                            {msg.profile?.username ?? 'Inconnu'}
+                          </span>
+                        )}
+                        <div className={`px-3 py-2 rounded-2xl text-sm ${
+                          isMe
+                            ? 'bg-zik-purple text-white rounded-tr-sm'
+                            : 'bg-zik-card/80 text-zik-text rounded-tl-sm border border-zik-border'
+                        }`}>
                           {msg.content}
                         </div>
-                        <span className="text-[10px] text-gray-400 mx-1">
+                        <span className="text-[10px] text-zik-muted mx-1">
                           {new Date(msg.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
@@ -616,10 +780,20 @@ export default function GroupDetailPage() {
                 })}
                 <div ref={messagesEndRef} />
               </div>
-              <form onSubmit={handleSendMessage} className="border-t border-gray-100 px-4 py-3 flex gap-2 items-center shrink-0">
-                <Input value={messageInput} onChange={(e) => setMessageInput(e.target.value)}
-                  placeholder="Envoyer un message..." className="flex-1 text-sm" disabled={isSending} />
-                <Button type="submit" size="sm" className="bg-blue-600 hover:bg-blue-700 shrink-0" disabled={!messageInput.trim() || isSending}>
+              <form onSubmit={handleSendMessage} className="border-t border-zik-border px-4 py-3 flex gap-2 items-center shrink-0">
+                <Input
+                  value={messageInput}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  placeholder="Envoyer un message..."
+                  className="flex-1 text-sm bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+                  disabled={isSending}
+                />
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="bg-zik-purple hover:bg-zik-indigo shrink-0 disabled:opacity-50"
+                  disabled={!messageInput.trim() || isSending}
+                >
                   <Send className="h-4 w-4" />
                 </Button>
               </form>
@@ -632,31 +806,62 @@ export default function GroupDetailPage() {
       <Modal open={isEditOpen} onClose={() => setIsEditOpen(false)} title="Modifier le groupe">
         <form onSubmit={handleSaveEdit} className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">Nom <span className="text-red-400">*</span></label>
-            <Input value={editName} onChange={(e) => setEditName(e.target.value)} required />
+            <label className="text-sm font-medium text-zik-text mb-1 block">
+              Nom <span className="text-zik-red">*</span>
+            </label>
+            <Input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              required
+              className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+            />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">Description</label>
-            <textarea value={editBio} onChange={(e) => setEditBio(e.target.value)} rows={3} maxLength={280}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none outline-none focus:ring-2 focus:ring-blue-300" />
+            <label className="text-sm font-medium text-zik-text mb-1 block">Description</label>
+            <textarea
+              value={editBio}
+              onChange={(e) => setEditBio(e.target.value)}
+              rows={3}
+              maxLength={280}
+              className="w-full border-zik-border rounded-lg px-3 py-2 text-sm resize-none outline-none bg-zik-card text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Ville</label>
-              <Input value={editCity} onChange={(e) => setEditCity(e.target.value)} />
+              <label className="text-sm font-medium text-zik-text mb-1 block">Ville</label>
+              <Input
+                value={editCity}
+                onChange={(e) => setEditCity(e.target.value)}
+                className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+              />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Genre</label>
-              <select value={editGenre} onChange={(e) => setEditGenre(e.target.value)}
-                className="w-full border border-gray-200 rounded-md text-sm px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
+              <label className="text-sm font-medium text-zik-text mb-1 block">Genre</label>
+              <select
+                value={editGenre}
+                onChange={(e) => setEditGenre(e.target.value)}
+                className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple"
+              >
                 <option value="">Aucun</option>
                 {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
               </select>
             </div>
           </div>
           <div className="flex gap-2 justify-end">
-            <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} disabled={isSavingEdit}>Annuler</Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={isSavingEdit}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsEditOpen(false)}
+              disabled={isSavingEdit}
+              className="border-zik-border text-zik-text hover:bg-zik-card-hover"
+            >
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              className="bg-zik-purple hover:bg-zik-indigo disabled:opacity-50"
+              disabled={isSavingEdit}
+            >
               {isSavingEdit ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Enregistrement...</> : 'Enregistrer'}
             </Button>
           </div>
@@ -666,30 +871,53 @@ export default function GroupDetailPage() {
       {/* Modale invitation */}
       <Modal open={isInviteOpen} onClose={() => { setIsInviteOpen(false); setInviteResult('idle'); setInviteUsername(''); }} title="Inviter un musicien">
         <form onSubmit={handleInvite} className="space-y-4">
-          <p className="text-sm text-gray-500">Renseigne le nom d'utilisateur du musicien à inviter dans le groupe.</p>
+          <p className="text-sm text-zik-muted">Renseigne le nom d'utilisateur du musicien à inviter dans le groupe.</p>
           <div className="flex gap-2">
-            <Input value={inviteUsername} onChange={(e) => { setInviteUsername(e.target.value); setInviteResult('idle'); }}
-              placeholder="Nom d'utilisateur exact" className="flex-1" />
-            <Button type="submit" className="bg-purple-600 hover:bg-purple-700 shrink-0" disabled={inviteResult === 'loading'}>
+            <Input
+              value={inviteUsername}
+              onChange={(e) => { setInviteUsername(e.target.value); setInviteResult('idle'); }}
+              placeholder="Nom d'utilisateur exact"
+              className="flex-1 bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+            />
+            <Button
+              type="submit"
+              className="bg-zik-purple hover:bg-zik-indigo shrink-0 disabled:opacity-50"
+              disabled={inviteResult === 'loading'}
+            >
               {inviteResult === 'loading' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Inviter'}
             </Button>
           </div>
-          {inviteResult === 'success' && <p className="text-sm text-green-600 font-medium">✓ Musicien ajouté au groupe !</p>}
-          {inviteResult === 'notfound' && <p className="text-sm text-red-500">Aucun utilisateur trouvé avec ce nom.</p>}
-          {inviteResult === 'already' && <p className="text-sm text-orange-500">Ce musicien est déjà dans le groupe.</p>}
+          {inviteResult === 'success' && (
+            <p className="text-sm text-zik-emerald font-medium">✓ Musicien ajouté au groupe !</p>
+          )}
+          {inviteResult === 'notfound' && (
+            <p className="text-sm text-zik-red">Aucun utilisateur trouvé avec ce nom.</p>
+          )}
+          {inviteResult === 'already' && (
+            <p className="text-sm text-zik-orange">Ce musicien est déjà dans le groupe.</p>
+          )}
         </form>
       </Modal>
 
       {/* Modale suppression */}
       <Modal open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Supprimer le groupe ?">
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-zik-muted mb-4">
           Cette action est irréversible. Tous les participants, événements et messages seront définitivement supprimés.
         </p>
         <div className="flex gap-2 justify-end">
-          <Button variant="outline" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting}>
+          <Button
+            variant="outline"
+            onClick={() => setShowDeleteConfirm(false)}
+            disabled={isDeleting}
+            className="border-zik-border text-zik-text hover:bg-zik-card-hover"
+          >
             Annuler
           </Button>
-          <Button className="bg-red-600 hover:bg-red-700" onClick={handleDeleteGroup} disabled={isDeleting}>
+          <Button
+            className="bg-zik-red hover:bg-zik-red/80 disabled:opacity-50"
+            onClick={handleDeleteGroup}
+            disabled={isDeleting}
+          >
             {isDeleting ? "Suppression..." : "Supprimer définitivement"}
           </Button>
         </div>

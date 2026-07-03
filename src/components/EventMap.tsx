@@ -35,9 +35,9 @@ function createDotIcon(color: string) {
     html: `<div style="
       width: 14px; height: 14px;
       background: ${color};
-      border: 2.5px solid white;
+      border: 2.5px solid var(--zik-bg);
       border-radius: 50%;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
     "></div>`,
     iconSize: [14, 14],
     iconAnchor: [7, 7],
@@ -45,16 +45,17 @@ function createDotIcon(color: string) {
   });
 }
 
-const JAM_ICON     = createDotIcon("#22c55e");
-const CONCERT_ICON = createDotIcon("#ef4444");
+// ✅ Couleurs adaptées à ton thème
+const JAM_ICON     = createDotIcon("var(--zik-emerald)");
+const CONCERT_ICON = createDotIcon("var(--zik-red)");
 
-// ✅ Force Leaflet à recalculer la taille après montage dans un onglet
 function InvalidateSize() {
   const map = useMap();
   useEffect(() => {
-    // Petit délai pour laisser le DOM se stabiliser (transition d'onglet)
-    const timer = setTimeout(() => { map.invalidateSize(); }, 100);
-    return () => clearTimeout(timer);
+    const t1 = setTimeout(() => map.invalidateSize(), 100);
+    const t2 = setTimeout(() => map.invalidateSize(), 500);
+    const t3 = setTimeout(() => map.invalidateSize(), 1000);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [map]);
   return null;
 }
@@ -73,6 +74,7 @@ function FitBounds({ markers }: { markers: EventMarker[] }) {
 function formatTime(d: string) {
   return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
+
 function formatDay(d: string) {
   return new Date(d).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
 }
@@ -89,24 +91,33 @@ export default function EventMap({
 
   if (markers.length === 0) {
     return (
-      <div className={`${height} flex flex-col items-center justify-center gap-2 bg-gray-100 rounded-xl text-sm text-gray-400`}>
+      // ✅ Fond et texte adaptés à ton thème
+      <div className={`${height} flex flex-col items-center justify-center gap-2 bg-zik-card rounded-xl text-sm text-zik-muted`}>
         <span>{emptyMessage}</span>
       </div>
     );
   }
 
   return (
-    <div style={{ isolation: "isolate" }} className={`${height} rounded-xl overflow-hidden border border-gray-200 shadow-sm relative`}>
+    // ✅ Bordure et ombre adaptées
+    // Bordure légèrement plus visible sur la carte
+<div
+  style={{ isolation: "isolate", borderColor: 'rgba(192,132,252,0.15)' }}
+  className={`${height} rounded-xl overflow-hidden border shadow-lg relative`}
+>
       {(hasJam || hasConcert) && (
-        <div className="absolute bottom-2 left-2 z-1000 flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 shadow text-[11px] font-medium text-gray-600 pointer-events-none">
+        // ✅ Fond et texte de la légende adaptés
+        <div className="absolute bottom-2 left-2 z-1000 flex items-center gap-2 bg-zik-card/90 backdrop-blur-sm rounded-full px-2.5 py-1 shadow text-[11px] font-medium text-zik-text pointer-events-none">
           {hasJam && (
             <span className="flex items-center gap-1">
-              <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500 border border-white shadow-sm" /> Jam
+              {/* ✅ Couleur de la légende adaptée */}
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-zik-emerald border border-zik-bg shadow-sm" /> Jam
             </span>
           )}
           {hasConcert && (
             <span className="flex items-center gap-1">
-              <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500 border border-white shadow-sm" /> Concert
+              {/* ✅ Couleur de la légende adaptée */}
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-zik-red border border-zik-bg shadow-sm" /> Concert
             </span>
           )}
         </div>
@@ -119,10 +130,11 @@ export default function EventMap({
         zoomControl={true}
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        />
-        {/* ✅ Ajouté ici */}
+  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+  attribution='&copy; OpenStreetMap contributors &copy; CARTO'
+  maxZoom={19}
+  crossOrigin="anonymous"
+/>
         <InvalidateSize />
         <FitBounds markers={markers} />
 
@@ -134,33 +146,42 @@ export default function EventMap({
           >
             <Popup>
               <div className="text-sm min-w-40">
+                {/* ✅ Badge de type d'événement adapté */}
                 <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mb-1 ${
-                  m.type === "jam" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                  m.type === "jam" ? "bg-zik-emerald/20 text-zik-emerald" : "bg-zik-red/20 text-zik-red"
                 }`}>
                   {m.type === "jam" ? "🎸 Jam" : "🎤 Concert"}
                 </span>
-                <p className="font-semibold text-gray-900 mb-0.5">{m.title}</p>
+
+                {/* ✅ Titre adapté */}
+                <p className="font-semibold text-zik-text mb-0.5">{m.title}</p>
+
                 {m.type === "concert" && m.artist && (
-                  <p className="text-blue-600 text-xs font-medium mb-0.5">{m.artist}</p>
+                  <p className="text-zik-purple text-xs font-medium mb-0.5">{m.artist}</p>
                 )}
-                <p className="text-gray-500 text-xs mb-2">
+
+                {/* ✅ Date et heure adaptées */}
+                <p className="text-zik-muted text-xs mb-2">
                   {formatDay(m.start_time)} · {formatTime(m.start_time)}
                 </p>
+
                 {m.type === "jam" && currentUserId && !m.isCreator && (
                   m.isParticipant
-                    ? <span className="text-xs text-green-600 font-medium">✓ Inscrit</span>
+                    ? <span className="text-xs text-zik-emerald font-medium">✓ Inscrit</span>
                     : <button
                         onClick={() => onJoinJam?.(m.id)}
-                        className="text-xs bg-blue-600 text-white px-3 py-1 rounded-full hover:bg-blue-700 transition-colors"
+                        className="text-xs bg-zik-purple text-white px-3 py-1 rounded-full hover:bg-zik-indigo transition-colors"
                       >
                         Rejoindre
                       </button>
                 )}
+
                 {m.type === "jam" && m.isCreator && (
-                  <span className="text-xs text-gray-400 italic">Organisateur</span>
+                  <span className="text-xs text-zik-muted italic">Organisateur</span>
                 )}
+
                 {m.type === "concert" && m.isInterested && (
-                  <span className="text-xs font-medium text-red-500">❤️ Intéressé</span>
+                  <span className="text-xs font-medium text-zik-red">❤️ Intéressé</span>
                 )}
               </div>
             </Popup>

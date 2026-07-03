@@ -2,13 +2,7 @@
   "style": "new-york",
   "rsc": true,
   "tsx": true,
-  "tailwind": {
-    "config": "tailwind.config.js",
-    "css": "src/app/globals.css",
-    "baseColor": "neutral",
-    "cssVariables": true,
-    "prefix": ""
-  },
+  "tailwind": false, 
   "iconLibrary": "lucide",
   "aliases": {
     "components": "@/components",

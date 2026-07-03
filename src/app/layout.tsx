@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "Ziklink",
-  description: "Plateforme musicale collaborative",
+  description: "trouve tes prochains jam, concert ou groupe de musique",
 };
 
 export default function RootLayout({
@@ -23,7 +23,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <Header />
         <HeaderSpacer />
-        <div className="min-h-screen bg-gray-50 relative">
+        <div className="min-h-screenbg-zik-bg text-zik-text">
           <MainWrapper>{children}</MainWrapper>
           <BottomNav />
         </div>

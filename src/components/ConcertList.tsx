@@ -9,7 +9,8 @@ import type { EventMarker } from "@/components/EventMap";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
-  loading: () => <div className="h-52 bg-gray-100 animate-pulse rounded-xl" />,
+  // ✅ Remplace bg-gray-100 par ta couleur de fond
+  loading: () => <div className="h-52 bg-zik-card animate-pulse rounded-xl" />,
 });
 
 interface Concert {
@@ -68,15 +69,17 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
 
   return (
     <div className="flex items-center gap-1.5 w-full">
+      {/* ✅ Bouton "Tout" */}
       <button
         onClick={() => onChange(null)}
         className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-          selectedDate === null ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          selectedDate === null ? "bg-zik-purple text-white" : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
         }`}
       >
         Tout
       </button>
 
+      {/* ✅ Boutons des jours visibles */}
       {visibleDays.map((day) => {
         const hasEvent = availableDates.some((d) => isSameDay(d, day));
         const isSelected = selectedDate !== null && isSameDay(selectedDate, day);
@@ -86,27 +89,28 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
             onClick={() => onChange(isSelected ? null : day)}
             className={`flex-1 min-w-0 py-1.5 rounded-full text-xs font-medium transition-colors relative text-center ${
               isSelected
-                ? "bg-blue-600 text-white"
+                ? "bg-zik-purple text-white"
                 : hasEvent
-                ? "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100"
-                : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                ? "bg-zik-indigo/10 text-zik-purple border border-zik-purple/20 hover:bg-zik-indigo/20"
+                : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
             }`}
           >
             <span className="truncate block px-1">{formatDayLabel(day)}</span>
             {hasEvent && !isSelected && (
-              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-red-500 rounded-full border border-white" />
+              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-zik-red rounded-full border border-white" />
             )}
           </button>
         );
       })}
 
+      {/* ✅ Bouton dropdown */}
       <div className="relative shrink-0" ref={dropdownRef}>
         <button
           onClick={() => setDropdownOpen((v) => !v)}
           className={`flex items-center gap-0.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors ${
             selectedIsInMore
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              ? "bg-zik-purple text-white"
+              : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
           }`}
         >
           {selectedIsInMore ? formatDayLabel(selectedDate!) : "···"}
@@ -114,7 +118,7 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
         </button>
 
         {dropdownOpen && (
-          <div className="absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-lg border border-gray-100 py-1 min-w-40 max-h-64 overflow-y-auto">
+          <div className="absolute right-0 top-full mt-1 z-50 bg-zik-card rounded-xl shadow-lg border border-zik-border py-1 min-w-40 max-h-64 overflow-y-auto">
             {moreDays.map((day) => {
               const hasEvent = availableDates.some((d) => isSameDay(d, day));
               const isSelected = selectedDate !== null && isSameDay(selectedDate, day);
@@ -122,12 +126,12 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
                 <button
                   key={day.toISOString()}
                   onClick={() => { onChange(isSelected ? null : day); setDropdownOpen(false); }}
-                  className={`w-full text-left px-4 py-2 text-xs flex items-center justify-between gap-2 hover:bg-gray-50 transition-colors ${
-                    isSelected ? "text-blue-600 font-semibold bg-blue-50" : "text-gray-700"
+                  className={`w-full text-left px-4 py-2 text-xs flex items-center justify-between gap-2 hover:bg-zik-card-hover transition-colors ${
+                    isSelected ? "text-zik-purple font-semibold bg-zik-indigo/10" : "text-zik-muted"
                   }`}
                 >
                   <span>{formatDayLabelLong(day)}</span>
-                  {hasEvent && <span className="h-2 w-2 rounded-full bg-red-500 shrink-0" />}
+                  {hasEvent && <span className="h-2 w-2 rounded-full bg-zik-red shrink-0" />}
                 </button>
               );
             })}
@@ -191,7 +195,6 @@ export default function ConcertList() {
   };
 
   const availableDates = useMemo(() => concerts.map((c) => new Date(c.start_time)), [concerts]);
-
   const filtered = useMemo(() => {
     if (!selectedDate) return concerts;
     return concerts.filter((c) => isSameDay(new Date(c.start_time), selectedDate));
@@ -210,10 +213,11 @@ export default function ConcertList() {
       } catch { return []; }
     }), [filtered, myInterests]);
 
+  // ✅ Loading skeleton avec ton thème
   if (isLoading) return (
     <div className="space-y-3">
-      <div className="h-52 bg-gray-100 animate-pulse rounded-xl" />
-      {[...Array(3)].map((_, i) => <div key={i} className="h-32 bg-gray-100 animate-pulse rounded-lg" />)}
+      <div className="h-52 bg-zik-card animate-pulse rounded-xl" />
+      {[...Array(3)].map((_, i) => <div key={i} className="h-32 bg-zik-card animate-pulse rounded-lg" />)}
     </div>
   );
 
@@ -222,7 +226,8 @@ export default function ConcertList() {
       <EventMap markers={concertMarkers} currentUserId={currentUserId} emptyMessage="Aucun concert à venir 🎤" />
       <DayFilter selectedDate={selectedDate} onChange={setSelectedDate} availableDates={availableDates} />
       {filtered.length === 0 ? (
-        <p className="text-gray-500 text-sm text-center py-6">Aucun concert à venir 🎤</p>
+        
+        <p className="text-zik-muted text-sm text-center py-6">Aucun concert à venir 🎤</p>
       ) : (
         <div className="space-y-3">
           {filtered.map((concert) => {
@@ -232,28 +237,31 @@ export default function ConcertList() {
             return (
               <div key={concert.id}
                 onClick={() => router.push(`/events/concerts/${concert.id}`)}
-                className="rounded-lg border border-gray-200 overflow-hidden hover:border-red-200 hover:shadow-sm transition-all cursor-pointer active:scale-[0.99]">
+                // ✅ Bordure avec ton thème
+                className="rounded-lg border border-zik-border overflow-hidden hover:border-zik-purple/30 hover:shadow-sm transition-all cursor-pointer active:scale-[0.99]">
                 <div className="flex">
                   {concert.poster_url ? (
                     <img src={concert.poster_url} alt={concert.title} className="w-24 shrink-0 object-cover self-stretch" />
                   ) : (
-                    <div className="w-24 shrink-0 bg-linear-to-br from-red-50 to-purple-100 flex items-center justify-center">
-                      <Music2 className="h-8 w-8 text-red-300" />
+                    
+                    <div className="w-24 shrink-0 bg-linear-to-br from-zik-purple/20 to-zik-indigo/20 flex items-center justify-center">
+                      <Music2 className="h-8 w-8 text-zik-purple" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0 p-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <h3 className="font-semibold text-gray-900 truncate">{concert.title}</h3>
-                        {concert.artist && <p className="text-sm text-blue-600 font-medium truncate">{concert.artist}</p>}
+                        {/* ✅ Titre et artiste avec ton thème */}
+                        <h3 className="font-semibold text-zik-text truncate">{concert.title}</h3>
+                        {concert.artist && <p className="text-sm text-zik-purple font-medium truncate">{concert.artist}</p>}
                       </div>
                       {concert.genre && (
-                        <span className="shrink-0 text-[10px] font-medium bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                        <span className="shrink-0 text-[10px] font-medium bg-zik-purple/10 text-zik-purple px-2 py-0.5 rounded-full">
                           {concert.genre}
                         </span>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-2 mt-2 text-xs text-gray-500">
+                    <div className="flex flex-wrap gap-2 mt-2 text-xs text-zik-muted">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {formatDate(concert.start_time)} · {formatTime(concert.start_time)}
@@ -267,7 +275,10 @@ export default function ConcertList() {
                     </div>
                     <div className="flex items-center justify-between mt-2">
                       <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
-                        concert.is_free ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>
+                        concert.is_free
+                          ? "bg-zik-emerald/10 text-zik-emerald"
+                          : "bg-zik-orange/10 text-zik-orange"
+                      }`}>
                         <Ticket className="h-3 w-3" />
                         {concert.is_free ? "Gratuit" : concert.price ? `${concert.price} €` : "Payant"}
                       </span>
@@ -277,10 +288,10 @@ export default function ConcertList() {
                           disabled={togglingId === concert.id}
                           className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
                             isInterested
-                              ? "bg-red-50 border-red-200 text-red-500"
-                              : "bg-gray-50 border-gray-200 text-gray-400 hover:border-red-200 hover:text-red-400"
+                              ? "bg-zik-red/10 border-zik-red/20 text-zik-red"
+                              : "bg-zik-card border-zik-border text-zik-muted hover:border-zik-red/20 hover:text-zik-red"
                           }`}>
-                          <Heart className={`h-3.5 w-3.5 ${isInterested ? "fill-red-500" : ""}`} />
+                          <Heart className={`h-3.5 w-3.5 ${isInterested ? "fill-zik-red" : ""}`} />
                           {interestedCount > 0 && <span>{interestedCount}</span>}
                           {isInterested ? "Intéressé" : "M'intéresse"}
                         </button>

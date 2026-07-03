@@ -11,7 +11,8 @@ import { Lock, Unlock, Repeat2, Users } from "lucide-react";
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
-  loading: () => <div className="h-64 w-full bg-gray-200 animate-pulse rounded-lg" />,
+  // ✅ Loading avec ton thème
+  loading: () => <div className="h-64 w-full bg-zik-card animate-pulse rounded-lg" />,
 });
 
 const DAYS_OF_WEEK = [
@@ -28,12 +29,15 @@ interface RecurrenceData {
   enabled: boolean; frequency: number; days: number[];
   endType: "date" | "count"; endDate: string; count: number;
 }
+
 interface JamFormData {
   title: string; description: string; date: string;
   start_hour: string; end_hour: string; is_open: boolean;
   location: { lat: number; lng: number; address: string };
 }
+
 interface UserGroup { id: string; name: string; avatar_url: string | null; }
+
 interface JamCreationFormProps { onSuccess?: () => void; onClose?: () => void; }
 
 function generateOccurrences(startDate: string, recurrence: RecurrenceData): Date[] {
@@ -78,7 +82,6 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
     enabled: false, frequency: 1, days: [], endType: "count", endDate: "", count: 8,
   });
 
-  // ✅ Selector groupe
   const [userGroups, setUserGroups] = useState<UserGroup[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
 
@@ -102,6 +105,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
   const toggleDay = (day: number) => {
     setRecurrence((prev) => ({
       ...prev,
@@ -130,37 +134,35 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
 
       const groupId = selectedGroupId || null;
 
-     const occurrencesPayload: { start_time: string; end_at: string | null }[] = [];
+      const occurrencesPayload: { start_time: string; end_at: string | null }[] = [];
 
-if (recurrence.enabled && occurrences.length > 0) {
-  if (recurrence.days.length === 0) { setError("Sélectionnez au moins un jour"); setIsLoading(false); return; }
-  for (const occ of occurrences) {
-    const dateStr = occ.toISOString().split("T")[0];
-    occurrencesPayload.push({
-      start_time: `${dateStr}T${formData.start_hour}:00`,
-      end_at: formData.end_hour ? `${dateStr}T${formData.end_hour}:00` : null,
-    });
-  }
-} else {
-  occurrencesPayload.push({ start_time, end_at });
-}
+      if (recurrence.enabled && occurrences.length > 0) {
+        if (recurrence.days.length === 0) { setError("Sélectionnez au moins un jour"); setIsLoading(false); return; }
+        for (const occ of occurrences) {
+          const dateStr = occ.toISOString().split("T")[0];
+          occurrencesPayload.push({
+            start_time: `${dateStr}T${formData.start_hour}:00`,
+            end_at: formData.end_hour ? `${dateStr}T${formData.end_hour}:00` : null,
+          });
+        }
+      } else {
+        occurrencesPayload.push({ start_time, end_at });
+      }
 
-const { data: createdJams, error: rpcError } = await supabase.rpc('create_jam_sessions', {
-  p_title: formData.title,
-  p_description: formData.description,
-  p_location: JSON.stringify(formData.location),
-  p_is_open: formData.is_open,
-  p_group_id: groupId,
-  p_occurrences: occurrencesPayload,
-});
+      const { data: createdJams, error: rpcError } = await supabase.rpc('create_jam_sessions', {
+        p_title: formData.title,
+        p_description: formData.description,
+        p_location: JSON.stringify(formData.location),
+        p_is_open: formData.is_open,
+        p_group_id: groupId,
+        p_occurrences: occurrencesPayload,
+      });
 
-if (rpcError) {
-  setError(`Erreur: ${rpcError.message}`);
-  setIsLoading(false);
-  return;
-}
-
- 
+      if (rpcError) {
+        setError(`Erreur: ${rpcError.message}`);
+        setIsLoading(false);
+        return;
+      }
 
       setFormData({ title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, location: { lat: 48.8566, lng: 2.3522, address: "" } });
       setSelectedLocation(null);
@@ -178,39 +180,80 @@ if (rpcError) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Titre */}
       <div>
-        <label className="text-sm font-medium">Titre de la jam</label>
-        <Input name="title" value={formData.title} onChange={handleInputChange} placeholder="Ex: Jam à La Boîte Noire" required />
+        <label className="text-sm font-medium text-zik-text">Titre de la jam</label>
+        <Input
+          name="title"
+          value={formData.title}
+          onChange={handleInputChange}
+          placeholder="Ex: Jam à La Boîte Noire"
+          required
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+        />
       </div>
+
+      {/* Description */}
       <div>
-        <label className="text-sm font-medium">Description</label>
-        <Textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Décrivez votre jam..." required />
+        <label className="text-sm font-medium text-zik-text">Description</label>
+        <Textarea
+          name="description"
+          value={formData.description}
+          onChange={handleInputChange}
+          placeholder="Décrivez votre jam..."
+          required
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+        />
       </div>
+
+      {/* Date + Heures */}
       <div className="grid grid-cols-3 gap-4 items-end">
         <div className="col-span-1">
-          <label className="text-sm font-medium">Date de début</label>
-          <Input type="date" name="date" value={formData.date} onChange={handleInputChange} required />
+          <label className="text-sm font-medium text-zik-text">Date de début</label>
+          <Input
+            type="date"
+            name="date"
+            value={formData.date}
+            onChange={handleInputChange}
+            required
+            className="bg-zik-card border-zik-border text-zik-text scheme-dark focus:ring-zik-purple/50"
+          />
         </div>
         <div>
-          <label className="text-sm font-medium">Début</label>
-          <Input type="time" name="start_hour" value={formData.start_hour} onChange={handleInputChange} required />
+          <label className="text-sm font-medium text-zik-text">Début</label>
+          <Input
+            type="time"
+            name="start_hour"
+            value={formData.start_hour}
+            onChange={handleInputChange}
+            required
+            className="bg-zik-card border-zik-border text-zik-text scheme-dark focus:ring-zik-purple/50"
+          />
         </div>
         <div>
-          <label className="text-sm font-medium">Fin <span className="text-gray-400 font-normal">(optionnel)</span></label>
-          <Input type="time" name="end_hour" value={formData.end_hour} onChange={handleInputChange} />
+          <label className="text-sm font-medium text-zik-muted">
+            Fin <span className="text-zik-muted font-normal">(optionnel)</span>
+          </label>
+          <Input
+            type="time"
+            name="end_hour"
+            value={formData.end_hour}
+            onChange={handleInputChange}
+            className="bg-zik-card border-zik-border text-zik-text scheme-dark focus:ring-zik-purple/50"
+          />
         </div>
       </div>
 
-      {/* ✅ Selector groupe */}
+      {/* Selector groupe */}
       {userGroups.length > 0 && (
         <div>
-          <label className="text-sm font-medium mb-1 flex items-center gap-1.5">
-            <Users className="h-3.5 w-3.5 text-gray-400" /> Organiser au nom d'un groupe <span className="text-gray-400 font-normal">(optionnel)</span>
+          <label className="text-sm font-medium text-zik-text mb-1 flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5 text-zik-purple" /> Organiser au nom d'un groupe <span className="text-zik-muted font-normal">(optionnel)</span>
           </label>
           <select
             value={selectedGroupId}
             onChange={(e) => setSelectedGroupId(e.target.value)}
-            className="w-full border border-gray-200 rounded-md text-sm px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-purple-400"
+            className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple"
           >
             <option value="">Aucun groupe — jam personnelle</option>
             {userGroups.map((g) => (
@@ -221,123 +264,209 @@ if (rpcError) {
       )}
 
       {/* Récurrence */}
-      <div className="rounded-lg border border-gray-200 overflow-hidden">
+      <div className="rounded-lg border border-zik-border overflow-hidden bg-zik-card/50">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            <Repeat2 className={`h-5 w-5 ${recurrence.enabled ? "text-blue-500" : "text-gray-400"}`} />
+            <Repeat2 className={`h-5 w-5 ${recurrence.enabled ? "text-zik-purple" : "text-zik-muted"}`} />
             <div>
-              <p className="text-sm font-medium">Jam récurrente</p>
-              <p className="text-xs text-gray-500">Se répète selon un calendrier</p>
+              <p className="text-sm font-medium text-zik-text">Jam récurrente</p>
+              <p className="text-xs text-zik-muted">Se répète selon un calendrier</p>
             </div>
           </div>
-          <Switch checked={recurrence.enabled}
-            onCheckedChange={(checked) => setRecurrence((prev) => ({ ...prev, enabled: checked }))} />
+          <Switch
+            checked={recurrence.enabled}
+            onCheckedChange={(checked) => setRecurrence((prev) => ({ ...prev, enabled: checked }))}
+            className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+          />
         </div>
         {recurrence.enabled && (
-          <div className="border-t border-gray-100 bg-gray-50 p-4 space-y-4">
+          <div className="border-t border-zik-border bg-zik-card/30 p-4 space-y-4">
+            {/* Fréquence */}
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-600">Toutes les</span>
-              <select value={recurrence.frequency}
+              <span className="text-sm text-zik-text">Toutes les</span>
+              <select
+                value={recurrence.frequency}
                 onChange={(e) => setRecurrence((prev) => ({ ...prev, frequency: Number(e.target.value) }))}
-                className="border border-gray-200 rounded-md text-sm px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                className="border-zik-border rounded-md text-sm px-2 py-1.5 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple"
+              >
                 {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
-              <span className="text-sm text-gray-600">semaine{recurrence.frequency > 1 ? "s" : ""}</span>
+              <span className="text-sm text-zik-text">semaine{recurrence.frequency > 1 ? "s" : ""}</span>
             </div>
+
+            {/* Jours de répétition */}
             <div>
-              <p className="text-xs text-gray-500 mb-2">Jours de répétition</p>
+              <p className="text-xs text-zik-muted mb-2">Jours de répétition</p>
               <div className="flex gap-1.5">
                 {DAYS_OF_WEEK.map((day) => (
-                  <button key={day.value} type="button" title={day.full} onClick={() => toggleDay(day.value)}
+                  <button
+                    key={day.value}
+                    type="button"
+                    title={day.full}
+                    onClick={() => toggleDay(day.value)}
                     className={`h-8 w-8 rounded-full text-xs font-semibold transition-colors ${
-                      recurrence.days.includes(day.value) ? "bg-blue-600 text-white" :
-                      "bg-white border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600"}`}>
+                      recurrence.days.includes(day.value)
+                        ? "bg-zik-purple text-white"
+                        : "bg-zik-card border border-zik-border text-zik-muted hover:border-zik-purple hover:text-zik-purple"
+                    }`}
+                  >
                     {day.label}
                   </button>
                 ))}
               </div>
             </div>
+
+            {/* Fin de la récurrence */}
             <div className="space-y-2">
-              <p className="text-xs text-gray-500">Fin de la récurrence</p>
+              <p className="text-xs text-zik-muted">Fin de la récurrence</p>
               <div className="flex gap-3">
-                <label className="flex items-center gap-1.5 text-sm cursor-pointer">
-                  <input type="radio" value="count" checked={recurrence.endType === "count"}
-                    onChange={() => setRecurrence((prev) => ({ ...prev, endType: "count" }))} className="accent-blue-600" />
+                <label className="flex items-center gap-1.5 text-sm cursor-pointer text-zik-text">
+                  <input
+                    type="radio"
+                    value="count"
+                    checked={recurrence.endType === "count"}
+                    onChange={() => setRecurrence((prev) => ({ ...prev, endType: "count" }))}
+                    className="accent-zik-purple"
+                  />
                   Après
                 </label>
                 {recurrence.endType === "count" && (
                   <div className="flex items-center gap-1.5">
-                    <input type="number" min={1} max={52} value={recurrence.count}
+                    <input
+                      type="number"
+                      min={1}
+                      max={52}
+                      value={recurrence.count}
                       onChange={(e) => setRecurrence((prev) => ({ ...prev, count: Math.max(1, Number(e.target.value)) }))}
-                      className="w-16 border border-gray-200 rounded-md text-sm px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    <span className="text-sm text-gray-600">occurrence{recurrence.count > 1 ? "s" : ""}</span>
+                      className="w-16 border-zik-border rounded-md text-sm px-2 py-1 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple"
+                    />
+                    <span className="text-sm text-zik-text">occurrence{recurrence.count > 1 ? "s" : ""}</span>
                   </div>
                 )}
               </div>
               <div className="flex items-center gap-1.5">
-                <label className="flex items-center gap-1.5 text-sm cursor-pointer">
-                  <input type="radio" value="date" checked={recurrence.endType === "date"}
-                    onChange={() => setRecurrence((prev) => ({ ...prev, endType: "date" }))} className="accent-blue-600" />
+                <label className="flex items-center gap-1.5 text-sm cursor-pointer text-zik-text">
+                  <input
+                    type="radio"
+                    value="date"
+                    checked={recurrence.endType === "date"}
+                    onChange={() => setRecurrence((prev) => ({ ...prev, endType: "date" }))}
+                    className="accent-zik-purple"
+                  />
                   Jusqu'au
                 </label>
                 {recurrence.endType === "date" && (
-                  <Input type="date" value={recurrence.endDate}
+                  <Input
+                    type="date"
+                    value={recurrence.endDate}
                     onChange={(e) => setRecurrence((prev) => ({ ...prev, endDate: e.target.value }))}
-                    className="w-auto text-sm" min={formData.date} />
+                    className="w-auto text-sm bg-zik-card border-zik-border text-zik-text scheme-dark"
+                    min={formData.date}
+                  />
                 )}
               </div>
             </div>
+
+            {/* Aperçu des occurrences */}
             {occurrences.length > 0 && (
-              <div className="bg-blue-50 rounded-lg p-3">
-                <p className="text-xs font-medium text-blue-700 mb-2">{occurrences.length} jam{occurrences.length > 1 ? "s" : ""} seront créées :</p>
+              <div className="bg-zik-purple/10 rounded-lg p-3">
+                <p className="text-xs font-medium text-zik-purple mb-2">
+                  {occurrences.length} jam{occurrences.length > 1 ? "s" : ""} seront créées :
+                </p>
                 <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
                   {occurrences.map((d, i) => (
-                    <span key={i} className="text-xs bg-white border border-blue-200 text-blue-700 px-2 py-0.5 rounded-full">
+                    <span
+                      key={i}
+                      className="text-xs bg-zik-card border border-zik-purple/20 text-zik-purple px-2 py-0.5 rounded-full"
+                    >
                       {formatDateShort(d)}
                     </span>
                   ))}
                 </div>
               </div>
             )}
-            {recurrence.days.length === 0 && <p className="text-xs text-amber-600">⚠️ Sélectionnez au moins un jour</p>}
+            {recurrence.days.length === 0 && (
+              <p className="text-xs text-zik-orange">⚠️ Sélectionnez au moins un jour</p>
+            )}
           </div>
         )}
       </div>
 
       {/* Ouverture */}
-      <div className="flex items-center justify-between rounded-lg border border-gray-200 p-4">
+      <div className="flex items-center justify-between rounded-lg border border-zik-border p-4 bg-zik-card/50">
         <div className="flex items-center gap-3">
-          {formData.is_open ? <Unlock className="h-5 w-5 text-green-500" /> : <Lock className="h-5 w-5 text-orange-500" />}
+          {formData.is_open ? (
+            <Unlock className="h-5 w-5 text-zik-emerald" />
+          ) : (
+            <Lock className="h-5 w-5 text-zik-orange" />
+          )}
           <div>
-            <p className="text-sm font-medium">{formData.is_open ? "Jam ouverte" : "Sur approbation"}</p>
-            <p className="text-xs text-gray-500">
-              {formData.is_open ? "Tout le monde peut rejoindre librement" : "Tu devras accepter chaque participant"}
+            <p className="text-sm font-medium text-zik-text">
+              {formData.is_open ? "Jam ouverte" : "Sur approbation"}
+            </p>
+            <p className="text-xs text-zik-muted">
+              {formData.is_open
+                ? "Tout le monde peut rejoindre librement"
+                : "Tu devras accepter chaque participant"}
             </p>
           </div>
         </div>
-        <Switch checked={formData.is_open}
-          onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, is_open: checked }))} />
+        <Switch
+          checked={formData.is_open}
+          onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, is_open: checked }))}
+          className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+        />
       </div>
 
       {/* Carte */}
       <div>
-        <label className="text-sm font-medium mb-2 block">Sélectionnez le lieu (cliquez sur la carte)</label>
-        <div className="h-64 rounded-lg border border-gray-300 overflow-hidden" style={{ position: "relative", zIndex: 0 }}>
-          <LocationPickerMap center={formData.location} selectedLocation={selectedLocation}
+        <label className="text-sm font-medium text-zik-text mb-2 block">
+          Sélectionnez le lieu (cliquez sur la carte)
+        </label>
+        <div
+          className="h-64 rounded-lg border border-zik-border overflow-hidden bg-zik-card"
+          style={{ position: "relative", zIndex: 0 }}
+        >
+          <LocationPickerMap
+            center={formData.location}
+            selectedLocation={selectedLocation}
             onLocationChange={({ lat, lng, address }) => {
               setSelectedLocation({ lat, lng });
               setFormData((prev) => ({ ...prev, location: { lat, lng, address } }));
-            }} />
+            }}
+          />
         </div>
-        {formData.location.address && <p className="text-sm text-gray-600 mt-2">📍 {formData.location.address}</p>}
+        {formData.location.address && (
+          <p className="text-sm text-zik-muted mt-2">📍 {formData.location.address}</p>
+        )}
       </div>
 
-      {error && <div className="text-red-600 text-sm">{error}</div>}
+      {/* Erreur */}
+      {error && <div className="text-zik-red text-sm">{error}</div>}
+
+      {/* Boutons */}
       <div className="flex gap-2 justify-end">
-        <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>Annuler</Button>
-        <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
-          {isLoading ? "Création..." : recurrence.enabled && occurrences.length > 0
-            ? `Créer ${occurrences.length} jam${occurrences.length > 1 ? "s" : ""}` : "Créer la jam"}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onClose}
+          disabled={isLoading}
+          className="border-zik-border text-zik-text hover:bg-zik-card-hover hover:text-zik-text"
+        >
+          Annuler
+        </Button>
+        <Button
+          type="submit"
+          className="bg-zik-purple hover:bg-zik-indigo text-white disabled:opacity-50"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            "Création..."
+          ) : recurrence.enabled && occurrences.length > 0 ? (
+            `Créer ${occurrences.length} jam${occurrences.length > 1 ? "s" : ""}`
+          ) : (
+            "Créer la jam"
+          )}
         </Button>
       </div>
     </form>

@@ -239,7 +239,7 @@ const handleToggleInterest = async () => {
               {concert.artist && <p className="text-base text-blue-600 font-medium mt-0.5">{concert.artist}</p>}
             </div>
             {concert.genre && (
-              <span className="shrink-0 text-xs font-medium bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full">
+              <span className="shrink-0 text-xs font-mediumbg-zik-bg text-zik-text-700 px-2.5 py-1 rounded-full">
                 {concert.genre}
               </span>
             )}

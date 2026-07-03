@@ -10,7 +10,8 @@ import type { EventMarker } from "@/components/EventMap";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
-  loading: () => <div className="h-52 bg-gray-100 animate-pulse rounded-xl" />,
+  // ✅ Loading avec ton thème
+  loading: () => <div className="h-52 bg-zik-card animate-pulse rounded-xl" />,
 });
 
 interface Profile { id: string; username: string | null; avatar_url: string | null; }
@@ -61,15 +62,17 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
 
   return (
     <div className="flex items-center gap-1.5 w-full">
+      {/* ✅ Bouton "Tout" */}
       <button
         onClick={() => onChange(null)}
         className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-          selectedDate === null ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          selectedDate === null ? "bg-zik-purple text-white" : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
         }`}
       >
         Tout
       </button>
 
+      {/* ✅ Boutons des jours visibles */}
       {visibleDays.map((day) => {
         const hasEvent = availableDates.some((d) => isSameDay(d, day));
         const isSelected = selectedDate !== null && isSameDay(selectedDate, day);
@@ -79,27 +82,28 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
             onClick={() => onChange(isSelected ? null : day)}
             className={`flex-1 min-w-0 py-1.5 rounded-full text-xs font-medium transition-colors relative text-center ${
               isSelected
-                ? "bg-blue-600 text-white"
+                ? "bg-zik-purple text-white"
                 : hasEvent
-                ? "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100"
-                : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                ? "bg-zik-indigo/10 text-zik-purple border border-zik-purple/20 hover:bg-zik-indigo/20"
+                : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
             }`}
           >
             <span className="truncate block px-1">{formatDayLabel(day)}</span>
             {hasEvent && !isSelected && (
-              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-blue-500 rounded-full border border-white" />
+              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-zik-purple rounded-full border border-zik-bg" />
             )}
           </button>
         );
       })}
 
+      {/* ✅ Bouton dropdown */}
       <div className="relative shrink-0" ref={dropdownRef}>
         <button
           onClick={() => setDropdownOpen((v) => !v)}
           className={`flex items-center gap-0.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors ${
             selectedIsInMore
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              ? "bg-zik-purple text-white"
+              : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
           }`}
         >
           {selectedIsInMore ? formatDayLabel(selectedDate!) : "···"}
@@ -107,7 +111,7 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
         </button>
 
         {dropdownOpen && (
-          <div className="absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-lg border border-gray-100 py-1 min-w-40 max-h-64 overflow-y-auto">
+          <div className="absolute right-0 top-full mt-1 z-50 bg-zik-card rounded-xl shadow-lg border border-zik-border py-1 min-w-40 max-h-64 overflow-y-auto">
             {moreDays.map((day) => {
               const hasEvent = availableDates.some((d) => isSameDay(d, day));
               const isSelected = selectedDate !== null && isSameDay(selectedDate, day);
@@ -115,12 +119,12 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
                 <button
                   key={day.toISOString()}
                   onClick={() => { onChange(isSelected ? null : day); setDropdownOpen(false); }}
-                  className={`w-full text-left px-4 py-2 text-xs flex items-center justify-between gap-2 hover:bg-gray-50 transition-colors ${
-                    isSelected ? "text-blue-600 font-semibold bg-blue-50" : "text-gray-700"
+                  className={`w-full text-left px-4 py-2 text-xs flex items-center justify-between gap-2 hover:bg-zik-card-hover transition-colors ${
+                    isSelected ? "text-zik-purple font-semibold bg-zik-indigo/10" : "text-zik-muted"
                   }`}
                 >
                   <span>{formatDayLabelLong(day)}</span>
-                  {hasEvent && <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />}
+                  {hasEvent && <span className="h-2 w-2 rounded-full bg-zik-purple shrink-0" />}
                 </button>
               );
             })}
@@ -136,27 +140,44 @@ function ParticipantAvatars({ participants }: { participants: ParticipantWithPro
   const visible = participants.slice(0, MAX_VISIBLE);
   const extra = participants.length - MAX_VISIBLE;
   if (participants.length === 0) return null;
+
   return (
     <div className="flex items-center">
       <div className="flex -space-x-2">
         {visible.map((p, i) => {
           const initials = p.profile?.username ? p.profile.username.slice(0, 2).toUpperCase() : "?";
           return p.profile?.avatar_url ? (
-            <img key={p.user_id} src={p.profile.avatar_url} alt={p.profile.username ?? ""} title={p.profile.username ?? ""}
-              className="h-7 w-7 rounded-full border-2 border-white object-cover" style={{ zIndex: MAX_VISIBLE - i }} />
+            <img
+              key={p.user_id}
+              src={p.profile.avatar_url}
+              alt={p.profile.username ?? ""}
+              title={p.profile.username ?? ""}
+              className="h-7 w-7 rounded-full border-2 border-zik-bg object-cover"
+              style={{ zIndex: MAX_VISIBLE - i }}
+            />
           ) : (
-            <div key={p.user_id} title={p.profile?.username ?? ""}
-              className="h-7 w-7 rounded-full border-2 border-white bg-blue-500 flex items-center justify-center text-white text-[10px] font-semibold"
-              style={{ zIndex: MAX_VISIBLE - i }}>{initials}</div>
+            <div
+              key={p.user_id}
+              title={p.profile?.username ?? ""}
+              className="h-7 w-7 rounded-full border-2 border-zik-bg bg-zik-purple flex items-center justify-center text-white text-[10px] font-semibold"
+              style={{ zIndex: MAX_VISIBLE - i }}
+            >
+              {initials}
+            </div>
           );
         })}
         {extra > 0 && (
-          <div className="h-7 w-7 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center text-gray-600 text-[10px] font-semibold" style={{ zIndex: 0 }}>
+          <div
+            className="h-7 w-7 rounded-full border-2 border-zik-bg bg-zik-card flex items-center justify-center text-zik-muted text-[10px] font-semibold"
+            style={{ zIndex: 0 }}
+          >
             +{extra}
           </div>
         )}
       </div>
-      <span className="ml-2 text-xs text-gray-400">{participants.length} participant{participants.length > 1 ? "s" : ""}</span>
+      <span className="ml-2 text-xs text-zik-muted">
+        {participants.length} participant{participants.length > 1 ? "s" : ""}
+      </span>
     </div>
   );
 }
@@ -219,13 +240,11 @@ export default function JamList() {
   }, [currentUserId]);
 
   const availableDates = useMemo(() => jams.map((j) => new Date(j.start_time)), [jams]);
-
   const filteredJams = useMemo(() => {
     if (!selectedDate) return jams;
     return jams.filter((j) => isSameDay(new Date(j.start_time), selectedDate));
   }, [jams, selectedDate]);
 
-  // ✅ Markers jams uniquement (points verts)
   const jamMarkers = useMemo<EventMarker[]>(() =>
     filteredJams.flatMap((jam) => {
       try {
@@ -254,17 +273,18 @@ export default function JamList() {
     return "Aucune jam ce jour-là 🎸";
   }, [selectedDate]);
 
+  // ✅ Loading skeleton avec ton thème
   if (isLoading) return (
     <div className="space-y-3">
-      <div className="h-52 bg-gray-100 animate-pulse rounded-xl" />
-      {[...Array(3)].map((_, i) => <div key={i} className="h-28 bg-gray-100 animate-pulse rounded-lg" />)}
+      <div className="h-52 bg-zik-card animate-pulse rounded-xl" />
+      {[...Array(3)].map((_, i) => <div key={i} className="h-28 bg-zik-card animate-pulse rounded-lg" />)}
     </div>
   );
-  if (error) return <p className="text-red-500 text-sm">{error}</p>;
+
+  if (error) return <p className="text-zik-red text-sm">{error}</p>;
 
   return (
     <div className="space-y-4">
-      {/* ✅ Carte avec markers jams uniquement */}
       <EventMap
         markers={jamMarkers}
         onJoinJam={(jamId) => handleJoin(jamId)}
@@ -273,7 +293,7 @@ export default function JamList() {
       />
       <DayFilter selectedDate={selectedDate} onChange={setSelectedDate} availableDates={availableDates} />
       {filteredJams.length === 0 ? (
-        <p className="text-gray-500 text-sm text-center py-6">{emptyMessage}</p>
+        <p className="text-zik-muted text-sm text-center py-6">{emptyMessage}</p>
       ) : (
         <div className="space-y-3">
           {filteredJams.map((jam) => {
@@ -282,20 +302,32 @@ export default function JamList() {
             const isParticipant = participants.some((p) => p.user_id === currentUserId);
             const isCreator = jam.created_by === currentUserId;
             const isJoining = joiningJamId === jam.id;
+
             return (
               <div key={jam.id}
                 onClick={() => router.push(`/events/jams/${jam.id}`)}
-                className="rounded-lg border border-gray-200 p-4 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer active:scale-[0.99]">
+                // ✅ Bordure et survol adaptés
+                className="rounded-lg border border-zik-border p-4 hover:border-zik-purple/30 hover:shadow-sm transition-all cursor-pointer active:scale-[0.99] bg-zik-card"
+              >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 truncate">{jam.title}</h3>
-                    <p className="text-sm text-gray-500 mt-1 line-clamp-2">{jam.description}</p>
+                    {/* ✅ Titre adapté */}
+                    <h3 className="font-semibold text-zik-text truncate">{jam.title}</h3>
+                    {/* ✅ Description adaptée */}
+                    <p className="text-sm text-zik-muted mt-1 line-clamp-2">{jam.description}</p>
                   </div>
-                  <span className={`shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${jam.is_open ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>
+                  {/* ✅ Badge de statut adapté */}
+                  <span className={`shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
+                    jam.is_open
+                      ? "bg-zik-emerald/10 text-zik-emerald"
+                      : "bg-zik-orange/10 text-zik-orange"
+                  }`}>
                     {jam.is_open ? <><Unlock className="h-3 w-3" /> Ouverte</> : <><Lock className="h-3 w-3" /> Sur approbation</>}
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-3 mt-3 text-xs text-gray-500">
+
+                {/* ✅ Infos date/lieu adaptées */}
+                <div className="flex flex-wrap gap-3 mt-3 text-xs text-zik-muted">
                   <span className="flex items-center gap-1">
                     <Clock className="h-3.5 w-3.5" />
                     {formatDate(jam.start_time)} · {formatTime(jam.start_time)}
@@ -307,23 +339,35 @@ export default function JamList() {
                     </span>
                   )}
                 </div>
+
+                {/* ✅ Participants et boutons adaptés */}
                 <div className="flex items-center justify-between mt-3">
                   <ParticipantAvatars participants={participants} />
                   {!isCreator && currentUserId && (
                     isParticipant ? (
-                      <Button size="sm" variant="outline"
-                        className="text-xs border-green-300 text-green-700 hover:bg-red-50 hover:border-red-300 hover:text-red-600 transition-colors"
-                        onClick={(e) => handleLeave(jam.id, e)} disabled={isJoining}>
-                        <Check className="h-3.5 w-3.5 mr-1" />{isJoining ? "..." : "Inscrit"}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs border-zik-emerald/30 text-zik-emerald hover:bg-zik-red/10 hover:border-zik-red/30 hover:text-zik-red transition-colors"
+                        onClick={(e) => handleLeave(jam.id, e)}
+                        disabled={isJoining}
+                      >
+                        <Check className="h-3.5 w-3.5 mr-1" />
+                        {isJoining ? "..." : "Inscrit"}
                       </Button>
                     ) : (
-                      <Button size="sm" className="text-xs bg-blue-600 hover:bg-blue-700"
-                        onClick={(e) => handleJoin(jam.id, e)} disabled={isJoining}>
-                        <UserPlus className="h-3.5 w-3.5 mr-1" />{isJoining ? "..." : "Rejoindre"}
+                      <Button
+                        size="sm"
+                        className="text-xs bg-zik-purple hover:bg-zik-indigo"
+                        onClick={(e) => handleJoin(jam.id, e)}
+                        disabled={isJoining}
+                      >
+                        <UserPlus className="h-3.5 w-3.5 mr-1" />
+                        {isJoining ? "..." : "Rejoindre"}
                       </Button>
                     )
                   )}
-                  {isCreator && <span className="text-xs text-gray-400 italic">Organisateur</span>}
+                  {isCreator && <span className="text-xs text-zik-muted italic">Organisateur</span>}
                 </div>
               </div>
             );

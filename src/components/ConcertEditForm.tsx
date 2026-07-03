@@ -108,122 +108,215 @@ export default function ConcertEditForm({ concert, onSuccess, onClose }: Concert
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+return (
+  <form onSubmit={handleSubmit} className="space-y-4">
+    {/* Titre */}
+    <div>
+      <label className="text-sm font-medium text-zik-text">
+        Titre <span className="text-zik-red">*</span>
+      </label>
+      <Input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        required
+        className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+      />
+    </div>
+
+    <div className="grid grid-cols-2 gap-3">
       <div>
-        <label className="text-sm font-medium">Titre <span className="text-red-400">*</span></label>
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
+        <label className="text-sm font-medium text-zik-text flex items-center gap-1.5">
+          <Music2 className="h-3.5 w-3.5 text-zik-purple" /> Artiste / Groupe
+        </label>
+        <Input
+          value={artist}
+          onChange={(e) => setArtist(e.target.value)}
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50 mt-0.5"
+        />
       </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-sm font-medium flex items-center gap-1.5">
-            <Music2 className="h-3.5 w-3.5 text-gray-400" /> Artiste / Groupe
-          </label>
-          <Input value={artist} onChange={(e) => setArtist(e.target.value)} />
-        </div>
-        <div>
-          <label className="text-sm font-medium">Genre musical</label>
-          <select value={genre} onChange={(e) => setGenre(e.target.value)}
-            className="w-full border border-gray-200 rounded-md text-sm px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 mt-0.5">
-            <option value="">Sélectionner...</option>
-            {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
-          </select>
-        </div>
-      </div>
-
       <div>
-        <label className="text-sm font-medium">Description</label>
-        <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+        <label className="text-sm font-medium text-zik-text">Genre musical</label>
+        <select
+          value={genre}
+          onChange={(e) => setGenre(e.target.value)}
+          className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple mt-0.5"
+        >
+          <option value="">Sélectionner...</option>
+          {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
+        </select>
       </div>
+    </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        <div>
-          <label className="text-sm font-medium">Date <span className="text-red-400">*</span></label>
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-        </div>
-        <div>
-          <label className="text-sm font-medium">Début <span className="text-red-400">*</span></label>
-          <Input type="time" value={startHour} onChange={(e) => setStartHour(e.target.value)} required />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-gray-600">Fin <span className="text-gray-400 font-normal">(optionnel)</span></label>
-          <Input type="time" value={endHour} onChange={(e) => setEndHour(e.target.value)} />
-        </div>
+    <div>
+      <label className="text-sm font-medium text-zik-text">Description</label>
+      <Textarea
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        rows={3}
+        className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+      />
+    </div>
+
+    <div className="grid grid-cols-3 gap-3">
+      <div>
+        <label className="text-sm font-medium text-zik-text">
+          Date <span className="text-zik-red">*</span>
+        </label>
+        <Input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          required
+          className="bg-zik-card border-zik-border text-zik-text scheme-dark focus:ring-zik-purple/50"
+        />
       </div>
+      <div>
+        <label className="text-sm font-medium text-zik-text">
+          Début <span className="text-zik-red">*</span>
+        </label>
+        <Input
+          type="time"
+          value={startHour}
+          onChange={(e) => setStartHour(e.target.value)}
+          required
+          className="bg-zik-card border-zik-border text-zik-text scheme-dark focus:ring-zik-purple/50"
+        />
+      </div>
+      <div>
+        <label className="text-sm font-medium text-zik-muted">
+          Fin <span className="text-zik-muted font-normal">(optionnel)</span>
+        </label>
+        <Input
+          type="time"
+          value={endHour}
+          onChange={(e) => setEndHour(e.target.value)}
+          className="bg-zik-card border-zik-border text-zik-text scheme-dark focus:ring-zik-purple/50"
+        />
+      </div>
+    </div>
 
-      {/* Billetterie */}
-      <div className="rounded-lg border border-gray-200 overflow-hidden">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-3">
-            <Ticket className={`h-5 w-5 ${isFree ? "text-green-500" : "text-orange-500"}`} />
-            <div>
-              <p className="text-sm font-medium">{isFree ? "Entrée gratuite" : "Entrée payante"}</p>
-              <p className="text-xs text-gray-500">{isFree ? "Accès libre" : "Précise le prix et le lien de billetterie"}</p>
-            </div>
+    {/* Billetterie */}
+    <div className="rounded-lg border border-zik-border overflow-hidden bg-zik-card/50">
+      <div className="flex items-center justify-between p-4">
+        <div className="flex items-center gap-3">
+          <Ticket className={`h-5 w-5 ${isFree ? "text-zik-emerald" : "text-zik-orange"}`} />
+          <div>
+            <p className="text-sm font-medium text-zik-text">
+              {isFree ? "Entrée gratuite" : "Entrée payante"}
+            </p>
+            <p className="text-xs text-zik-muted">
+              {isFree ? "Accès libre" : "Précise le prix et le lien de billetterie"}
+            </p>
           </div>
-          <Switch checked={!isFree} onCheckedChange={(checked) => setIsFree(!checked)} />
         </div>
-        {!isFree && (
-          <div className="border-t border-gray-100 bg-gray-50 p-4 space-y-3">
-            <div>
-              <label className="text-xs text-gray-500 mb-1 block">Prix (€)</label>
-              <Input type="number" min="0" step="0.5" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Ex: 15" />
-            </div>
-            <div>
-              <label className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                <LinkIcon className="h-3 w-3" /> Lien billetterie (optionnel)
-              </label>
-              <Input value={ticketUrl} onChange={(e) => setTicketUrl(e.target.value)} placeholder="https://..." type="url" />
-            </div>
-          </div>
-        )}
+        <Switch
+          checked={!isFree}
+          onCheckedChange={(checked) => setIsFree(!checked)}
+          className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+        />
       </div>
-
-      {/* Affiche */}
-      <div>
-        <label className="text-sm font-medium mb-2 block">Affiche</label>
-        {posterPreview ? (
-          <div className="relative w-full max-w-xs">
-            <img src={posterPreview} alt="Aperçu affiche" className="rounded-lg w-full object-cover max-h-48 border border-gray-200" />
-            <button type="button"
-              onClick={() => { setPosterFile(null); setPosterPreview(null); }}
-              className="absolute top-2 right-2 bg-white rounded-full p-1 shadow text-gray-500 hover:text-red-500 transition-colors">
-              <X className="h-4 w-4" />
-            </button>
+      {!isFree && (
+        <div className="border-t border-zik-border bg-zik-card/30 p-4 space-y-3">
+          <div>
+            <label className="text-xs text-zik-muted mb-1 block">Prix (€)</label>
+            <Input
+              type="number"
+              min="0"
+              step="0.5"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="Ex: 15"
+              className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+            />
           </div>
-        ) : (
-          <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-200 rounded-lg p-6 cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-colors">
-            <Upload className="h-6 w-6 text-gray-400" />
-            <span className="text-sm text-gray-500">Cliquez pour importer une image</span>
-            <input type="file" accept="image/*" className="hidden" onChange={handlePosterChange} />
-          </label>
-        )}
-      </div>
+          <div>
+            <label className="text-xs text-zik-muted mb-1 flex items-center gap-1">
+              <LinkIcon className="h-3 w-3" /> Lien billetterie (optionnel)
+            </label>
+            <Input
+              value={ticketUrl}
+              onChange={(e) => setTicketUrl(e.target.value)}
+              placeholder="https://..."
+              type="url"
+              className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+            />
+          </div>
+        </div>
+      )}
+    </div>
 
-      {/* Carte */}
-      <div>
-        <label className="text-sm font-medium mb-2 block">Lieu (cliquez sur la carte pour modifier)</label>
-        <div className="h-64 rounded-lg border border-gray-300 overflow-hidden" style={{ position: "relative", zIndex: 0 }}>
-          <LocationPickerMap
-            center={location}
-            selectedLocation={selectedLocation}
-            onLocationChange={({ lat, lng, address }) => {
-              setSelectedLocation({ lat, lng });
-              setLocation({ lat, lng, address });
-            }}
+    {/* Affiche */}
+    <div>
+      <label className="text-sm font-medium text-zik-text mb-2 block">Affiche</label>
+      {posterPreview ? (
+        <div className="relative w-full max-w-xs">
+          <img
+            src={posterPreview}
+            alt="Aperçu affiche"
+            className="rounded-lg w-full object-cover max-h-48 border border-zik-border"
           />
+          <button
+            type="button"
+            onClick={() => { setPosterFile(null); setPosterPreview(null); }}
+            className="absolute top-2 right-2 bg-zik-card rounded-full p-1 shadow text-zik-muted hover:text-zik-red transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
-        {location.address && <p className="text-sm text-gray-600 mt-2">📍 {location.address}</p>}
-      </div>
+      ) : (
+        <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zik-border rounded-lg p-6 cursor-pointer hover:border-zik-purple hover:bg-zik-purple/5 transition-colors">
+          <Upload className="h-6 w-6 text-zik-muted" />
+          <span className="text-sm text-zik-muted">Cliquez pour importer une image</span>
+          <input type="file" accept="image/*" className="hidden" onChange={handlePosterChange} />
+        </label>
+      )}
+    </div>
 
-      {error && <p className="text-red-600 text-sm">{error}</p>}
-      <div className="flex gap-2 justify-end pt-1">
-        <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>Annuler</Button>
-        <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
-          {isLoading ? "Enregistrement..." : "Enregistrer les modifications"}
-        </Button>
+    {/* Carte */}
+    <div>
+      <label className="text-sm font-medium text-zik-text mb-2 block">
+        Lieu (cliquez sur la carte pour modifier)
+      </label>
+      <div
+        className="h-64 rounded-lg border border-zik-border overflow-hidden bg-zik-card"
+        style={{ position: "relative", zIndex: 0 }}
+      >
+        <LocationPickerMap
+          center={location}
+          selectedLocation={selectedLocation}
+          onLocationChange={({ lat, lng, address }) => {
+            setSelectedLocation({ lat, lng });
+            setLocation({ lat, lng, address });
+          }}
+        />
       </div>
-    </form>
-  );
+      {location.address && (
+        <p className="text-sm text-zik-muted mt-2">📍 {location.address}</p>
+      )}
+    </div>
+
+    {/* Erreur */}
+    {error && <p className="text-zik-red text-sm">{error}</p>}
+
+    {/* Boutons */}
+    <div className="flex gap-2 justify-end pt-1">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onClose}
+        disabled={isLoading}
+        className="border-zik-border text-zik-text hover:bg-zik-card-hover hover:text-zik-text"
+      >
+        Annuler
+      </Button>
+      <Button
+        type="submit"
+        className="bg-zik-purple hover:bg-zik-indigo text-white disabled:opacity-50"
+        disabled={isLoading}
+      >
+        {isLoading ? "Enregistrement..." : "Enregistrer les modifications"}
+      </Button>
+    </div>
+  </form>
+);
 }

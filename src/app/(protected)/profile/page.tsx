@@ -133,11 +133,12 @@ export default function MyProfilePage() {
     setTimeout(() => setSaved(false), 2000);
   };
 
+  // ✅ Loading skeleton avec ton thème
   if (isLoading) return (
     <div className="flex flex-col gap-4 p-4">
-      <div className="h-24 w-24 rounded-full bg-gray-100 animate-pulse mx-auto" />
-      <div className="h-6 w-40 bg-gray-100 animate-pulse rounded mx-auto" />
-      <div className="h-32 bg-gray-100 animate-pulse rounded-xl" />
+      <div className="h-24 w-24 rounded-full bg-zik-card animate-pulse mx-auto" />
+      <div className="h-6 w-40 bg-zik-card animate-pulse rounded mx-auto" />
+      <div className="h-32 bg-zik-card animate-pulse rounded-xl" />
     </div>
   );
 
@@ -149,57 +150,68 @@ export default function MyProfilePage() {
       <div className="flex flex-col items-center gap-3 pt-4">
         <div className="relative">
           {avatarUrl ? (
-            <img src={avatarUrl} alt={username} className="h-24 w-24 rounded-full object-cover border-4 border-white shadow-md" />
+            <img src={avatarUrl} alt={username}
+              className="h-24 w-24 rounded-full object-cover border-4 border-zik-bg shadow-md" />
           ) : (
-            <div className="h-24 w-24 rounded-full bg-blue-500 flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-md">
+            <div className="h-24 w-24 rounded-full bg-linear-to-br from-zik-purple to-zik-indigo flex items-center justify-center text-white text-2xl font-bold border-4 border-zik-bg shadow-md">
               {initials}
             </div>
           )}
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploadingAvatar}
-            className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center hover:bg-gray-50 transition-colors"
+            className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-zik-card border border-zik-border shadow flex items-center justify-center hover:bg-zik-card-hover transition-colors"
           >
             {isUploadingAvatar
-              ? <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
-              : <Camera className="h-4 w-4 text-gray-600" />
+              ? <Loader2 className="h-4 w-4 animate-spin text-zik-muted" />
+              : <Camera className="h-4 w-4 text-zik-muted" />
             }
           </button>
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
         </div>
-        <p className="text-xs text-gray-400">Appuie sur l'icône pour changer ta photo</p>
+        <p className="text-xs text-zik-muted">Appuie sur l'icône pour changer ta photo</p>
       </div>
 
       {/* Champs */}
       <div className="space-y-4">
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">Nom d'utilisateur</label>
-          <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Ton pseudo" />
+          <label className="text-sm font-medium text-zik-text mb-1 block">Nom d'utilisateur</label>
+          <Input
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Ton pseudo"
+            className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+          />
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">Bio</label>
+          <label className="text-sm font-medium text-zik-text mb-1 block">Bio</label>
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             placeholder="Parle de toi, de ta musique..."
             rows={3}
             maxLength={280}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none outline-none focus:ring-2 focus:ring-blue-300 transition-all"
+            className="w-full border-zik-border rounded-lg px-3 py-2 text-sm resize-none outline-none bg-zik-card text-zik-text placeholder:text-zik-muted focus:ring-2 focus:ring-zik-purple/50 transition-all"
           />
-          <p className="text-xs text-gray-400 text-right mt-0.5">{bio.length}/280</p>
+          <p className="text-xs text-zik-muted text-right mt-0.5">{bio.length}/280</p>
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5 text-gray-400" /> Ville
+          <label className="text-sm font-medium text-zik-text mb-1 flex items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5 text-zik-purple" /> Ville
           </label>
-          <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Ex: Paris, Lyon, Strasbourg..." />
+          <Input
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            placeholder="Ex: Paris, Lyon, Strasbourg..."
+            className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+          />
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1.5">
-            <Music2 className="h-3.5 w-3.5 text-gray-400" /> Instruments
+          <label className="text-sm font-medium text-zik-text mb-2 flex items-center gap-1.5">
+            <Music2 className="h-3.5 w-3.5 text-zik-purple" /> Instruments
           </label>
           <div className="flex flex-wrap gap-2">
             {INSTRUMENTS.map((inst) => {
@@ -211,8 +223,8 @@ export default function MyProfilePage() {
                   onClick={() => toggleInstrument(inst.key)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
                     active
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600'
+                      ? 'bg-zik-purple text-white border-zik-purple'
+                      : 'bg-zik-card text-zik-muted border-zik-border hover:border-zik-purple hover:text-zik-purple'
                   }`}
                 >
                   <span>{inst.emoji}</span> {inst.label}
@@ -227,7 +239,11 @@ export default function MyProfilePage() {
       <Button
         onClick={handleSave}
         disabled={isSaving}
-        className={`w-full transition-all ${saved ? 'bg-green-600 hover:bg-green-600' : 'bg-blue-600 hover:bg-blue-700'}`}
+        className={`w-full transition-all ${
+          saved
+            ? 'bg-zik-emerald hover:bg-zik-emerald/80'
+            : 'bg-zik-purple hover:bg-zik-indigo'
+        }`}
       >
         {isSaving
           ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enregistrement...</>
@@ -240,28 +256,28 @@ export default function MyProfilePage() {
       {/* Historique jams */}
       {jams.length > 0 && (
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
-            <CalendarDays className="h-4 w-4 text-gray-400" /> Mes jams ({jams.length})
+          <h2 className="text-sm font-semibold text-zik-text mb-2 flex items-center gap-1.5">
+            <CalendarDays className="h-4 w-4 text-zik-purple" /> Mes jams ({jams.length})
           </h2>
           <div className="space-y-2">
             {jams.slice(0, 5).map((jam) => (
               <button
                 key={jam.id}
                 onClick={() => router.push(`/events/jams/${jam.id}`)}
-                className="w-full flex items-center justify-between gap-3 p-3 rounded-lg border border-gray-100 bg-gray-50 hover:border-blue-200 hover:bg-blue-50/30 transition-all text-left"
+                className="w-full flex items-center justify-between gap-3 p-3 rounded-lg border border-zik-border bg-zik-card/50 hover:border-zik-purple/30 hover:bg-zik-purple/5 transition-all text-left"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span className="text-base shrink-0">🎸</span>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate">{jam.title}</p>
-                    <p className="text-xs text-gray-400">{formatDate(jam.start_time)}</p>
+                    <p className="text-sm font-medium text-zik-text truncate">{jam.title}</p>
+                    <p className="text-xs text-zik-muted">{formatDate(jam.start_time)}</p>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 text-gray-300 shrink-0" />
+                <ChevronRight className="h-4 w-4 text-zik-muted shrink-0" />
               </button>
             ))}
             {jams.length > 5 && (
-              <p className="text-xs text-center text-gray-400 pt-1">+ {jams.length - 5} autres</p>
+              <p className="text-xs text-center text-zik-muted pt-1">+ {jams.length - 5} autres</p>
             )}
           </div>
         </div>
