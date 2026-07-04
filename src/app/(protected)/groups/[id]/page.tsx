@@ -10,7 +10,7 @@ import { createPortal } from 'react-dom';
 import {
   ArrowLeft, MapPin, Music2, Users, MessageCircle, Crown,
   ShieldCheck, X, UserPlus, Pencil, ChevronRight,
-  Camera, Loader2, Send, CalendarDays, Mail, Trash2, Check
+  Camera, Loader2, Send, CalendarDays, Mail, Trash2, Check, Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,14 +18,46 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 const GENRES = ['Rock', 'Jazz', 'Blues', 'Metal', 'Pop', 'Électro', 'Folk', 'Classique', 'Hip-Hop', 'Reggae', 'Autre'];
 
+const INSTRUMENTS = [
+  { key: 'chant', label: 'Chant', emoji: '🎤' },
+  { key: 'guitare', label: 'Guitare', emoji: '🎸' },
+  { key: 'basse', label: 'Basse', emoji: '🎵' },
+  { key: 'batterie', label: 'Batterie', emoji: '🥁' },
+  { key: 'clavier', label: 'Clavier', emoji: '🎹' },
+  { key: 'autres', label: 'Autres', emoji: '🎶' },
+];
+
 interface Group {
   id: string; name: string; bio: string | null;
   city: string | null; genre: string | null;
   avatar_url: string | null; created_by: string;
 }
-interface Profile { id: string; username: string | null; avatar_url: string | null; }
-interface GroupMember { user_id: string; role: string; status: string; instrument: string | null; profile: Profile | null; }
-interface Message { id: string; user_id: string; content: string; created_at: string; profile: Profile | null; }
+interface Profile {
+  id: string;
+  username: string | null;
+  avatar_url: string | null;
+  city: string | null;
+  instruments: string[] | null;
+  looking_for_group: boolean;
+}
+interface GroupMember {
+  user_id: string;
+  role: string;
+  status: string;
+  instrument: string | null;
+  profile: Profile | null;
+}
+interface Message {
+  id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  profile: Profile | null;
+}
+
+interface SearchableProfile extends Profile {
+  distance?: number;
+}
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -37,21 +69,33 @@ function GroupAvatar({ group, size = 'md' }: { group: Pick<Group, 'name' | 'avat
   return group.avatar_url ? (
     <img src={group.avatar_url} alt={group.name} className={`${cls} rounded-2xl object-cover shrink-0`} />
   ) : (
-    // ✅ Dégradé adapté à ton thème
-    <div className={`${cls} rounded-2xl bg-gradient-to-br from-zik-purple to-zik-indigo flex items-center justify-center text-white font-bold shrink-0`}>
+    <div className={`${cls} rounded-2xl bg-linear-to-br from-zik-purple to-zik-indigo flex items-center justify-center text-white font-bold shrink-0`}>
       {initials}
     </div>
   );
 }
 
-function MemberAvatar({ profile, size = 'md' }: { profile: Profile | null; size?: 'sm' | 'md' }) {
+function MemberAvatar({ profile, size = 'md', onClick }: {
+  profile: Profile | null;
+  size?: 'sm' | 'md';
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+}) {
   const cls = size === 'sm' ? 'h-6 w-6 text-[9px]' : 'h-10 w-10 text-sm';
   const initials = profile?.username?.slice(0, 2).toUpperCase() ?? '?';
+  const interactClass = onClick ? "cursor-pointer hover:ring-2 hover:ring-zik-purple/50 hover:ring-offset-1 transition-all" : "";
+
   return profile?.avatar_url ? (
-    <img src={profile.avatar_url} alt={profile.username ?? ''} className={`${cls} rounded-full object-cover shrink-0`} />
+    <img
+      src={profile.avatar_url}
+      alt={profile.username ?? ''}
+      onClick={onClick}
+      className={`${cls} ${interactClass} rounded-full object-cover shrink-0`}
+    />
   ) : (
-    // ✅ Fond adapté à ton thème
-    <div className={`${cls} rounded-full bg-zik-purple flex items-center justify-center text-white font-semibold shrink-0`}>
+    <div
+      onClick={onClick}
+      className={`${cls} ${interactClass} rounded-full bg-zik-purple flex items-center justify-center text-white font-semibold shrink-0`}
+    >
       {initials}
     </div>
   );
@@ -71,7 +115,6 @@ function Modal({ open, onClose, title, children }: {
 
   return createPortal(
     <div style={{ position: 'fixed', inset: 0, zIndex: 99999 }}>
-      {/* ✅ Overlay adapté */}
       <div
         style={{ position: 'absolute', inset: 0, background: 'rgba(14, 11, 22, 0.8)' }}
         onClick={onClose}
@@ -89,9 +132,7 @@ function Modal({ open, onClose, title, children }: {
         color: 'var(--zik-text)',
       }}>
         <div className="flex items-center justify-between mb-4">
-          {/* ✅ Titre adapté */}
           <h2 className="text-xl font-bold text-zik-text">{title}</h2>
-          {/* ✅ Bouton de fermeture adapté */}
           <button
             onClick={onClose}
             className="p-1 rounded hover:bg-zik-card-hover text-zik-muted hover:text-zik-text transition-colors"
@@ -106,12 +147,70 @@ function Modal({ open, onClose, title, children }: {
   );
 }
 
+// ✅ Composant ProfilePopup intégré
+function ProfilePopup({ profile, anchorRef, onClose, onMessage, onViewProfile }: {
+  profile: Profile;
+  anchorRef: React.RefObject<HTMLElement>;
+  onClose: () => void;
+  onMessage: (userId: string) => void;
+  onViewProfile: (userId: string) => void;
+}) {
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        popupRef.current && !popupRef.current.contains(e.target as Node) &&
+        anchorRef.current && !anchorRef.current.contains(e.target as Node)
+      ) onClose();
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [onClose, anchorRef]);
+
+  const rect = anchorRef.current?.getBoundingClientRect();
+
+  return createPortal(
+    <div
+      ref={popupRef}
+      className="fixed z-99998 bg-zik-card rounded-xl shadow-xl border border-zik-border p-3 min-w-45 animate-in fade-in slide-in-from-top-2 duration-200"
+      style={{
+        top: (rect?.bottom ?? 0) + 6,
+        left: Math.min(rect?.left ?? 0, window.innerWidth - 200),
+        zIndex: 100000,
+      }}
+    >
+      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-zik-border">
+        <MemberAvatar profile={profile} size="sm" />
+        <span className="text-sm font-semibold text-zik-text truncate">{profile.username ?? "Inconnu"}</span>
+      </div>
+      <button
+        onClick={() => { onViewProfile(profile.id); onClose(); }}
+        className="w-full flex items-center gap-2 text-xs text-zik-text font-medium hover:bg-zik-card-hover rounded-lg px-2 py-1.5 transition-colors mb-1"
+      >
+        <Users className="h-3.5 w-3.5 text-zik-purple" /> Voir le profil
+      </button>
+      <button
+        onClick={() => { onMessage(profile.id); onClose(); }}
+        className="w-full flex items-center gap-2 text-xs text-zik-purple font-medium hover:bg-zik-purple/10 rounded-lg px-2 py-1.5 transition-colors"
+      >
+        <MessageCircle className="h-3.5 w-3.5" /> Envoyer un message
+      </button>
+    </div>,
+    document.body
+  );
+}
+
 export default function GroupDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // États pour le popup de profil
+  const [popupProfile, setPopupProfile] = useState<Profile | null>(null);
+  const popupAnchorRef = useRef<HTMLElement | null>(null);
 
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
@@ -147,7 +246,23 @@ export default function GroupDetailPage() {
   const pendingMembers = members.filter((m) => m.status === 'pending');
   const confirmedMembers = members.filter((m) => m.status !== 'pending');
 
-  // ✅ Récupération des données
+// États pour la modale de recherche de musiciens
+const [isSearchOpen, setIsSearchOpen] = useState(false);
+const [searchTerm, setSearchTerm] = useState("");
+const [selectedInstruments, setSelectedInstruments] = useState<string[]>([]);
+const [distance, setDistance] = useState<number>(50);
+const [onlyLookingForGroup, setOnlyLookingForGroup] = useState(true);
+const [searchResults, setSearchResults] = useState<Profile[]>([]);
+const [isSearchLoading, setIsSearchLoading] = useState(false);
+
+  // ✅ Fonction pour gérer le clic sur un avatar (corrigée)
+  const handleAvatarClick = (profile: Profile, e: React.MouseEvent<HTMLDivElement>) => {
+    if (profile.id === currentUserId) return;
+    e.stopPropagation();
+    popupAnchorRef.current = e.currentTarget;
+    setPopupProfile(profile);
+  };
+
   const fetchAll = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setCurrentUserId(user?.id ?? null);
@@ -163,7 +278,7 @@ export default function GroupDetailPage() {
 
     const { data: membersData } = await supabase
       .from('group_members')
-      .select('user_id, role, status, instrument, profile:profiles(id, username, avatar_url)')
+      .select('user_id, role, status, instrument, profile:profiles(id, username, avatar_url, city, instruments)')
       .eq('group_id', id);
     setMembers((membersData ?? []).map((m: any) => ({ ...m, status: m.status ?? 'confirmed', profile: m.profile ?? null })));
 
@@ -209,7 +324,6 @@ export default function GroupDetailPage() {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  // ✅ Fonctions d'action
   const handleContactGroup = async () => {
     if (!currentUserId) { router.push('/login'); return; }
     setIsContactingGroup(true);
@@ -234,16 +348,6 @@ export default function GroupDetailPage() {
       if (convError) {
         console.error(convError);
       } else if (convId) {
-        for (const m of members) {
-          if (m.user_id === currentUserId) continue;
-          await supabase.from('notifications').insert({
-            user_id: m.user_id,
-            type: 'message',
-            title: `Nouveau message pour ${group!.name}`,
-            body: 'Quelqu\'un a contacté votre groupe',
-            link: `/messages/${convId}`,
-          });
-        }
         router.push(`/messages/${convId}`);
       }
     } finally {
@@ -349,9 +453,91 @@ export default function GroupDetailPage() {
 
   const handleOpenDM = async (targetUserId: string) => {
     if (!currentUserId || targetUserId === currentUserId) return;
-    const { data: convId } = await supabase.rpc('get_or_create_direct_conversation', { p_other_user_id: targetUserId, p_title: null });
+    const { data: convId } = await supabase.rpc('get_or_create_direct_conversation', { p_other_user_id: targetUserId });
     if (convId) router.push(`/messages/${convId}`);
   };
+
+  const handleViewProfile = useCallback((userId: string) => {
+    router.push(`/profile/${userId}`);
+  }, [router]);
+
+  const fetchMusicians = useCallback(async () => {
+  if (!currentUserId) return;
+  setIsSearchLoading(true);
+  try {
+    let query = supabase
+      .from("profiles")
+      .select("id, username, avatar_url, city, instruments, looking_for_group")
+      .neq("id", currentUserId)
+      .eq("looking_for_group", onlyLookingForGroup);
+
+    if (selectedInstruments.length > 0) {
+      query = query.contains("instruments", selectedInstruments);
+    }
+
+    if (searchTerm.trim()) {
+      query = query.ilike("username", `%${searchTerm.trim()}%`);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    let filteredProfiles = data || [];
+    if (group?.city && distance > 0) {
+      filteredProfiles = filteredProfiles.filter(
+        (profile) => profile.city?.toLowerCase() === group.city?.toLowerCase()
+      );
+    }
+
+    setSearchResults(filteredProfiles);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setIsSearchLoading(false);
+  }
+}, [searchTerm, selectedInstruments, distance, onlyLookingForGroup, group?.city, currentUserId]);
+
+
+const toggleInstrument = (instrument: string) => {
+  setSelectedInstruments((prev) =>
+    prev.includes(instrument)
+      ? prev.filter((i) => i !== instrument)
+      : [...prev, instrument]
+  );
+};
+
+const handleInviteById = async (userId: string) => {
+  if (!isAdmin) return;
+
+  try {
+    if (members.some((m) => m.user_id === userId)) {
+      setInviteResult('already');
+      return;
+    }
+
+    await supabase.from('group_members').insert({
+      group_id: id,
+      user_id: userId,
+      role: 'member',
+      status: 'confirmed'
+    });
+
+    if (conversationId) {
+      await supabase.from('conversation_participants').upsert({
+        conversation_id: conversationId,
+        user_id: userId
+      });
+    }
+
+    setInviteResult('success');
+    await fetchAll();
+    setIsSearchOpen(false);
+    setTimeout(() => setInviteResult('idle'), 2000);
+  } catch (error) {
+    console.error("Erreur lors de l'invitation:", error);
+    setInviteResult('notfound');
+  }
+};
 
   // ✅ Loading skeleton adapté
   if (isLoading) return (
@@ -373,6 +559,17 @@ export default function GroupDetailPage() {
 
   return (
     <div className="flex flex-col pb-24">
+      {/* Popup de profil */}
+      {popupProfile && (
+        <ProfilePopup
+          profile={popupProfile}
+          anchorRef={popupAnchorRef}
+          onClose={() => setPopupProfile(null)}
+          onMessage={handleOpenDM}
+          onViewProfile={handleViewProfile}
+        />
+      )}
+
       {/* Header */}
       <div className="px-4 pt-4 pb-4 border-b border-zik-border">
         <div className="flex items-center justify-between mb-4">
@@ -384,24 +581,24 @@ export default function GroupDetailPage() {
           </button>
           <div className="flex gap-2">
             {isAdmin && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-xs flex items-center gap-1.5 border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
-                onClick={() => setIsEditOpen(true)}
-              >
-                <Pencil className="h-3.5 w-3.5" /> Modifier
-              </Button>
-            )}
-            {isAdmin && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-xs flex items-center gap-1.5 border-zik-red/30 text-zik-red hover:border-zik-red hover:text-zik-red hover:bg-zik-red/10"
-                onClick={() => setShowDeleteConfirm(true)}
-              >
-                <Trash2 className="h-3.5 w-3.5" /> Supprimer
-              </Button>
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs flex items-center gap-1.5 border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
+                  onClick={() => setIsEditOpen(true)}
+                >
+                  <Pencil className="h-3.5 w-3.5" /> Modifier
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs flex items-center gap-1.5 border-zik-red/30 text-zik-red hover:border-zik-red hover:text-zik-red hover:bg-zik-red/10"
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> Supprimer
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -502,15 +699,31 @@ export default function GroupDetailPage() {
             </Button>
           )}
           {isAdmin && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-zik-purple/30 text-zik-purple hover:bg-zik-purple/10"
-              onClick={() => setIsInviteOpen(true)}
-            >
-              <UserPlus className="h-3.5 w-3.5 mr-1.5" /> Inviter
-            </Button>
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs border-zik-purple/30 text-zik-purple hover:bg-zik-purple/10"
+                onClick={() => setIsInviteOpen(true)}
+              >
+                <UserPlus className="h-3.5 w-3.5 mr-1.5" /> Inviter
+              </Button>
+            </>
           )}
+          {isAdmin && (
+  <Button
+    size="sm"
+    variant="outline"
+    className="text-xs border-zik-purple/30 text-zik-purple hover:bg-zik-purple/10 flex items-center gap-1.5"
+    onClick={() => {
+      setIsSearchOpen(true);
+      fetchMusicians(); // Charge les musiciens dès l'ouverture
+    }}
+  >
+    <Search className="h-3.5 w-3.5" />
+    Chercher un musicien
+  </Button>
+)}
         </div>
       </div>
 
@@ -557,7 +770,10 @@ export default function GroupDetailPage() {
                     className="flex items-center justify-between gap-2 p-3 rounded-lg bg-zik-orange/10 border border-zik-orange/20"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <MemberAvatar profile={m.profile} />
+                      <MemberAvatar
+                        profile={m.profile}
+                        onClick={(e) => m.profile && handleAvatarClick(m.profile, e)}
+                      />
                       <span className="text-sm font-medium text-zik-text truncate">
                         {m.profile?.username ?? 'Inconnu'}
                       </span>
@@ -599,7 +815,10 @@ export default function GroupDetailPage() {
                     : 'bg-zik-card/50 border-zik-border'
                 }`}
               >
-                <MemberAvatar profile={m.profile} />
+                <MemberAvatar
+                  profile={m.profile}
+                  onClick={(e) => m.profile && handleAvatarClick(m.profile, e)}
+                />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-zik-text truncate">
                     {m.profile?.username ?? 'Inconnu'}
@@ -757,7 +976,7 @@ export default function GroupDetailPage() {
                   const isMe = msg.user_id === currentUserId;
                   return (
                     <div key={msg.id} className={`flex gap-2.5 ${isMe ? 'flex-row-reverse' : ''}`}>
-                      {!isMe && <MemberAvatar profile={msg.profile} size="sm" />}
+                      {!isMe && <MemberAvatar profile={msg.profile} size="sm" onClick={(e) => msg.profile && handleAvatarClick(msg.profile, e)} />}
                       <div className={`max-w-[75%] flex flex-col gap-0.5 ${isMe ? 'items-end' : 'items-start'}`}>
                         {!isMe && (
                           <span className="text-xs text-zik-muted ml-0.5">
@@ -922,6 +1141,160 @@ export default function GroupDetailPage() {
           </Button>
         </div>
       </Modal>
+      {/* Modale de recherche de musiciens */}
+<Modal open={isSearchOpen} onClose={() => setIsSearchOpen(false)} title="Chercher un musicien">
+  <div className="space-y-4">
+    {/* Filtres */}
+    <div className="space-y-3">
+      <div>
+        <label className="text-sm font-medium text-zik-text mb-1 block">
+          Rechercher par nom
+        </label>
+        <Input
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Nom d'utilisateur..."
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+        />
+      </div>
+
+      <div>
+        <label className="text-sm font-medium text-zik-text mb-1 block">
+          Instruments
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {INSTRUMENTS.map((inst) => {
+            const isSelected = selectedInstruments.includes(inst.key);
+            return (
+              <button
+                key={inst.key}
+                onClick={() => toggleInstrument(inst.key)}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                  isSelected
+                    ? "bg-zik-purple text-white border-zik-purple"
+                    : "bg-zik-card text-zik-muted border-zik-border hover:border-zik-purple hover:text-zik-purple"
+                }`}
+              >
+                <span>{inst.emoji}</span> {inst.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {group?.city && (
+        <div>
+          <label className="text-sm font-medium text-zik-text mb-1 block">
+            Distance (km) - {group.city}
+          </label>
+          <Input
+            type="number"
+            value={distance}
+            onChange={(e) => setDistance(Number(e.target.value) || 0)}
+            min="0"
+            max="200"
+            className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+          />
+        </div>
+      )}
+
+      <div className="flex items-center gap-2">
+        <label className="text-sm font-medium text-zik-text cursor-pointer">
+          Uniquement ceux qui cherchent un groupe
+        </label>
+        <Button
+          variant={onlyLookingForGroup ? "default" : "outline"}
+          size="sm"
+          className={`h-7 w-7 p-0 ${
+            onlyLookingForGroup
+              ? "bg-zik-purple hover:bg-zik-indigo"
+              : "border-zik-border text-zik-muted hover:bg-zik-card-hover"
+          }`}
+          onClick={() => setOnlyLookingForGroup(!onlyLookingForGroup)}
+        >
+          {onlyLookingForGroup ? "✓" : "✗"}
+        </Button>
+      </div>
+    </div>
+
+    {/* Bouton de recherche */}
+    <Button
+      onClick={fetchMusicians}
+      disabled={isSearchLoading}
+      className="w-full bg-zik-purple hover:bg-zik-indigo"
+    >
+      {isSearchLoading ? (
+        <>
+          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          Recherche...
+        </>
+      ) : (
+        <>
+          <Search className="h-4 w-4 mr-2" />
+          Rechercher
+        </>
+      )}
+    </Button>
+
+    {/* Résultats */}
+    <div className="max-h-96 overflow-y-auto space-y-2">
+      {searchResults.length === 0 ? (
+        <p className="text-sm text-zik-muted text-center py-4">
+          Aucun musicien trouvé avec ces critères.
+        </p>
+      ) : (
+        searchResults.map((profile) => (
+          <div
+            key={profile.id}
+            className="flex items-center justify-between gap-3 p-3 rounded-lg bg-zik-card/50 border border-zik-border"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <MemberAvatar
+                profile={profile}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  popupAnchorRef.current = e.currentTarget;
+                  setPopupProfile(profile);
+                }}
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-zik-text truncate">
+                  {profile.username ?? "Inconnu"}
+                </p>
+                <div className="flex flex-wrap gap-1.5 mt-0.5">
+                  {profile.city && (
+                    <span className="flex items-center gap-0.5 text-xs text-zik-muted">
+                      <MapPin className="h-3 w-3" /> {profile.city}
+                    </span>
+                  )}
+                  {profile.instruments?.map((inst) => {
+                    const instrument = INSTRUMENTS.find((i) => i.key === inst);
+                    return instrument ? (
+                      <span
+                        key={inst}
+                        className="text-xs bg-zik-purple/10 text-zik-purple px-1.5 py-0.5 rounded-full"
+                      >
+                        {instrument.emoji} {instrument.label}
+                      </span>
+                    ) : null;
+                  })}
+                </div>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              className="bg-zik-purple/10 text-zik-purple hover:bg-zik-purple/20"
+              onClick={() => handleInviteById(profile.id)}
+            >
+              <UserPlus className="h-3.5 w-3.5 mr-1" />
+              Inviter
+            </Button>
+          </div>
+        ))
+      )}
+    </div>
+  </div>
+</Modal>
     </div>
   );
 }

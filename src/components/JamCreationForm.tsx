@@ -7,7 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Lock, Unlock, Repeat2, Users } from "lucide-react";
+import { Lock, Unlock, Repeat2, Users, MapPin } from "lucide-react";
+import AddressSearchInput from '@/components/AddressSearchInput';
+
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
@@ -419,27 +421,68 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
       </div>
 
       {/* Carte */}
-      <div>
-        <label className="text-sm font-medium text-zik-text mb-2 block">
-          Sélectionnez le lieu (cliquez sur la carte)
-        </label>
-        <div
-          className="h-64 rounded-lg border border-zik-border overflow-hidden bg-zik-card"
-          style={{ position: "relative", zIndex: 0 }}
-        >
-          <LocationPickerMap
-            center={formData.location}
-            selectedLocation={selectedLocation}
-            onLocationChange={({ lat, lng, address }) => {
-              setSelectedLocation({ lat, lng });
-              setFormData((prev) => ({ ...prev, location: { lat, lng, address } }));
-            }}
-          />
-        </div>
-        {formData.location.address && (
-          <p className="text-sm text-zik-muted mt-2">📍 {formData.location.address}</p>
-        )}
-      </div>
+      {/* Lieu */}
+<div>
+  <label className="text-sm font-medium mb-2 block"
+    style={{ color: 'rgba(255,255,255,0.75)' }}>
+    Lieu
+  </label>
+
+  {/* Recherche par adresse */}
+  <AddressSearchInput
+    value={formData.location.address}
+    placeholder="Ex: 10 rue de la Paix, Paris"
+    onChange={({ address, lat, lng }) => {
+      setSelectedLocation({ lat, lng });
+      setFormData((prev) => ({
+        ...prev,
+        location: { lat, lng, address },
+      }));
+    }}
+    onClear={() => {
+      setFormData((prev) => ({
+        ...prev,
+        location: { lat: 48.8566, lng: 2.3522, address: '' },
+      }));
+      setSelectedLocation(null);
+    }}
+  />
+
+  {/* Séparateur */}
+  <div className="flex items-center gap-3 my-3">
+    <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
+    <span className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
+      ou cliquez sur la carte
+    </span>
+    <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
+  </div>
+
+  {/* Carte */}
+  <div
+    className="h-48 rounded-xl overflow-hidden"
+    style={{ border: '1px solid rgba(255,255,255,0.08)', isolation: 'isolate' }}
+  >
+    <LocationPickerMap
+      center={formData.location}
+      selectedLocation={selectedLocation}
+      onLocationChange={({ lat, lng, address }) => {
+        setSelectedLocation({ lat, lng });
+        setFormData((prev) => ({
+          ...prev,
+          location: { lat, lng, address },
+        }));
+      }}
+    />
+  </div>
+
+  {formData.location.address && (
+    <p className="text-xs mt-2 px-1 flex items-center gap-1.5"
+      style={{ color: 'rgba(255,255,255,0.40)' }}>
+      <MapPin size={12} style={{ color: '#C084FC' }} />
+      {formData.location.address}
+    </p>
+  )}
+</div>
 
       {/* Erreur */}
       {error && <div className="text-zik-red text-sm">{error}</div>}

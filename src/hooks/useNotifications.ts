@@ -3,9 +3,17 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
+export type NotificationType =
+  | 'message'
+  | 'jam_accepted'
+  | 'jam_turn'
+  | 'group_request'
+   | 'jam_request'
+  | 'group_accepted';
+
 export interface Notification {
   id: string;
-  type: 'message' | 'jam_accepted' | 'jam_turn';
+  type: NotificationType;
   title: string;
   body: string | null;
   link: string | null;
@@ -31,11 +39,8 @@ export function useNotifications(userId: string | null) {
     setUnreadCount(notifs.filter((n) => !n.read).length);
   }, [userId]);
 
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
+  useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
 
-  // Realtime : écoute les nouvelles notifications
   useEffect(() => {
     if (!userId) return;
     const channel = supabase
@@ -67,7 +72,9 @@ export function useNotifications(userId: string | null) {
 
   const markRead = useCallback(async (id: string) => {
     await supabase.from('notifications').update({ read: true }).eq('id', id);
-    setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
+    setNotifications((prev) =>
+      prev.map((n) => n.id === id ? { ...n, read: true } : n)
+    );
     setUnreadCount((prev) => Math.max(0, prev - 1));
   }, []);
 

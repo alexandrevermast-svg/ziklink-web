@@ -68,26 +68,33 @@ export default function EventsTab() {
   const [isJamModalOpen, setIsJamModalOpen] = React.useState(false);
   const [isConcertModalOpen, setIsConcertModalOpen] = React.useState(false);
 
-  return (
+   return (
     <Tabs defaultValue="jams" className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="jams" className="text-zik-text">
+      {/* ✅ TabsList avec style adapté */}
+      <TabsList className="grid w-full grid-cols-2 bg-zik-card/50 p-1 rounded-xl border border-zik-border">
+        {/* ✅ TabsTrigger pour "Jams" avec style actif visible */}
+        <TabsTrigger
+          value="jams"
+          className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+        >
           <Users className="mr-2 h-4 w-4" />
           Jams
         </TabsTrigger>
-        <TabsTrigger value="concerts" className="text-zik-text">
+        {/* ✅ TabsTrigger pour "Concerts" avec style actif visible */}
+        <TabsTrigger
+          value="concerts"
+          className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+        >
           <Mic2 className="mr-2 h-4 w-4" />
           Concerts
         </TabsTrigger>
       </TabsList>
 
       {/* Onglet Jams */}
-      <TabsContent value="jams">
+       <TabsContent value="jams">
         <div className="flex flex-col gap-4 pt-4 px-4">
           <div className="flex items-center justify-between">
-            {/* ✅ Remplace text-gray-700 par text-zik-text */}
             <h2 className="text-base font-semibold text-zik-text">Jams à venir</h2>
-            {/* ✅ Remplace bg-blue-600 par une classe personnalisée ou une variable */}
             <Button
               size="sm"
               className="bg-zik-purple hover:bg-zik-indigo text-white"
@@ -101,7 +108,7 @@ export default function EventsTab() {
       </TabsContent>
 
       {/* Onglet Concerts */}
-      <TabsContent value="concerts">
+       <TabsContent value="concerts">
         <div className="flex flex-col gap-4 pt-4 px-4">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-zik-text">Concerts à venir</h2>
@@ -114,8 +121,8 @@ export default function EventsTab() {
             </Button>
           </div>
           <ConcertList />
-          </div>
-        </TabsContent>
+        </div>
+      </TabsContent>
 
       <Modal
         open={isJamModalOpen}

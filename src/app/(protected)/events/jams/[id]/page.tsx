@@ -366,12 +366,10 @@ export default function JamDetailPage() {
   const handleAccept = async (userId: string) => {
     await supabase.from("jam_participants").update({ status: "confirmed" }).eq("jam_id", id).eq("user_id", userId);
     if (conversationId) await supabase.from("conversation_participants").upsert({ conversation_id: conversationId, user_id: userId });
-    await supabase.from("notifications").insert({
-      user_id: userId, type: "jam_accepted",
-      title: "Demande acceptée ! 🎸",
-      body: `Tu as été accepté dans "${jam?.title}"`,
-      link: `/events/jams/${id}`,
-    });
+    await supabase.from('jam_participants')
+  .update({ status: 'confirmed' })
+  .eq('jam_id', id)
+  .eq('user_id', userId);
     await fetchAll();
   };
   const handleReject = async (userId: string) => {

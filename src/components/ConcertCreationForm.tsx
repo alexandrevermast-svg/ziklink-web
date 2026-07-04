@@ -7,12 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Ticket, Link as LinkIcon, Music2, Upload, X, Users } from "lucide-react";
+import { Ticket, Link as LinkIcon, Music2, Upload, X, Users, MapPin } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar"; // ✅ Importe le Calendar personnalisé
 import { fr } from "date-fns/locale"; // ✅ Pour la localisation en français
 import { format } from "date-fns"; // ✅ Pour formater la date
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // ✅ Ton Popover
 import { cn } from "@/lib/utils";
+import AddressSearchInput from '@/components/AddressSearchInput';
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
@@ -362,21 +363,54 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
 
       {/* Carte */}
       <div>
-        <label className="text-sm font-medium text-zik-text mb-2 block">Lieu (cliquez sur la carte)</label>
-        <div className="h-64 rounded-lg border border-zik-border overflow-hidden bg-zik-card">
-          <LocationPickerMap
-            center={location}
-            selectedLocation={selectedLocation}
-            onLocationChange={({ lat, lng, address }) => {
-              setSelectedLocation({ lat, lng });
-              setLocation({ lat, lng, address });
-            }}
-          />
-        </div>
-        {location.address && (
-          <p className="text-sm text-zik-muted mt-2">📍 {location.address}</p>
-        )}
-      </div>
+  <label className="text-sm font-medium mb-2 block"
+    style={{ color: 'rgba(255,255,255,0.75)' }}>
+    Lieu <span style={{ color: 'rgba(255,255,255,0.30)', fontWeight: 400 }}>(optionnel)</span>
+  </label>
+
+  <AddressSearchInput
+    value={location.address ?? ''}
+    placeholder="Ex: Olympia, Paris"
+    onChange={({ address, lat, lng }) => {
+      setSelectedLocation({ lat, lng });
+      setLocation({ lat, lng, address });
+    }}
+    onClear={() => {
+      setLocation({ lat: 48.8566, lng: 2.3522, address: '' });
+      setSelectedLocation(null);
+    }}
+  />
+
+  <div className="flex items-center gap-3 my-3">
+    <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
+    <span className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
+      ou cliquez sur la carte
+    </span>
+    <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
+  </div>
+
+  <div
+    className="h-48 rounded-xl overflow-hidden"
+    style={{ border: '1px solid rgba(255,255,255,0.08)', isolation: 'isolate' }}
+  >
+    <LocationPickerMap
+      center={location}
+      selectedLocation={selectedLocation}
+      onLocationChange={({ lat, lng, address }) => {
+        setSelectedLocation({ lat, lng });
+        setLocation({ lat, lng, address });
+      }}
+    />
+  </div>
+
+  {location.address && (
+    <p className="text-xs mt-2 px-1 flex items-center gap-1.5"
+      style={{ color: 'rgba(255,255,255,0.40)' }}>
+      <MapPin size={12} style={{ color: '#C084FC' }} />
+      {location.address}
+    </p>
+  )}
+</div>
 
       {/* Erreur */}
       {error && (

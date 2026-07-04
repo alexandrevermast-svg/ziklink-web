@@ -32,6 +32,8 @@
   --zik-text:        #F1F0F6;
   --zik-muted:       rgba(255, 255, 255, 0.40);
   --zik-subtle:      rgba(255, 255, 255, 0.15);
+    --zik-radius: 12px;
+  --zik-transition: 150ms ease;
 }
 
 /* ── Base ────────────────────────────────────────── */
@@ -263,3 +265,7 @@ textarea.zik-input {
 .leaflet-popup-close-button:hover {
   color: #C084FC !important;
 }
+
+/* globals.css — à ajouter */
+.conv-row { transition: background 0.15s; }
+.conv-row:hover { background: rgba(255,255,255,0.03) !important; }

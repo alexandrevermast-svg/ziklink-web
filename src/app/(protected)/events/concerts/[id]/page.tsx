@@ -1,4 +1,7 @@
-"use client";
+// ============================================================
+// app/(protected)/concerts/[id]/page.tsx
+// ============================================================
+'use client';
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -38,7 +41,7 @@ function Avatar({ profile, size = "md" }: { profile: Profile | null; size?: "sm"
   return profile?.avatar_url ? (
     <img src={profile.avatar_url} alt={profile.username ?? ""} className={`${cls} rounded-full object-cover shrink-0`} />
   ) : (
-    <div className={`${cls} rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold shrink-0`}>
+    <div className={`${cls} rounded-full bg-zik-purple flex items-center justify-center text-white font-semibold shrink-0`}>
       {initials}
     </div>
   );
@@ -54,16 +57,25 @@ function Modal({ open, onClose, title, children }: { open: boolean; onClose: () 
   if (!open) return null;
   return createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: 99999 }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)" }} onClick={onClose} />
+      {/* ✅ Overlay adapté */}
+      <div style={{ position: "absolute", inset: 0, background: "rgba(14, 11, 22, 0.8)" }} onClick={onClose} />
       <div style={{
         position: "absolute", top: "50%", left: "50%",
-        transform: "translate(-50%, -50%)", background: "white",
-        borderRadius: "12px", padding: "24px", width: "min(90vw, 640px)",
-        maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+        transform: "translate(-50%, -50%)",
+        background: "var(--zik-card)",
+        borderRadius: "12px",
+        padding: "24px",
+        width: "min(90vw, 640px)",
+        maxHeight: "90vh",
+        overflowY: "auto",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+        color: "var(--zik-text)",
       }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">{title}</h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+          {/* ✅ Titre adapté */}
+          <h2 className="text-xl font-bold text-zik-text">{title}</h2>
+          {/* ✅ Bouton de fermeture adapté */}
+          <button onClick={onClose} className="p-1 rounded hover:bg-zik-card-hover text-zik-muted hover:text-zik-text transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -138,26 +150,26 @@ export default function ConcertDetailPage() {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
-const handleToggleInterest = async () => {
-  if (!currentUserId || isToggling) return;
-  setIsToggling(true);
-  if (isInterested) {
-    await supabase.from("concert_interested").delete().eq("concert_id", id).eq("user_id", currentUserId);
-  } else {
-    await supabase.from("concert_interested").upsert(
-      { concert_id: id, user_id: currentUserId },
-      { onConflict: 'concert_id,user_id', ignoreDuplicates: true }
-    );
-    // Rejoint (ou crée) la conversation et récupère son id directement
-    const { data: newConvId, error } = await supabase.rpc('join_concert_conversation', {
-      p_concert_id: id,
-      p_concert_title: concert?.title ?? '',
-    });
-    if (!error && newConvId) setConversationId(newConvId);
-  }
-  await fetchAll();
-  setIsToggling(false);
-};
+  const handleToggleInterest = async () => {
+    if (!currentUserId || isToggling) return;
+    setIsToggling(true);
+    if (isInterested) {
+      await supabase.from("concert_interested").delete().eq("concert_id", id).eq("user_id", currentUserId);
+    } else {
+      await supabase.from("concert_interested").upsert(
+        { concert_id: id, user_id: currentUserId },
+        { onConflict: 'concert_id,user_id', ignoreDuplicates: true }
+      );
+      // Rejoint (ou crée) la conversation
+      const { data: newConvId, error } = await supabase.rpc('join_concert_conversation', {
+        p_concert_id: id,
+        p_concert_title: concert?.title ?? '',
+      });
+      if (!error && newConvId) setConversationId(newConvId);
+    }
+    await fetchAll();
+    setIsToggling(false);
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,25 +180,32 @@ const handleToggleInterest = async () => {
     setIsSending(false);
   };
 
+  // ✅ Loading skeleton avec ton thème
   if (isLoading) return (
     <div className="flex flex-col gap-4 p-4">
-      <div className="h-8 w-32 bg-gray-100 animate-pulse rounded" />
-      <div className="h-48 bg-gray-100 animate-pulse rounded-xl" />
-      <div className="h-32 bg-gray-100 animate-pulse rounded-xl" />
+      <div className="h-8 w-32 bg-zik-card animate-pulse rounded" />
+      <div className="h-48 bg-zik-card animate-pulse rounded-xl" />
+      <div className="h-32 bg-zik-card animate-pulse rounded-xl" />
     </div>
   );
 
   if (!concert) return (
-    <div className="p-4 text-center text-gray-500">
+    <div className="p-4 text-center text-zik-muted">
       <p>Concert introuvable.</p>
-      <Button variant="outline" className="mt-4" onClick={() => router.back()}>Retour</Button>
+      <Button
+        variant="outline"
+        className="mt-4 border-zik-border text-zik-text hover:bg-zik-card-hover"
+        onClick={() => router.back()}
+      >
+        Retour
+      </Button>
     </div>
   );
 
   const address = getAddress(concert.location);
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-zik-bg">
       {/* Header */}
       <div className="shrink-0">
         {concert.poster_url ? (
@@ -198,7 +217,7 @@ const handleToggleInterest = async () => {
                 className="flex items-center gap-1.5 text-sm text-white bg-black/30 hover:bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm transition-colors">
                 <ArrowLeft className="h-4 w-4" /> Retour
               </button>
-              {/* ✅ Bouton Modifier pour l'organisateur */}
+              {/* Bouton Modifier pour l'organisateur */}
               {isOrganizer && (
                 <button onClick={() => setIsEditOpen(true)}
                   className="flex items-center gap-1.5 text-sm text-white bg-black/30 hover:bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm transition-colors">
@@ -211,73 +230,83 @@ const handleToggleInterest = async () => {
           <div className="px-4 pt-4 pb-2">
             <div className="flex items-center justify-between mb-3">
               <button onClick={() => router.back()}
-                className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors">
+                className="flex items-center gap-1.5 text-sm text-zik-muted hover:text-zik-text transition-colors">
                 <ArrowLeft className="h-4 w-4" /> Retour
               </button>
-              {/* ✅ Bouton Modifier pour l'organisateur */}
+              {/* Bouton Modifier pour l'organisateur */}
               {isOrganizer && (
                 <Button size="sm" variant="outline"
-                  className="text-xs flex items-center gap-1.5 border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600"
+                  className="text-xs flex items-center gap-1.5 border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
                   onClick={() => setIsEditOpen(true)}>
                   <Pencil className="h-3.5 w-3.5" /> Modifier
                 </Button>
               )}
               {!isOrganizer && currentUserId && (
-  <ReportButton targetType="concert" targetId={id} variant="icon" />
-)}
+                <ReportButton targetType="concert" targetId={id} variant="icon" />
+              )}
             </div>
-            <div className="h-28 rounded-xl bg-linear-to-br from-blue-100 to-purple-100 flex items-center justify-center mb-3">
-              <Music2 className="h-12 w-12 text-blue-300" />
+            {/* ✅ Fond adapté à ton thème */}
+            <div className="h-28 rounded-xl bg-linear-to-br from-zik-purple/20 to-zik-indigo/20 flex items-center justify-center mb-3">
+              <Music2 className="h-12 w-12 text-zik-purple/50" />
             </div>
           </div>
         )}
 
-        <div className="px-4 pt-3 pb-3 border-b border-gray-100">
+        <div className="px-4 pt-3 pb-3 border-b border-zik-border">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-bold text-gray-900">{concert.title}</h1>
-              {concert.artist && <p className="text-base text-blue-600 font-medium mt-0.5">{concert.artist}</p>}
+              <h1 className="text-xl font-bold text-zik-text">{concert.title}</h1>
+              {concert.artist && <p className="text-base text-zik-purple font-medium mt-0.5">{concert.artist}</p>}
             </div>
-            {concert.genre && (
-              <span className="shrink-0 text-xs font-mediumbg-zik-bg text-zik-text-700 px-2.5 py-1 rounded-full">
+            {concert.genre && (     
+              <span className="shrink-0 text-xs font-medium bg-zik-purple/10 text-zik-purple px-2.5 py-1 rounded-full">
                 {concert.genre}
               </span>
             )}
           </div>
-          {concert.description && <p className="text-sm text-gray-500 mt-2 line-clamp-3">{concert.description}</p>}
-          <div className="flex flex-wrap gap-3 mt-2 text-xs text-gray-500">
+          {concert.description && <p className="text-sm text-zik-muted mt-2 line-clamp-3">{concert.description}</p>}
+          <div className="flex flex-wrap gap-3 mt-2 text-xs text-zik-muted">
             <span className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" />
+              <Clock className="h-3.5 w-3.5 text-zik-purple" />
               {formatDate(concert.start_time)} · {formatTime(concert.start_time)}
               {concert.end_at && ` → ${formatTime(concert.end_at)}`}
             </span>
             {address && (
               <span className="flex items-center gap-1 truncate max-w-xs">
-                <MapPin className="h-3.5 w-3.5 shrink-0" />{address}
+                <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-purple" />{address}
               </span>
             )}
           </div>
           <div className="flex items-center gap-2 mt-3">
+            {/* ✅ Badge de prix adapté */}
             <span className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${
-              concert.is_free ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>
+              concert.is_free ? "bg-zik-emerald/10 text-zik-emerald" : "bg-zik-orange/10 text-zik-orange"
+            }`}>
               <Ticket className="h-3 w-3" />
               {concert.is_free ? "Gratuit" : concert.price ? `${concert.price} €` : "Payant"}
             </span>
             {concert.ticket_url && (
               <a href={concert.ticket_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-1 text-xs text-blue-600 hover:underline font-medium">
+                className="flex items-center gap-1 text-xs text-zik-purple hover:underline font-medium">
                 <ExternalLink className="h-3 w-3" /> Billetterie
               </a>
             )}
           </div>
           {currentUserId && !isOrganizer && (
             <div className="mt-3">
-              <Button size="sm" variant="outline" onClick={handleToggleInterest} disabled={isToggling}
+              {/* ✅ Bouton "Ça m'intéresse" adapté */}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleToggleInterest}
+                disabled={isToggling}
                 className={`text-xs transition-colors ${
                   isInterested
-                    ? "border-red-200 text-red-500 bg-red-50 hover:bg-white hover:text-gray-500"
-                    : "border-gray-200 text-gray-500 hover:border-red-200 hover:text-red-500 hover:bg-red-50"}`}>
-                <Heart className={`h-3.5 w-3.5 mr-1.5 ${isInterested ? "fill-red-500" : ""}`} />
+                    ? "border-zik-red/30 text-zik-red bg-zik-red/10 hover:bg-zik-card hover:text-zik-text"
+                    : "border-zik-border text-zik-muted hover:border-zik-red/30 hover:text-zik-red hover:bg-zik-red/5"
+                }`}
+              >
+                <Heart className={`h-3.5 w-3.5 mr-1.5 ${isInterested ? "fill-zik-red text-zik-red" : "text-zik-muted"}`} />
                 {isInterested ? "Je n'y vais plus" : "Ça m'intéresse !"}
               </Button>
             </div>
@@ -288,18 +317,18 @@ const handleToggleInterest = async () => {
       {/* Onglets */}
       <Tabs defaultValue="interested" className="flex-1 flex flex-col overflow-hidden">
         <TabsList className="grid grid-cols-2 mx-4 mt-3 shrink-0">
-          <TabsTrigger value="interested">
+          <TabsTrigger value="interested" className="text-zik-text">
             <Users className="h-3.5 w-3.5 mr-1.5" /> Intéressés
             {interestedProfiles.length > 0 && (
-              <span className="ml-1.5 bg-blue-100 text-blue-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 bg-zik-purple/10 text-zik-purple text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                 {interestedProfiles.length}
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="chat">
+          <TabsTrigger value="chat" className="text-zik-text">
             <Send className="h-3.5 w-3.5 mr-1.5" /> Chat
             {messages.length > 0 && (
-              <span className="ml-1.5 bg-blue-100 text-blue-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 bg-zik-purple/10 text-zik-purple text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                 {messages.length}
               </span>
             )}
@@ -308,13 +337,15 @@ const handleToggleInterest = async () => {
 
         <TabsContent value="interested" className="flex-1 overflow-y-auto px-4 py-3">
           {interestedProfiles.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-8">Personne n'a encore marqué son intérêt 🎤<br /><span className="text-xs">Sois le premier !</span></p>
+            <p className="text-sm text-zik-muted text-center py-8">
+              Personne n'a encore marqué son intérêt 🎤<br /><span className="text-xs">Sois le premier !</span>
+            </p>
           ) : (
             <div className="space-y-2">
               {interestedProfiles.map((profile) => (
-                <div key={profile.id} className="flex items-center gap-2.5 p-3 rounded-lg bg-gray-50 border border-gray-100">
+                <div key={profile.id} className="flex items-center gap-2.5 p-3 rounded-lg bg-zik-card/50 border border-zik-border">
                   <Avatar profile={profile} />
-                  <p className="text-sm font-medium text-gray-800">{profile.username ?? "Inconnu"}</p>
+                  <p className="text-sm font-medium text-zik-text">{profile.username ?? "Inconnu"}</p>
                 </div>
               ))}
             </div>
@@ -323,27 +354,38 @@ const handleToggleInterest = async () => {
 
         <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden px-0 py-0">
           {!isInterested && !isOrganizer ? (
-            <div className="flex-1 flex items-center justify-center text-sm text-gray-400 p-4 text-center">
+            <div className="flex-1 flex items-center justify-center text-sm text-zik-muted p-4 text-center">
               Marque ton intérêt pour accéder au chat 🎤
             </div>
           ) : !conversationId ? (
-            <div className="flex-1 flex items-center justify-center text-sm text-gray-400 p-4">Le chat sera disponible prochainement.</div>
+            <div className="flex-1 flex items-center justify-center text-sm text-zik-muted p-4">
+              Le chat sera disponible prochainement.
+            </div>
           ) : (
             <>
               <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
                 {messages.length === 0 ? (
-                  <p className="text-sm text-gray-400 text-center py-8">Pas encore de messages — soyez les premiers ! 🎵</p>
+                  <p className="text-sm text-zik-muted text-center py-8">Pas encore de messages — soyez les premiers ! 🎵</p>
                 ) : messages.map((msg) => {
                   const isMe = msg.user_id === currentUserId;
                   return (
                     <div key={msg.id} className={`flex gap-2.5 ${isMe ? "flex-row-reverse" : ""}`}>
                       {!isMe && <Avatar profile={msg.profile} size="sm" />}
-                      <div className={`max-w-[75%] flex flex-col gap-0.5 ${isMe ? "items-end" : "items-start"}`}>
-                        {!isMe && <span className="text-xs text-gray-500 ml-0.5">{msg.profile?.username ?? "Inconnu"}</span>}
-                        <div className={`px-3 py-2 rounded-2xl text-sm ${isMe ? "bg-blue-600 text-white rounded-tr-sm" : "bg-gray-100 text-gray-800 rounded-tl-sm"}`}>
+                      <div className={`max-w-[75%] ${isMe ? "items-end" : "items-start"} flex flex-col gap-0.5`}>
+                        {!isMe && (
+                          <span className="text-xs text-zik-muted ml-0.5">
+                            {msg.profile?.username ?? "Inconnu"}
+                          </span>
+                        )}
+                        {/* ✅ Messages adaptés */}
+                        <div className={`px-3 py-2 rounded-2xl text-sm ${
+                          isMe
+                            ? "bg-zik-purple text-white rounded-tr-sm"
+                            : "bg-zik-card/80 text-zik-text rounded-tl-sm border border-zik-border"
+                        }`}>
                           {msg.content}
                         </div>
-                        <span className="text-[10px] text-gray-400 mx-1">
+                        <span className="text-[10px] text-zik-muted mx-1">
                           {new Date(msg.created_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
                         </span>
                       </div>
@@ -352,11 +394,20 @@ const handleToggleInterest = async () => {
                 })}
                 <div ref={messagesEndRef} />
               </div>
-              <form onSubmit={handleSendMessage} className="border-t border-gray-100 px-4 py-3 flex gap-2 items-center shrink-0">
-                <Input value={messageInput} onChange={(e) => setMessageInput(e.target.value)}
-                  placeholder="Envoyer un message..." className="flex-1 text-sm" disabled={isSending} />
-                <Button type="submit" size="sm" className="bg-blue-600 hover:bg-blue-700 shrink-0"
-                  disabled={!messageInput.trim() || isSending}>
+              <form onSubmit={handleSendMessage} className="border-t border-zik-border px-4 py-3 flex gap-2 items-center shrink-0">
+                <Input
+                  value={messageInput}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  placeholder="Envoyer un message..."
+                  className="flex-1 text-sm bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+                  disabled={isSending}
+                />
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="bg-zik-purple hover:bg-zik-indigo shrink-0 disabled:opacity-50"
+                  disabled={!messageInput.trim() || isSending}
+                >
                   <Send className="h-4 w-4" />
                 </Button>
               </form>
@@ -365,7 +416,7 @@ const handleToggleInterest = async () => {
         </TabsContent>
       </Tabs>
 
-      {/* ✅ Modale d'édition */}
+      {/* Modale d'édition */}
       <Modal open={isEditOpen} onClose={() => setIsEditOpen(false)} title="Modifier le concert">
         <ConcertEditForm
           concert={concert}
