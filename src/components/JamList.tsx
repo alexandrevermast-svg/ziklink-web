@@ -262,7 +262,13 @@ export default function JamList() {
     }), [filteredJams, participantsMap, currentUserId]);
 
   const formatDate = (d: string) => new Date(d).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  const formatTime = (d: string) => new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  const formatTime = (d: string) => {
+  return new Date(d).toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Europe/Paris' // ✅ Force le fuseau horaire de la France
+  });
+};
   const getAddress = (s: string) => { try { return JSON.parse(s)?.address ?? null; } catch { return null; } };
 
   const emptyMessage = useMemo(() => {

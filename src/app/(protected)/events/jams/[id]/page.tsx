@@ -10,14 +10,15 @@ import { Input } from '@/components/ui/input';
 import {
   ArrowLeft, Lock, Unlock, MapPin, Clock, Send,
   UserPlus, Check, X, Crown, ShieldCheck, Pencil,
-  MessageCircle, Music, Play, Radio, User, Trash2
+  MessageCircle, Music, Play, Radio, User, Trash2,
+  ChevronUp, ChevronDown, Camera, Loader2, ImagePlus
 } from 'lucide-react';
 import JamEditForm from "@/components/JamEditForm";
 
 interface JamSession {
   id: string; title: string; description: string; start_time: string;
   end_at: string | null; location: string; is_open: boolean; created_by: string;
-  current_slot_index: number | null;
+  current_slot_index: number | null; poster_url: string | null;
 }
 interface Profile { id: string; username: string | null; avatar_url: string | null; }
 interface Participant { user_id: string; status: string; is_organizer: boolean; profile: Profile | null; }
@@ -64,53 +65,34 @@ function Avatar({ profile, size = "md", onClick }: {
   );
 }
 
-// ─── Picker de participant (orga uniquement) ──────────────────────────────
 interface ParticipantPickerProps {
-  instrument: string;
-  slot_index: number;
-  participants: Participant[];
-  slots: JamSlot[];
-  anchorEl: HTMLElement;
+  instrument: string; slot_index: number; participants: Participant[];
+  slots: JamSlot[]; anchorEl: HTMLElement;
   onPick: (userId: string, instrument: string, slot_index: number) => void;
   onClose: () => void;
 }
 
 function ParticipantPicker({ instrument, slot_index, participants, slots, anchorEl, onPick, onClose }: ParticipantPickerProps) {
   const ref = useRef<HTMLDivElement>(null);
-
   const lockedToOtherInstrument = useMemo(
-    () => new Set(
-      slots
-        .filter((s) => s.instrument !== instrument && !!s.user_id)
-        .map((s) => s.user_id as string)
-    ),
+    () => new Set(slots.filter((s) => s.instrument !== instrument && !!s.user_id).map((s) => s.user_id as string)),
     [slots, instrument]
   );
-
-  const available = participants.filter(
-    (p) => p.status === "confirmed" && !lockedToOtherInstrument.has(p.user_id)
-  );
+  const available = participants.filter((p) => p.status === "confirmed" && !lockedToOtherInstrument.has(p.user_id));
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node) && !anchorEl.contains(e.target as Node)) {
-        onClose();
-      }
+      if (ref.current && !ref.current.contains(e.target as Node) && !anchorEl.contains(e.target as Node)) onClose();
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [onClose, anchorEl]);
 
   const rect = anchorEl.getBoundingClientRect();
-  const top = rect.bottom + 4;
-  const left = Math.min(rect.left, window.innerWidth - 200);
-
   return createPortal(
-    <div
-      ref={ref}
-      style={{ position: "fixed", top, left, zIndex: 99999, width: "min(90vw, 200px)" }}
-      className="bg-zik-card rounded-xl shadow-xl border border-zik-border overflow-hidden"
-    >
+    <div ref={ref}
+      style={{ position: "fixed", top: rect.bottom + 4, left: Math.min(rect.left, window.innerWidth - 200), zIndex: 99999, width: "min(90vw, 200px)" }}
+      className="bg-zik-card rounded-xl shadow-xl border border-zik-border overflow-hidden">
       <div className="px-3 py-2 border-b border-zik-border">
         <p className="text-xs font-semibold text-zik-text">Assigner un participant</p>
         <p className="text-[10px] text-zik-muted mt-0.5">Ligne {slot_index + 1}</p>
@@ -120,11 +102,8 @@ function ParticipantPicker({ instrument, slot_index, participants, slots, anchor
       ) : (
         <div className="max-h-48 overflow-y-auto py-1">
           {available.map((p) => (
-            <button
-              key={p.user_id}
-              onClick={() => { onPick(p.user_id, instrument, slot_index); onClose(); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-zik-card-hover transition-colors text-left"
-            >
+            <button key={p.user_id} onClick={() => { onPick(p.user_id, instrument, slot_index); onClose(); }}
+              className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-zik-card-hover transition-colors text-left">
               {p.profile?.avatar_url ? (
                 <img src={p.profile.avatar_url} alt="" className="h-6 w-6 rounded-full object-cover shrink-0" />
               ) : (
@@ -144,33 +123,22 @@ function ParticipantPicker({ instrument, slot_index, participants, slots, anchor
 }
 
 function ProfilePopup({ profile, anchorRef, onClose, onMessage, onViewProfile }: {
-  profile: Profile;
-  anchorRef: React.RefObject<HTMLElement>;
-  onClose: () => void;
-  onMessage: (userId: string) => void;
-  onViewProfile: (userId: string) => void;
+  profile: Profile; anchorRef: React.RefObject<HTMLElement>;
+  onClose: () => void; onMessage: (userId: string) => void; onViewProfile: (userId: string) => void;
 }) {
   const popupRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (
-        popupRef.current && !popupRef.current.contains(e.target as Node) &&
-        anchorRef.current && !anchorRef.current.contains(e.target as Node)
-      ) onClose();
+      if (popupRef.current && !popupRef.current.contains(e.target as Node) &&
+        anchorRef.current && !anchorRef.current.contains(e.target as Node)) onClose();
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [onClose, anchorRef]);
-
   const rect = anchorRef.current?.getBoundingClientRect();
-
   return createPortal(
-    <div ref={popupRef}
-      className="fixed z-99998 bg-zik-card rounded-xl shadow-xl border border-zik-border p-3 min-w-45"
-      style={{
-        top: (rect?.bottom ?? 0) + 6,
-        left: Math.min(rect?.left ?? 0, window.innerWidth - 200),
-      }}>
+    <div ref={popupRef} className="fixed z-99998 bg-zik-card rounded-xl shadow-xl border border-zik-border p-3 min-w-45"
+      style={{ top: (rect?.bottom ?? 0) + 6, left: Math.min(rect?.left ?? 0, window.innerWidth - 200) }}>
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-zik-border">
         <div className="h-8 w-8 rounded-full bg-zik-purple flex items-center justify-center text-white text-xs font-semibold shrink-0">
           {profile.username?.slice(0, 2).toUpperCase() ?? "?"}
@@ -206,14 +174,9 @@ function Modal({ open, onClose, title, children }: {
       <div style={{
         position: 'absolute', top: '50%', left: '50%',
         transform: 'translate(-50%, -50%)',
-        background: 'var(--zik-card)',
-        borderRadius: '12px',
-        padding: '24px',
-        width: 'min(90vw, 640px)',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-        color: 'var(--zik-text)',
+        background: 'var(--zik-card)', borderRadius: '12px', padding: '24px',
+        width: 'min(90vw, 640px)', maxHeight: '90vh', overflowY: 'auto',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.5)', color: 'var(--zik-text)',
       }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-zik-text">{title}</h2>
@@ -225,6 +188,97 @@ function Modal({ open, onClose, title, children }: {
       </div>
     </div>,
     document.body
+  );
+}
+
+// ── Composant poster de jam ────────────────────────────────────────────────
+function JamPoster({
+  posterUrl, isOrganizer, onUpload, isUploading,
+}: {
+  posterUrl: string | null;
+  isOrganizer: boolean;
+  onUpload: (file: File) => void;
+  isUploading: boolean;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  if (!posterUrl && !isOrganizer) return null;
+
+  return (
+    <div className="relative w-full overflow-hidden" style={{ borderRadius: '0 0 16px 16px' }}>
+      {posterUrl ? (
+        <>
+          {/* Image existante */}
+          <div className="relative h-48 w-full">
+            <img
+              src={posterUrl}
+              alt="Affiche de la jam"
+              className="w-full h-full object-cover"
+            />
+            {/* Dégradé bas pour lisibilité du texte header */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(to bottom, rgba(14,11,22,0.7) 0%, transparent 40%, transparent 60%, rgba(14,11,22,0.9) 100%)',
+              }}
+            />
+            {/* Bouton changer la photo */}
+            {isOrganizer && (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+                style={{
+                  background: 'rgba(14,11,22,0.7)',
+                  backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  color: 'rgba(255,255,255,0.75)',
+                }}
+              >
+                {isUploading
+                  ? <><Loader2 size={12} className="animate-spin" /> Envoi...</>
+                  : <><Camera size={12} /> Changer</>
+                }
+              </button>
+            )}
+          </div>
+        </>
+      ) : (
+        /* Zone d'upload vide (organisateur uniquement) */
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+          className="w-full flex flex-col items-center justify-center gap-2 py-6 transition-all"
+          style={{
+            background: 'rgba(192,132,252,0.04)',
+            border: '1px dashed rgba(192,132,252,0.20)',
+            borderRadius: 12,
+            margin: '0 16px 8px',
+            width: 'calc(100% - 32px)',
+          }}
+        >
+          {isUploading ? (
+            <><Loader2 size={20} className="animate-spin" style={{ color: '#C084FC' }} />
+              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.40)' }}>Envoi en cours...</span></>
+          ) : (
+            <><ImagePlus size={20} style={{ color: 'rgba(192,132,252,0.50)' }} />
+              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                Ajouter une affiche
+              </span></>
+          )}
+        </button>
+      )}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onUpload(file);
+        }}
+      />
+    </div>
   );
 }
 
@@ -254,8 +308,11 @@ export default function JamDetailPage() {
   const [claimingCell, setClaimingCell] = useState<{ instrument: string; slot_index: number } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
   const [pickerCell, setPickerCell] = useState<{ instrument: string; slot_index: number; anchorEl: HTMLElement } | null>(null);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
+
+  // ── État upload poster ─────────────────────────────────────────────────
+  const [isUploadingPoster, setIsUploadingPoster] = useState(false);
 
   const isMainOrganizer = jam?.created_by === currentUserId;
   const isCoOrganizer = participants.some((p) => p.user_id === currentUserId && p.is_organizer && p.status === "confirmed");
@@ -274,7 +331,11 @@ export default function JamDetailPage() {
     const { data: { user } } = await supabase.auth.getUser();
     setCurrentUserId(user?.id ?? null);
 
-    const { data: jamData } = await supabase.from("jam_sessions").select("*").eq("id", id).single();
+    const { data: jamData } = await supabase
+      .from("jam_sessions")
+      .select("*")
+      .eq("id", id)
+      .single();
     setJam(jamData);
 
     const { data: participantsData } = await supabase
@@ -286,7 +347,8 @@ export default function JamDetailPage() {
       is_organizer: p.is_organizer ?? false, profile: p.profile ?? null,
     })));
 
-    const { data: convData } = await supabase.from("conversations").select("id").eq('entity_id', id).eq('type', 'jam').single();
+    const { data: convData } = await supabase
+      .from("conversations").select("id").eq('entity_id', id).eq('type', 'jam').single();
     if (convData) {
       setConversationId(convData.id);
       const { data: messagesData } = await supabase
@@ -304,14 +366,16 @@ export default function JamDetailPage() {
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
   useEffect(() => {
-    const channel = supabase
-      .channel(`jam-session-${id}`)
+    const channel = supabase.channel(`jam-session-${id}`)
       .on("postgres_changes", {
         event: "UPDATE", schema: "public", table: "jam_sessions", filter: `id=eq.${id}`,
       }, (payload) => {
-        setJam((prev) => prev ? { ...prev, current_slot_index: (payload.new as any).current_slot_index } : prev);
-      })
-      .subscribe();
+        setJam((prev) => prev ? {
+          ...prev,
+          current_slot_index: (payload.new as any).current_slot_index,
+          poster_url: (payload.new as any).poster_url ?? prev.poster_url,
+        } : prev);
+      }).subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [id]);
 
@@ -328,6 +392,38 @@ export default function JamDetailPage() {
   }, [conversationId]);
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+
+  // ── Upload poster ──────────────────────────────────────────────────────
+  const handlePosterUpload = async (file: File) => {
+    if (!jam || !isOrganizer) return;
+    setIsUploadingPoster(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `jams/${jam.id}/poster.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true });
+
+      if (uploadError) {
+        console.error('Erreur upload:', uploadError);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+      const posterUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+      const { error: updateError } = await supabase
+        .from('jam_sessions')
+        .update({ poster_url: posterUrl })
+        .eq('id', jam.id);
+
+      if (!updateError) {
+        setJam((prev) => prev ? { ...prev, poster_url: posterUrl } : prev);
+      }
+    } finally {
+      setIsUploadingPoster(false);
+    }
+  };
 
   const handleSetCurrentSlot = useCallback(async (slotIndex: number) => {
     if (!isOrganizer || !jam) return;
@@ -358,28 +454,29 @@ export default function JamDetailPage() {
     if (conversationId) await supabase.from("conversation_participants").insert({ conversation_id: conversationId, user_id: currentUserId });
     await fetchAll();
   };
+
   const handleLeave = async () => {
     if (!currentUserId) return;
     await supabase.from("jam_participants").delete().eq("jam_id", id).eq("user_id", currentUserId);
     await fetchAll();
   };
+
   const handleAccept = async (userId: string) => {
     await supabase.from("jam_participants").update({ status: "confirmed" }).eq("jam_id", id).eq("user_id", userId);
     if (conversationId) await supabase.from("conversation_participants").upsert({ conversation_id: conversationId, user_id: userId });
-    await supabase.from('jam_participants')
-  .update({ status: 'confirmed' })
-  .eq('jam_id', id)
-  .eq('user_id', userId);
     await fetchAll();
   };
+
   const handleReject = async (userId: string) => {
     await supabase.from("jam_participants").delete().eq("jam_id", id).eq("user_id", userId);
     await fetchAll();
   };
+
   const handleToggleCoOrganizer = async (userId: string, currentIsOrganizer: boolean) => {
     await supabase.from("jam_participants").update({ is_organizer: !currentIsOrganizer }).eq("jam_id", id).eq("user_id", userId);
     await fetchAll();
   };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!messageInput.trim() || !currentUserId || !conversationId) return;
@@ -405,11 +502,9 @@ export default function JamDetailPage() {
   const handleClaim = async (instrument: string, slot_index: number) => {
     if (!currentUserId || !canInteract) return;
     if (getSlot(instrument, slot_index)) return;
-
     const userSlots = slots.filter((s) => s.user_id === currentUserId);
     const isLockedToOtherInstrument = userSlots.some((s) => s.instrument !== instrument);
     if (isLockedToOtherInstrument) return;
-
     setClaimingCell({ instrument, slot_index });
     await supabase.from("jam_slots").insert({ jam_id: id, user_id: currentUserId, instrument, slot_index });
     await fetchAll();
@@ -421,7 +516,6 @@ export default function JamDetailPage() {
     const userSlots = slots.filter((s) => s.user_id === userId);
     const isLockedToOtherInstrument = userSlots.some((s) => s.instrument !== instrument);
     if (isLockedToOtherInstrument) return;
-
     setClaimingCell({ instrument, slot_index });
     await supabase.from("jam_slots").insert({ jam_id: id, user_id: userId, instrument, slot_index });
     await fetchAll();
@@ -441,16 +535,27 @@ export default function JamDetailPage() {
     await supabase.from("jam_slots").delete().eq("id", slotId);
     await fetchAll();
   };
+
   const handleDragStart = (slot: JamSlot) => {
     if (slot.user_id !== currentUserId && !isOrganizer) return;
     setDraggedSlot({ id: slot.id, instrument: slot.instrument, slot_index: slot.slot_index });
   };
+
   const handleDragOver = (e: React.DragEvent, instrument: string, slot_index: number) => {
     e.preventDefault(); setDragOverCell({ instrument, slot_index });
   };
+
   const handleDrop = async (instrument: string, slot_index: number) => {
     setDragOverCell(null);
     if (!draggedSlot) return;
+    const movedSlot = slots.find((s) => s.id === draggedSlot.id);
+    if (!movedSlot || !movedSlot.user_id) { setDraggedSlot(null); return; }
+    if (instrument !== draggedSlot.instrument) {
+      const otherSlotsElsewhere = slots.some(
+        (s) => s.user_id === movedSlot.user_id && s.id !== movedSlot.id && s.instrument !== instrument
+      );
+      if (otherSlotsElsewhere) { setDraggedSlot(null); return; }
+    }
     const target = getSlot(instrument, slot_index);
     if (target) {
       await Promise.all([
@@ -463,6 +568,7 @@ export default function JamDetailPage() {
     setDraggedSlot(null);
     await fetchAll();
   };
+
   const handleDragEnd = () => { setDraggedSlot(null); setDragOverCell(null); };
 
   const handleStartEditSong = (slot: JamSlot, e: React.MouseEvent) => {
@@ -471,6 +577,7 @@ export default function JamDetailPage() {
     setEditingSongSlotId(slot.id);
     setSongInputValue(slot.song ?? "");
   };
+
   const handleSaveSong = async (slotId: string) => {
     await supabase.from("jam_slots").update({ song: songInputValue.trim() || null }).eq("id", slotId);
     setEditingSongSlotId(null);
@@ -497,7 +604,10 @@ export default function JamDetailPage() {
     router.push('/events');
   };
 
-  // ✅ Loading skeleton avec ton thème
+  const toggleDescription = (jamId: string) => {
+    setExpandedDescriptions((prev) => ({ ...prev, [jamId]: !prev[jamId] }));
+  };
+
   if (isLoading) return (
     <div className="flex flex-col gap-4 p-4">
       <div className="h-8 w-32 bg-zik-card animate-pulse rounded" />
@@ -527,36 +637,45 @@ export default function JamDetailPage() {
   return (
     <div className="flex flex-col h-full bg-zik-bg">
       {popupProfile && (
-        <ProfilePopup
-          profile={popupProfile}
-          anchorRef={popupAnchorRef}
-          onClose={() => setPopupProfile(null)}
-          onMessage={handleOpenDM}
-          onViewProfile={handleViewProfile}
-        />
+        <ProfilePopup profile={popupProfile} anchorRef={popupAnchorRef}
+          onClose={() => setPopupProfile(null)} onMessage={handleOpenDM} onViewProfile={handleViewProfile} />
       )}
 
       {pickerCell && (
-        <ParticipantPicker
-          instrument={pickerCell.instrument}
-          slot_index={pickerCell.slot_index}
-          participants={participants}
-          slots={slots}
-          anchorEl={pickerCell.anchorEl}
-          onPick={handleAssign}
-          onClose={() => setPickerCell(null)}
+        <ParticipantPicker instrument={pickerCell.instrument} slot_index={pickerCell.slot_index}
+          participants={participants} slots={slots} anchorEl={pickerCell.anchorEl}
+          onPick={handleAssign} onClose={() => setPickerCell(null)} />
+      )}
+
+      {/* ── POSTER ──────────────────────────────────────────────────────── */}
+      {(jam.poster_url || isOrganizer) && (
+        <JamPoster
+          posterUrl={jam.poster_url}
+          isOrganizer={isOrganizer}
+          onUpload={handlePosterUpload}
+          isUploading={isUploadingPoster}
         />
       )}
 
-      {/* Header */}
-      <div className="px-4 pt-4 pb-3 border-b border-zik-border">
+      {/* ── HEADER ──────────────────────────────────────────────────────── */}
+      <div
+        className="px-4 pt-4 pb-3"
+        style={{
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          // Si poster présent : on superpose le header par-dessus l'image
+          marginTop: jam.poster_url ? -48 : 0,
+          position: jam.poster_url ? 'relative' : 'static',
+          zIndex: 2,
+        }}
+      >
         <div className="flex items-center justify-between mb-3">
           <button onClick={() => router.back()}
-            className="flex items-center gap-1.5 text-sm text-zik-muted hover:text-zik-text transition-colors">
+            className="flex items-center gap-1.5 text-sm transition-colors"
+            style={{ color: jam.poster_url ? 'rgba(255,255,255,0.80)' : 'rgba(255,255,255,0.45)' }}>
             <ArrowLeft className="h-4 w-4" /> Retour
           </button>
           {isOrganizer && (
-            <>
+            <div className="flex gap-2">
               <Button size="sm" variant="outline"
                 className="text-xs flex items-center gap-1.5 border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
                 onClick={() => setIsEditOpen(true)}>
@@ -567,14 +686,31 @@ export default function JamDetailPage() {
                 onClick={() => setShowDeleteConfirm(true)}>
                 <Trash2 className="h-3.5 w-3.5" /> Supprimer
               </Button>
-            </>
+            </div>
           )}
         </div>
 
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold text-zik-text truncate">{jam.title}</h1>
-            <p className="text-sm text-zik-muted mt-1 line-clamp-2">{jam.description}</p>
+            {jam.description && (
+              <div className="mt-1">
+                <p className={`text-sm text-zik-muted whitespace-pre-wrap transition-all duration-200 ${
+                  expandedDescriptions[jam.id] ? '' : 'line-clamp-2'
+                }`}>
+                  {jam.description}
+                </p>
+                {jam.description.length > 100 && (
+                  <button onClick={() => toggleDescription(jam.id)}
+                    className="text-xs text-zik-purple mt-1 hover:bg-zik-purple/10 rounded-lg px-2 py-1 flex items-center gap-1 transition-colors">
+                    {expandedDescriptions[jam.id]
+                      ? <><ChevronUp className="h-3 w-3" /> Voir moins</>
+                      : <><ChevronDown className="h-3 w-3" /> Voir plus</>
+                    }
+                  </button>
+                )}
+              </div>
+            )}
           </div>
           <span className={`shrink-0 flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${
             jam.is_open ? "bg-zik-emerald/10 text-zik-emerald" : "bg-zik-orange/10 text-zik-orange"
@@ -614,8 +750,7 @@ export default function JamDetailPage() {
             ) : isPending ? (
               <span className="text-xs text-zik-orange font-medium">⏳ En attente d'approbation</span>
             ) : (
-              <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo"
-                onClick={handleJoin}>
+              <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo" onClick={handleJoin}>
                 <UserPlus className="h-3.5 w-3.5 mr-1" />
                 {jam.is_open ? "Rejoindre" : "Demander à rejoindre"}
               </Button>
@@ -632,7 +767,7 @@ export default function JamDetailPage() {
         )}
       </div>
 
-      {/* Onglets */}
+      {/* ── ONGLETS ─────────────────────────────────────────────────────── */}
       <Tabs defaultValue="participants" className="flex-1 flex flex-col overflow-hidden">
         <TabsList className="grid grid-cols-3 mx-4 mt-3 shrink-0">
           <TabsTrigger value="participants" className="text-zik-text">
@@ -665,7 +800,9 @@ export default function JamDetailPage() {
         <TabsContent value="participants" className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
           {isOrganizer && pendingParticipants.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-zik-orange uppercase tracking-wide mb-2">En attente · {pendingParticipants.length}</p>
+              <p className="text-xs font-semibold text-zik-orange uppercase tracking-wide mb-2">
+                En attente · {pendingParticipants.length}
+              </p>
               <div className="space-y-2">
                 {pendingParticipants.map((p) => (
                   <div key={p.user_id} className="flex items-center justify-between gap-2 p-3 rounded-lg bg-zik-orange/10 border border-zik-orange/20">
@@ -674,12 +811,10 @@ export default function JamDetailPage() {
                       <span className="text-sm font-medium text-zik-text truncate">{p.profile?.username ?? "Inconnu"}</span>
                     </div>
                     <div className="flex gap-1.5 shrink-0">
-                      <Button size="sm" className="h-7 text-xs bg-zik-emerald hover:bg-zik-emerald/80 px-2"
-                        onClick={() => handleAccept(p.user_id)}>
+                      <Button size="sm" className="h-7 text-xs bg-zik-emerald hover:bg-zik-emerald/80 px-2" onClick={() => handleAccept(p.user_id)}>
                         <Check className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="sm" variant="outline" className="h-7 text-xs border-zik-red/30 text-zik-red hover:bg-zik-red/10 px-2"
-                        onClick={() => handleReject(p.user_id)}>
+                      <Button size="sm" variant="outline" className="h-7 text-xs border-zik-red/30 text-zik-red hover:bg-zik-red/10 px-2" onClick={() => handleReject(p.user_id)}>
                         <X className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -689,7 +824,9 @@ export default function JamDetailPage() {
             </div>
           )}
           <div>
-            <p className="text-xs font-semibold text-zik-muted uppercase tracking-wide mb-2">Confirmés · {confirmedParticipants.length}</p>
+            <p className="text-xs font-semibold text-zik-muted uppercase tracking-wide mb-2">
+              Confirmés · {confirmedParticipants.length}
+            </p>
             {confirmedParticipants.length === 0 ? (
               <p className="text-sm text-zik-muted text-center py-4">Aucun participant pour l'instant</p>
             ) : (
@@ -776,18 +913,14 @@ export default function JamDetailPage() {
                     }`}>
                       {isOrganizer && (
                         <td className="px-1 py-1 text-center">
-                          <button
-                            onClick={() => handleSetCurrentSlot(rowIdx)}
+                          <button onClick={() => handleSetCurrentSlot(rowIdx)}
                             title={isCurrentSlot ? "Désactiver ce passage" : "Marquer comme en cours"}
                             className={`h-6 w-6 flex items-center justify-center rounded-full transition-all duration-150 mx-auto ${
                               isCurrentSlot
                                 ? "bg-zik-emerald text-white shadow-md shadow-zik-emerald/20 hover:bg-zik-red"
                                 : "text-zik-muted hover:text-zik-emerald hover:bg-zik-emerald/10"
                             }`}>
-                            {isCurrentSlot
-                              ? <Radio className="h-3.5 w-3.5 animate-pulse" />
-                              : <Play className="h-3.5 w-3.5" />
-                            }
+                            {isCurrentSlot ? <Radio className="h-3.5 w-3.5 animate-pulse" /> : <Play className="h-3.5 w-3.5" />}
                           </button>
                         </td>
                       )}
@@ -855,7 +988,7 @@ export default function JamDetailPage() {
                                   ? <span className="text-[10px] text-zik-purple animate-pulse font-medium">...</span>
                                   : canInteract
                                     ? isOrganizer
-                                      ? <UserPlus className={`h-3.5 w-3.5 ${isPickerOpen ? "text-zik-purple" : "text-zik-muted group-hover:text-zik-purple"}`} />
+                                      ? <UserPlus className={`h-3.5 w-3.5 ${isPickerOpen ? "text-zik-purple" : "text-zik-muted"}`} />
                                       : <span className="text-lg leading-none text-zik-muted">+</span>
                                     : null
                                 }
@@ -884,7 +1017,8 @@ export default function JamDetailPage() {
                               className={`flex items-center gap-1 px-1.5 py-1 rounded text-[11px] min-h-7 group
                                 ${(songSlot.user_id === currentUserId || isOrganizer) ? "cursor-pointer hover:bg-zik-card-hover" : ""}`}>
                               {songSlot.song ? (
-                                <><Music className="h-3 w-3 text-zik-purple shrink-0" /><span className="truncate text-zik-text max-w-22.5">{songSlot.song}</span></>
+                                <><Music className="h-3 w-3 text-zik-purple shrink-0" />
+                                  <span className="truncate text-zik-text max-w-22.5">{songSlot.song}</span></>
                               ) : (
                                 (songSlot.user_id === currentUserId || isOrganizer) &&
                                 <span className="text-zik-muted group-hover:text-zik-purple transition-colors">+ Morceau</span>
@@ -920,12 +1054,11 @@ export default function JamDetailPage() {
                   const isMe = msg.user_id === currentUserId;
                   return (
                     <div key={msg.id} className={`flex gap-2.5 ${isMe ? "flex-row-reverse" : ""}`}>
-                      {!isMe && <Avatar profile={msg.profile} size="sm" onClick={msg.profile ? (e) => handleAvatarClick(msg.profile!, e) : undefined} />}
+                      {!isMe && <Avatar profile={msg.profile} size="sm"
+                        onClick={msg.profile ? (e) => handleAvatarClick(msg.profile!, e) : undefined} />}
                       <div className={`max-w-[75%] ${isMe ? "items-end" : "items-start"} flex flex-col gap-0.5`}>
                         {!isMe && (
-                          <span className="text-xs text-zik-muted ml-0.5">
-                            {msg.profile?.username ?? "Inconnu"}
-                          </span>
+                          <span className="text-xs text-zik-muted ml-0.5">{msg.profile?.username ?? "Inconnu"}</span>
                         )}
                         <div className={`px-3 py-2 rounded-2xl text-sm ${
                           isMe
@@ -947,8 +1080,7 @@ export default function JamDetailPage() {
                 <Input value={messageInput} onChange={(e) => setMessageInput(e.target.value)}
                   placeholder="Envoyer un message..."
                   className="flex-1 text-sm bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
-                  disabled={isSending}
-                />
+                  disabled={isSending} />
                 <Button type="submit" size="sm" className="bg-zik-purple hover:bg-zik-indigo shrink-0 disabled:opacity-50"
                   disabled={!messageInput.trim() || isSending}>
                   <Send className="h-4 w-4" />
@@ -962,6 +1094,7 @@ export default function JamDetailPage() {
       <Modal open={isEditOpen} onClose={() => setIsEditOpen(false)} title="Modifier la jam">
         <JamEditForm jam={jam} onSuccess={() => { setIsEditOpen(false); fetchAll(); }} onClose={() => setIsEditOpen(false)} />
       </Modal>
+
       <Modal open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Supprimer la jam ?">
         <p className="text-sm text-zik-muted mb-4">
           Cette action est irréversible. Tous les participants, passages et messages seront définitivement supprimés.

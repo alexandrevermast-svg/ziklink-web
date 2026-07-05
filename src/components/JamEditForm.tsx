@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Lock, Unlock } from "lucide-react";
+import moment from 'moment-timezone';
+
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
@@ -50,7 +52,8 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
         setIsLoading(false);
         return;
       }
-      const start_time = `${date}T${startHour}:00`;
+      const start_timeLocal = `${date}T${startHour}:00`;
+            const start_time = moment.tz(start_timeLocal, moment.tz.guess()).utc().format();
       const end_at = endHour ? `${date}T${endHour}:00` : null;
       if (end_at && end_at <= start_time) {
         setError("L'heure de fin doit être après l'heure de début");

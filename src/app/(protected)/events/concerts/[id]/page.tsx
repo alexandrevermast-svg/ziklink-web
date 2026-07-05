@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   ArrowLeft, MapPin, Clock, Ticket, Music2, Heart,
-  ExternalLink, Send, Users, Pencil, X
+  ExternalLink, Send, Users, Pencil, X, ChevronUp, ChevronDown
 } from "lucide-react";
 import ConcertEditForm from "@/components/ConcertEditForm";
 import ReportButton from '@/components/ReportButton';
@@ -103,6 +103,7 @@ export default function ConcertDetailPage() {
   const [isToggling, setIsToggling] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
 
   const isOrganizer = concert?.created_by === currentUserId;
 
@@ -179,6 +180,13 @@ export default function ConcertDetailPage() {
     setMessageInput("");
     setIsSending(false);
   };
+
+  const toggleDescription = (concertId: string) => {
+  setExpandedDescriptions((prev) => ({
+    ...prev,
+    [concertId]: !prev[concertId],
+  }));
+};
 
   // ✅ Loading skeleton avec ton thème
   if (isLoading) return (
@@ -262,7 +270,33 @@ export default function ConcertDetailPage() {
               <span className="shrink-0 text-xs font-medium bg-zik-purple/10 text-zik-purple px-2.5 py-1 rounded-full">
                 {concert.genre}
               </span>
-            )}
+            )}{concert.description && (
+  <div className="mt-2">
+    <p
+      className={`text-sm text-zik-muted whitespace-pre-wrap transition-all duration-200 ${
+        expandedDescriptions[concert.id] ? '' : 'line-clamp-3'
+      }`}
+    >
+      {concert.description}
+    </p>
+    {concert.description.length > 100 && (
+      <button
+        onClick={() => toggleDescription(concert.id)}
+        className="text-xs text-zik-purple mt-1 hover:bg-zik-purple/10 rounded-lg px-2 py-1 flex items-center gap-1 transition-colors"
+      >
+        {expandedDescriptions[concert.id] ? (
+          <>
+            Voir moins <ChevronUp className="h-3 w-3" />
+          </>
+        ) : (
+          <>
+            Voir plus <ChevronDown className="h-3 w-3" />
+          </>
+        )}
+      </button>
+    )}
+  </div>
+)}
           </div>
           {concert.description && <p className="text-sm text-zik-muted mt-2 line-clamp-3">{concert.description}</p>}
           <div className="flex flex-wrap gap-3 mt-2 text-xs text-zik-muted">

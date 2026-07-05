@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Lock, Unlock, Repeat2, Users, MapPin } from "lucide-react";
 import AddressSearchInput from '@/components/AddressSearchInput';
+import moment from 'moment-timezone';
 
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
@@ -130,9 +131,10 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
       if (!formData.title || !formData.description || !formData.date || !formData.start_hour) {
         setError("Veuillez remplir tous les champs obligatoires"); setIsLoading(false); return;
       }
-      const start_time = `${formData.date}T${formData.start_hour}:00`;
+      const start_timeLocal = `${formData.date}T${formData.start_hour}:00`;
+      const start_time = moment.tz(start_timeLocal, moment.tz.guess()).utc().format();
       const end_at = formData.end_hour ? `${formData.date}T${formData.end_hour}:00` : null;
-      if (end_at && end_at <= start_time) { setError("L'heure de fin doit être après l'heure de début"); setIsLoading(false); return; }
+      if (end_at && end_at <= start_timeLocal) { setError("L'heure de fin doit être après l'heure de début"); setIsLoading(false); return; }
 
       const groupId = selectedGroupId || null;
 
@@ -148,7 +150,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
           });
         }
       } else {
-        occurrencesPayload.push({ start_time, end_at });
+        occurrencesPayload.push({ start_time: start_time, end_at: end_at });
       }
 
       const { data: createdJams, error: rpcError } = await supabase.rpc('create_jam_sessions', {
@@ -211,7 +213,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
       {/* Date + Heures */}
       <div className="grid grid-cols-3 gap-4 items-end">
         <div className="col-span-1">
-          <label className="text-sm font-medium text-zik-text">Date de début</label>
+          <label className="text-sm font-medium text-zik-text">Date</label>
           <Input
             type="date"
             name="date"
@@ -222,7 +224,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-zik-text">Début</label>
+          <label className="text-sm font-medium text-zik-text">Heure</label>
           <Input
             type="time"
             name="start_hour"
