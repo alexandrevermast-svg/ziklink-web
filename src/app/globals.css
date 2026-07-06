@@ -265,6 +265,9 @@ textarea.zik-input {
 .leaflet-popup-close-button:hover {
   color: #C084FC !important;
 }
+.leaflet-tile {
+  filter: brightness(1.7) contrast(1) saturate(1.2) !important;
+}
 
 /* globals.css — à ajouter */
 .conv-row { transition: background 0.15s; }
