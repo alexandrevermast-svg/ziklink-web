@@ -80,7 +80,7 @@ export default function GroupCreationForm({ onSuccess, onClose }: GroupCreationF
             <img src={avatarPreview} alt="preview" className="h-20 w-20 rounded-2xl object-cover border-2 border-zik-border" />
           ) : (
             // ✅ Dégradé adapté à ton thème
-            <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-zik-purple to-zik-indigo flex items-center justify-center text-white text-2xl font-bold">
+            <div className="h-20 w-20 rounded-2xl bg-linear-to-br from-zik-purple to-zik-indigo flex items-center justify-center text-white text-2xl font-bold">
               {name ? name.slice(0, 2).toUpperCase() : '🎸'}
             </div>
           )}

@@ -7,9 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Lock, Unlock, Repeat2, Users, MapPin } from "lucide-react";
+import { Lock, Unlock, Repeat2, Users, MapPin, CalendarDays, Clock } from "lucide-react";
 import AddressSearchInput from '@/components/AddressSearchInput';
 import moment from 'moment-timezone';
+import { Calendar } from "@/components/ui/calendar";
+import { fr } from "date-fns/locale";
+import { format } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import TimePicker from '@/components/ui/TimePicker';
 
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
@@ -210,43 +216,79 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         />
       </div>
 
-      {/* Date + Heures */}
-      <div className="grid grid-cols-3 gap-4 items-end">
-        <div className="col-span-1">
-          <label className="text-sm font-medium text-zik-text">Date</label>
-          <Input
-            type="date"
-            name="date"
-            value={formData.date}
-            onChange={handleInputChange}
-            required
-            className="bg-zik-card border-zik-border text-zik-text scheme-dark focus:ring-zik-purple/50"
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-zik-text">Heure</label>
-          <Input
-            type="time"
-            name="start_hour"
-            value={formData.start_hour}
-            onChange={handleInputChange}
-            required
-            className="bg-zik-card border-zik-border text-zik-text scheme-dark focus:ring-zik-purple/50"
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-zik-muted">
-            Fin <span className="text-zik-muted font-normal">(optionnel)</span>
-          </label>
-          <Input
-            type="time"
-            name="end_hour"
-            value={formData.end_hour}
-            onChange={handleInputChange}
-            className="bg-zik-card border-zik-border text-zik-text scheme-dark focus:ring-zik-purple/50"
-          />
-        </div>
-      </div>
+<div className="grid grid-cols-1 gap-3">
+  {/* Date */}
+  <div>
+    <label className="text-sm font-medium text-zik-text">
+      Date <span className="text-zik-red">*</span>
+    </label>
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full justify-start text-left font-normal bg-zik-card border-zik-border text-zik-text hover:bg-zik-card-hover gap-2",
+            !formData.date && "text-zik-muted"
+          )}
+        >
+          <CalendarDays className="h-4 w-4 text-zik-purple shrink-0" />
+          {formData.date
+            ? format(new Date(formData.date), "PPP", { locale: fr })
+            : <span>Sélectionnez une date</span>
+          }
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-[320px] p-0 bg-zik-card border-zik-border shadow-lg"
+        align="start"
+        sideOffset={8}
+      >
+        <Calendar
+          mode="single"
+          selected={formData.date ? new Date(formData.date) : undefined}
+          onSelect={(selectedDate) => {
+            if (selectedDate) {
+              const year = selectedDate.getFullYear();
+              const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+              const day = String(selectedDate.getDate()).padStart(2, '0');
+              setFormData((prev) => ({ ...prev, date: `${year}-${month}-${day}` }));
+            }
+          }}
+          locale={fr}
+          initialFocus
+          classNames={{
+            root: "w-full",
+            months: "flex flex-col gap-4",
+            month: "flex w-full flex-col gap-4",
+            nav: "flex items-center justify-between gap-2 px-2",
+            button_previous: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover",
+            button_next: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover",
+            month_caption: "flex h-8 w-full items-center justify-center px-4 text-zik-text font-medium",
+            weekday: "text-zik-muted text-[0.9rem] font-medium",
+            day: "h-8 w-8 text-[0.9rem] font-medium text-zik-text hover:bg-zik-card-hover rounded-md",
+            day_selected: "bg-zik-purple text-white hover:bg-zik-purple/90",
+            day_today: "bg-zik-purple/10 text-zik-text border border-zik-purple/30 rounded-md",
+          }}
+        />
+      </PopoverContent>
+    </Popover>
+  </div>
+
+ <div className="grid grid-cols-2 gap-2">
+  <TimePicker
+    label="Début"
+    required
+    value={formData.start_hour}
+    onChange={(val) => setFormData((prev) => ({ ...prev, start_hour: val }))}
+  />
+  <TimePicker
+    label="Fin"
+    optional
+    value={formData.end_hour}
+    onChange={(val) => setFormData((prev) => ({ ...prev, end_hour: val }))}
+  />
+</div>
+</div>
 
       {/* Selector groupe */}
       {userGroups.length > 0 && (

@@ -74,11 +74,11 @@ interface ParticipantPickerProps {
 
 function ParticipantPicker({ instrument, slot_index, participants, slots, anchorEl, onPick, onClose }: ParticipantPickerProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const lockedToOtherInstrument = useMemo(
-    () => new Set(slots.filter((s) => s.instrument !== instrument && !!s.user_id).map((s) => s.user_id as string)),
-    [slots, instrument]
-  );
-  const available = participants.filter((p) => p.status === "confirmed" && !lockedToOtherInstrument.has(p.user_id));
+  const alreadyOnThisRow = useMemo(
+  () => new Set(slots.filter((s) => s.slot_index === slot_index && !!s.user_id).map((s) => s.user_id as string)),
+  [slots, slot_index]
+);
+const available = participants.filter((p) => p.status === "confirmed" && !alreadyOnThisRow.has(p.user_id));
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -98,7 +98,7 @@ function ParticipantPicker({ instrument, slot_index, participants, slots, anchor
         <p className="text-[10px] text-zik-muted mt-0.5">Ligne {slot_index + 1}</p>
       </div>
       {available.length === 0 ? (
-        <p className="text-xs text-zik-muted text-center py-4 px-3">Tous les participants sont déjà dans cette colonne.</p>
+        <p className="text-xs text-zik-muted text-center py-4 px-3">Tous les participants sont déjà sur cette ligne.</p>
       ) : (
         <div className="max-h-48 overflow-y-auto py-1">
           {available.map((p) => (
@@ -502,9 +502,10 @@ export default function JamDetailPage() {
   const handleClaim = async (instrument: string, slot_index: number) => {
     if (!currentUserId || !canInteract) return;
     if (getSlot(instrument, slot_index)) return;
-    const userSlots = slots.filter((s) => s.user_id === currentUserId);
-    const isLockedToOtherInstrument = userSlots.some((s) => s.instrument !== instrument);
-    if (isLockedToOtherInstrument) return;
+    const alreadyOnThisRow = slots.some(
+  (s) => s.user_id === currentUserId && s.slot_index === slot_index
+);
+if (alreadyOnThisRow) return;
     setClaimingCell({ instrument, slot_index });
     await supabase.from("jam_slots").insert({ jam_id: id, user_id: currentUserId, instrument, slot_index });
     await fetchAll();
@@ -513,9 +514,9 @@ export default function JamDetailPage() {
 
   const handleAssign = async (userId: string, instrument: string, slot_index: number) => {
     if (!isOrganizer) return;
-    const userSlots = slots.filter((s) => s.user_id === userId);
-    const isLockedToOtherInstrument = userSlots.some((s) => s.instrument !== instrument);
-    if (isLockedToOtherInstrument) return;
+    const alreadyOnThisRow = slots.some(
+  (s) => s.user_id === userId && s.slot_index === slot_index);
+if (alreadyOnThisRow) return;
     setClaimingCell({ instrument, slot_index });
     await supabase.from("jam_slots").insert({ jam_id: id, user_id: userId, instrument, slot_index });
     await fetchAll();
