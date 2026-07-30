@@ -1,0 +1,16 @@
+# ZikLink
+
+> ZikLink est une application web qui aide les musiciens à trouver des jam sessions, des concerts et des groupes de musique près de chez eux, et à s'organiser entre eux.
+
+ZikLink permet de :
+- Découvrir et rejoindre des jam sessions organisées par d'autres musiciens.
+- Découvrir des concerts (gratuits ou payants) et indiquer son intérêt.
+- Créer ou rejoindre un groupe de musique, avec un espace de discussion dédié.
+- Échanger par messagerie avec d'autres musiciens et groupes.
+
+La majorité des fonctionnalités (détail des jams/concerts, groupes, messagerie, profil) nécessitent la création d'un compte. La page d'accueil (https://ziklink-web.vercel.app/) présente un aperçu public des jams et concerts du jour et du lendemain.
+
+## Pages
+
+- [Accueil](https://ziklink-web.vercel.app/): aperçu public des jams et concerts à venir.
+- [Connexion / Inscription](https://ziklink-web.vercel.app/login): créer un compte ou se connecter.
