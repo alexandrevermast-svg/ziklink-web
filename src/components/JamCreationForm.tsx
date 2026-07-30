@@ -150,10 +150,11 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         if (recurrence.days.length === 0) { setError("Sélectionnez au moins un jour"); setIsLoading(false); return; }
         for (const occ of occurrences) {
           const dateStr = occ.toISOString().split("T")[0];
-          occurrencesPayload.push({
-            start_time: `${dateStr}T${formData.start_hour}:00`,
-            end_at: formData.end_hour ? `${dateStr}T${formData.end_hour}:00` : null,
-          });
+          const occStart = moment.tz(`${dateStr}T${formData.start_hour}:00`, moment.tz.guess()).utc().format();
+          const occEnd = formData.end_hour
+            ? moment.tz(`${dateStr}T${formData.end_hour}:00`, moment.tz.guess()).utc().format()
+            : null;
+          occurrencesPayload.push({ start_time: occStart, end_at: occEnd });
         }
       } else {
         occurrencesPayload.push({ start_time: start_time, end_at: end_at });
