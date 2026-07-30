@@ -161,6 +161,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         occurrencesPayload.push({ start_time: start_time, end_at: end_at });
       }
 
+      // p_group_id accepte NULL côté Postgres, non reflété par le typage généré des Args de fonction.
       const { data: createdJams, error: rpcError } = await supabase.rpc('create_jam_sessions', {
         p_title: formData.title,
         p_description: formData.description,
@@ -168,7 +169,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         p_is_open: formData.is_open,
         p_group_id: groupId,
         p_occurrences: occurrencesPayload,
-      });
+      } as any);
 
       if (rpcError) {
         setError(`Erreur: ${rpcError.message}`);

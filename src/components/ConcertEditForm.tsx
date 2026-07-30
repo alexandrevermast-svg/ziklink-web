@@ -22,8 +22,8 @@ interface ConcertEditFormProps {
   concert: {
     id: string; title: string; description: string | null;
     artist: string | null; genre: string | null;
-    start_time: string; end_at: string | null; location: string;
-    is_free: boolean; price: number | null; ticket_url: string | null;
+    start_time: string; end_at: string | null; location: string | null;
+    is_free: boolean | null; price: number | null; ticket_url: string | null;
     poster_url: string | null;
   };
   onSuccess?: () => void;
@@ -33,7 +33,10 @@ interface ConcertEditFormProps {
 export default function ConcertEditForm({ concert, onSuccess, onClose }: ConcertEditFormProps) {
   const supabase = createClient();
 
-  const parsedLoc = (() => { try { return JSON.parse(concert.location); } catch { return { lat: 48.8566, lng: 2.3522, address: "" }; } })();
+  const parsedLoc = (() => {
+    if (!concert.location) return { lat: 48.8566, lng: 2.3522, address: "" };
+    try { return JSON.parse(concert.location); } catch { return { lat: 48.8566, lng: 2.3522, address: "" }; }
+  })();
 
   const startLocal = moment.tz(concert.start_time, moment.tz.guess());
   const endLocal = concert.end_at ? moment.tz(concert.end_at, moment.tz.guess()) : null;

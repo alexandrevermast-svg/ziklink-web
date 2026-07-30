@@ -14,12 +14,8 @@ import {
   ChevronUp, ChevronDown, Camera, Loader2, ImagePlus
 } from 'lucide-react';
 import JamEditForm from "@/components/JamEditForm";
+import type { JamSession } from "@/types";
 
-interface JamSession {
-  id: string; title: string; description: string; start_time: string;
-  end_at: string | null; location: string; is_open: boolean; created_by: string;
-  current_slot_index: number | null; poster_url: string | null;
-}
 interface Profile { id: string; username: string | null; avatar_url: string | null; }
 interface Participant { user_id: string; status: string; is_organizer: boolean; profile: Profile | null; }
 interface Message { id: string; user_id: string; content: string; created_at: string; profile: Profile | null; }
@@ -45,7 +41,7 @@ function formatDate(d: string) {
 function formatTime(d: string) {
   return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
-function getAddress(s: string) { try { return JSON.parse(s)?.address ?? null; } catch { return null; } }
+function getAddress(s: string | null) { if (!s) return null; try { return JSON.parse(s)?.address ?? null; } catch { return null; } }
 
 function Avatar({ profile, size = "md", onClick }: {
   profile: Profile | null; size?: "sm" | "md";

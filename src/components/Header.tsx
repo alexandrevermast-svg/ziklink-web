@@ -20,9 +20,12 @@ export default function Header() {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUserId(user?.id ?? null);
-      setIsAdmin(Boolean(user?.user_metadata?.is_admin));
+      if (!user) { setIsAdmin(false); return; }
+      const { data: profile } = await supabase
+        .from('profiles').select('is_admin').eq('id', user.id).single();
+      setIsAdmin(Boolean(profile?.is_admin));
     });
   }, []);
 

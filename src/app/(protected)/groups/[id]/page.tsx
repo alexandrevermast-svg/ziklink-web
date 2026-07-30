@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import type { Group } from "@/types";
 
 const GENRES = ['Rock', 'Jazz', 'Blues', 'Metal', 'Pop', 'Électro', 'Folk', 'Classique', 'Hip-Hop', 'Reggae', 'Autre'];
 
@@ -26,12 +27,6 @@ const INSTRUMENTS = [
   { key: 'clavier', label: 'Clavier', emoji: '🎹' },
   { key: 'autres', label: 'Autres', emoji: '🎶' },
 ];
-
-interface Group {
-  id: string; name: string; bio: string | null;
-  city: string | null; genre: string | null;
-  avatar_url: string | null; created_by: string;
-}
 interface Profile {
   id: string;
   username: string | null;

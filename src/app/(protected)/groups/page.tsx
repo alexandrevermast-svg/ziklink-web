@@ -12,12 +12,9 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import GroupCreationForm from '@/components/GroupCreationForm';
 import { GroupAvatar } from "./GroupAvatar";
+import type { Group as GroupRow } from "@/types";
 
-interface Group {
-  id: string; name: string; bio: string | null;
-  city: string | null; genre: string | null;
-  avatar_url: string | null; created_by: string; member_count?: number;
-}
+type Group = Pick<GroupRow, "id" | "name" | "bio" | "city" | "genre" | "avatar_url" | "created_by"> & { member_count?: number };
 
 function Modal({ open, onClose, title, children }: {
   open: boolean; onClose: () => void; title: string; children: React.ReactNode;
@@ -84,7 +81,10 @@ export default function GroupsPage() {
       const ids = data.map((g) => g.id);
       const { data: members } = await supabase.from('group_members').select('group_id').in('group_id', ids);
       const countMap: Record<string, number> = {};
-      for (const m of members ?? []) countMap[m.group_id] = (countMap[m.group_id] ?? 0) + 1;
+      for (const m of members ?? []) {
+        if (!m.group_id) continue;
+        countMap[m.group_id] = (countMap[m.group_id] ?? 0) + 1;
+      }
       setGroups(data.map((g) => ({ ...g, member_count: countMap[g.id] ?? 0 })));
     } else {
       setGroups(data ?? []);

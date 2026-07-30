@@ -113,6 +113,8 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
         }
       }
 
+      // Les paramètres de la RPC acceptent NULL côté Postgres (colonnes nullables),
+      // mais le typage généré par `supabase gen types` ne le reflète pas pour les Args de fonction.
       const { data: result, error: rpcError } = await supabase.rpc('create_concert', {
         p_title: title,
         p_description: description || null,
@@ -126,7 +128,7 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
         p_ticket_url: ticketUrl || null,
         p_poster_url: posterUrl,
         p_group_id: selectedGroupId || null,
-      });
+      } as any);
 
       if (rpcError || !result || result.length === 0) {
         setError(`Erreur: ${rpcError?.message ?? 'inconnue'}`);

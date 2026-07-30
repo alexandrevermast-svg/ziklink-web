@@ -152,13 +152,13 @@ export default function AdminModerationPage() {
     reportId: string
   ) => {
     setProcessingId(reportId);
-    const tableMap: Record<string, string> = {
+    const tableMap = {
       jam:     'jam_sessions',
       concert: 'concerts',
       message: 'messages',
       group:   'groups',
-    };
-    const table = tableMap[targetType];
+    } as const satisfies Record<string, 'jam_sessions' | 'concerts' | 'messages' | 'groups'>;
+    const table = tableMap[targetType as keyof typeof tableMap];
     if (table) {
       await supabase.from(table).delete().eq('id', targetId);
     }

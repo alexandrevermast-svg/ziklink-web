@@ -6,20 +6,13 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { MapPin, Clock, Ticket, Music2, Heart, ChevronDown } from "lucide-react";
 import type { EventMarker } from "@/components/EventMap";
+import type { Concert } from "@/types";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
   // ✅ Remplace bg-gray-100 par ta couleur de fond
   loading: () => <div className="h-52 bg-zik-card animate-pulse rounded-xl" />,
 });
-
-interface Concert {
-  id: string; title: string; description: string | null;
-  artist: string | null; genre: string | null;
-  start_time: string; end_at: string | null; location: string;
-  is_free: boolean; price: number | null; ticket_url: string | null;
-  poster_url: string | null; created_by: string;
-}
 
 function startOfDay(d: Date) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 function isSameDay(a: Date, b: Date) { return startOfDay(a).getTime() === startOfDay(b).getTime(); }
@@ -40,7 +33,7 @@ function formatDate(d: string) {
 function formatTime(d: string) {
   return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
-function getAddress(s: string) { try { return JSON.parse(s)?.address ?? null; } catch { return null; } }
+function getAddress(s: string | null) { if (!s) return null; try { return JSON.parse(s)?.address ?? null; } catch { return null; } }
 
 const VISIBLE_DAYS = 4;
 
@@ -208,6 +201,7 @@ const { data: concertsData } = await supabase
 
   const concertMarkers = useMemo<EventMarker[]>(() =>
     filtered.flatMap((concert) => {
+      if (!concert.location) return [];
       try {
         const loc = JSON.parse(concert.location);
         if (!loc?.lat || !loc?.lng) return [];

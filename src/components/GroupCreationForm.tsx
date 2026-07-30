@@ -54,14 +54,20 @@ export default function GroupCreationForm({ onSuccess, onClose }: GroupCreationF
         }
       }
 
+      // Les paramètres optionnels acceptent NULL côté Postgres, non reflété par le
+      // typage généré des Args de fonction.
       const { data: groupId, error } = await supabase.rpc('create_group', {
         p_name: name.trim(),
         p_bio: bio.trim() || null,
         p_city: city.trim() || null,
         p_genre: genre || null,
         p_avatar_url: avatarUrl,
-      });
+      } as any);
 
+      if (error || !groupId) {
+        setError(`Erreur: ${error?.message ?? 'inconnue'}`);
+        return;
+      }
       onSuccess?.(groupId);
     } catch {
       setError("Une erreur s'est produite");

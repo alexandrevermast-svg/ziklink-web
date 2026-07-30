@@ -25,7 +25,7 @@ const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap")
 interface JamEditFormProps {
   jam: {
     id: string; title: string; description: string; start_time: string;
-    end_at: string | null; location: string; is_open: boolean;
+    end_at: string | null; location: string | null; is_open: boolean;
   };
   onSuccess?: () => void;
   onClose?: () => void;
@@ -35,6 +35,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
   const supabase = createClient();
 
   const parsedLoc = (() => {
+    if (!jam.location) return { lat: 48.8566, lng: 2.3522, address: "" };
     try { return JSON.parse(jam.location); }
     catch { return { lat: 48.8566, lng: 2.3522, address: "" }; }
   })();

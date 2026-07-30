@@ -31,25 +31,26 @@ export type Conversation = {
 export type Participant = {
   user_id: string;
   profiles: {
-    username: string;
+    username: string | null;
   } | null;
 };
 
 export type ConversationWithParticipants = {
   id: string;
-  type: 'direct' | 'group';
+  // La colonne `type` en base n'est pas contrainte à 'direct'/'group' (ex: 'jam', 'concert' ailleurs dans l'app).
+  type: string | null;
   title: string | null;
   participants: Participant[];
 };
 
 export type MinimalProfile = {
-  username: string;
+  username: string | null;
 };
 
 export type MessageWithProfile = {
   id: string;
   content: string;
-  created_at: string;
+  created_at: string | null;
   user_id: string;
   profiles: MinimalProfile; // ✅ Un seul objet (pas un tableau)
 };

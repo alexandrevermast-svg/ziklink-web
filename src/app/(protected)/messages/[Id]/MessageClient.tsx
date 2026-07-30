@@ -17,7 +17,8 @@ interface MessageClientProps {
   participants: ParticipantWithProfile[];
 }
 
-function formatTime(dateStr: string) {
+function formatTime(dateStr: string | null) {
+  if (!dateStr) return '';
   return new Date(dateStr).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 

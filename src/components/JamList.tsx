@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Lock, Unlock, MapPin, Clock, UserPlus, Check, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { EventMarker } from "@/components/EventMap";
+import type { JamSession, Profile as ProfileRow } from "@/types";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
@@ -14,11 +15,7 @@ const EventMap = dynamic(() => import("@/components/EventMap"), {
   loading: () => <div className="h-52 bg-zik-card animate-pulse rounded-xl" />,
 });
 
-interface Profile { id: string; username: string | null; avatar_url: string | null; }
-interface JamSession {
-  id: string; title: string; description: string; start_time: string;
-  end_at: string | null; location: string; is_open: boolean; created_by: string; created_at: string;
-}
+type Profile = Pick<ProfileRow, "id" | "username" | "avatar_url">;
 interface ParticipantWithProfile { user_id: string; profile: Profile | null; }
 
 function startOfDay(d: Date) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
@@ -254,6 +251,7 @@ const { data: jamsData, error: jamsError } = await supabase
 
   const jamMarkers = useMemo<EventMarker[]>(() =>
     filteredJams.flatMap((jam) => {
+      if (!jam.location) return [];
       try {
         const loc = JSON.parse(jam.location);
         if (!loc?.lat || !loc?.lng) return [];
@@ -271,7 +269,7 @@ const { data: jamsData, error: jamsError } = await supabase
   const formatDate = (d: string) => new Date(d).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const formatTime  = (d: string) => new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 
-  const getAddress = (s: string) => { try { return JSON.parse(s)?.address ?? null; } catch { return null; } };
+  const getAddress = (s: string | null) => { if (!s) return null; try { return JSON.parse(s)?.address ?? null; } catch { return null; } };
 
   const emptyMessage = useMemo(() => {
     if (!selectedDate) return "Aucune jam à venir 🎸";

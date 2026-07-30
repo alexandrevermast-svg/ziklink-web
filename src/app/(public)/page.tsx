@@ -7,35 +7,31 @@ import { createClient } from "@/lib/supabase/client";
 import { Lock, Unlock, MapPin, Clock, UserPlus, Check, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { EventMarker } from "@/components/EventMap";
+import type { JamSession as JamSessionRow, Concert as ConcertRow, Profile } from "@/types";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
   loading: () => <div className="h-52 bg-zik-card animate-pulse rounded-xl" />,
 });
 
-interface JamSession {
-  id: string; title: string; description: string; start_time: string;
-  end_at: string | null; location: string; is_open: boolean; created_by: string;
-}
-interface Concert {
-  id: string; title: string; artist: string | null; start_time: string;
-  end_at: string | null; location: string; genre: string | null;
-  is_free: boolean; price: number | null;
-}
+type JamSession = Pick<JamSessionRow, "id" | "title" | "description" | "start_time" | "end_at" | "location" | "is_open" | "created_by">;
+type Concert = Pick<ConcertRow, "id" | "title" | "artist" | "start_time" | "end_at" | "location" | "genre" | "is_free" | "price">;
 interface ParticipantWithProfile {
   user_id: string;
-  profile: { id: string; username: string | null; avatar_url: string | null } | null;
+  profile: Pick<Profile, "id" | "username" | "avatar_url"> | null;
 }
 
 function startOfDay(d: Date) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
-function getLatLng(location: string): { lat: number; lng: number } | null {
+function getLatLng(location: string | null): { lat: number; lng: number } | null {
+  if (!location) return null;
   try { const p = JSON.parse(location); return p?.lat && p?.lng ? { lat: p.lat, lng: p.lng } : null; }
   catch { return null; }
 }
 function formatTime(d: string) {
   return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
-function getAddress(s: string) {
+function getAddress(s: string | null) {
+  if (!s) return null;
   try { return JSON.parse(s)?.address ?? null; } catch { return null; }
 }
 
