@@ -33,12 +33,12 @@ export default function TimePicker({
           {optional && <span className="text-zik-muted font-normal">(opt.)</span>}
         </label>
       )}
-      <div className="flex items-center bg-zik-card border border-zik-border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-zik-purple/50 w-28">
+      <div className="flex items-center h-9 w-full bg-zik-card border border-zik-border rounded-md shadow-sm overflow-hidden transition-colors hover:bg-zik-card-hover focus-within:outline-none focus-within:ring-1 focus-within:ring-zik-purple/50">
         <select
           value={h || ''}
           onChange={(e) => onChange(e.target.value ? `${e.target.value}:${m || '00'}` : '')}
           required={required}
-          className="flex-1 bg-transparent border-0 py-1.5 pl-2 pr-0 text-xs text-zik-text focus:outline-none appearance-none text-center cursor-pointer"
+          className="flex-1 bg-transparent border-0 py-1 pl-3 pr-0 text-sm text-zik-text focus:outline-none appearance-none text-center cursor-pointer"
         >
           <option value="">--</option>
           {HOURS.map((hour) => (
@@ -46,12 +46,12 @@ export default function TimePicker({
           ))}
         </select>
 
-        <span className="text-zik-muted font-bold shrink-0 select-none text-xs">:</span>
+        <span className="text-zik-muted font-bold shrink-0 select-none text-sm">:</span>
 
         <select
           value={m || ''}
           onChange={(e) => onChange(h ? `${h}:${e.target.value}` : '')}
-          className="flex-1 bg-transparent border-0 py-1.5 pr-2 pl-0 text-xs text-zik-text focus:outline-none appearance-none text-center cursor-pointer"
+          className="flex-1 bg-transparent border-0 py-1 pr-3 pl-0 text-sm text-zik-text focus:outline-none appearance-none text-center cursor-pointer"
         >
           <option value="">--</option>
           {MINUTES.map((min) => (

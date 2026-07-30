@@ -13,6 +13,7 @@ import { fr } from "date-fns/locale"; // ✅ Pour la localisation en français
 import { format } from "date-fns"; // ✅ Pour formater la date
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // ✅ Ton Popover
 import { cn } from "@/lib/utils";
+import TimePicker from "@/components/ui/TimePicker";
 import AddressSearchInput from '@/components/AddressSearchInput';
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
@@ -226,9 +227,9 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
         // ✅ Personnalisation supplémentaire pour le Calendar
         classNames={{
           root: "w-full",
-          months: "flex flex-col gap-4",
+          months: "relative flex flex-col gap-4",
           month: "flex w-full flex-col gap-4",
-          nav: "flex items-center justify-between gap-2 px-2",
+          nav: "absolute inset-x-0 top-0 z-10 flex items-center justify-between px-2",
           button_previous: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover",
           button_next: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover",
           month_caption: "flex h-8 w-full items-center justify-center px-4 text-zik-text font-medium",
@@ -242,29 +243,18 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
   </Popover>
 </div>
   <div className="grid grid-cols-2 gap-3">
-    <div>
-      <label className="text-sm font-medium text-zik-text">
-        Début <span className="text-zik-red">*</span>
-      </label>
-      <Input
-        type="time"
-        value={startHour}
-        onChange={(e) => setStartHour(e.target.value)}
-        required
-        className="bg-zik-card border-zik-border text-zik-text scheme-dark focus:ring-zik-purple/50"
-      />
-    </div>
-    <div>
-      <label className="text-sm font-medium text-zik-muted">
-        Fin <span className="text-zik-muted font-normal">(optionnel)</span>
-      </label>
-      <Input
-        type="time"
-        value={endHour}
-        onChange={(e) => setEndHour(e.target.value)}
-        className="bg-zik-card border-zik-border text-zik-text scheme-dark focus:ring-zik-purple/50"
-      />
-    </div>
+    <TimePicker
+      label="Début"
+      required
+      value={startHour}
+      onChange={setStartHour}
+    />
+    <TimePicker
+      label="Fin"
+      optional
+      value={endHour}
+      onChange={setEndHour}
+    />
   </div>
 </div>
 

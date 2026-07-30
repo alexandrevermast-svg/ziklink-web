@@ -156,8 +156,14 @@ export default function ConcertList() {
   const fetchAll = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setCurrentUserId(user?.id ?? null);
-    const { data: concertsData } = await supabase
-      .from("concerts").select("*").order("start_time", { ascending: true });
+    const now = new Date();
+const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString();
+
+const { data: concertsData } = await supabase
+  .from("concerts")
+  .select("*")
+  .or(`end_at.gte.${now.toISOString()},and(end_at.is.null,start_time.gte.${twoHoursAgo})`)
+  .order("start_time", { ascending: true });
     setConcerts(concertsData ?? []);
     if (concertsData && concertsData.length > 0) {
       const ids = concertsData.map((c) => c.id);

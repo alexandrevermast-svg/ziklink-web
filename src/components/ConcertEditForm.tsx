@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import TimePicker from "@/components/ui/TimePicker";
 import { Ticket, Link as LinkIcon, Music2, Upload, X } from "lucide-react";
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
@@ -170,29 +171,18 @@ return (
           className="bg-zik-card border-zik-border text-zik-text scheme-dark focus:ring-zik-purple/50"
         />
       </div>
-      <div>
-        <label className="text-sm font-medium text-zik-text">
-          Début <span className="text-zik-red">*</span>
-        </label>
-        <Input
-          type="time"
-          value={startHour}
-          onChange={(e) => setStartHour(e.target.value)}
-          required
-          className="bg-zik-card border-zik-border text-zik-text scheme-dark focus:ring-zik-purple/50"
-        />
-      </div>
-      <div>
-        <label className="text-sm font-medium text-zik-muted">
-          Fin <span className="text-zik-muted font-normal">(optionnel)</span>
-        </label>
-        <Input
-          type="time"
-          value={endHour}
-          onChange={(e) => setEndHour(e.target.value)}
-          className="bg-zik-card border-zik-border text-zik-text scheme-dark focus:ring-zik-purple/50"
-        />
-      </div>
+      <TimePicker
+        label="Début"
+        required
+        value={startHour}
+        onChange={setStartHour}
+      />
+      <TimePicker
+        label="Fin"
+        optional
+        value={endHour}
+        onChange={setEndHour}
+      />
     </div>
 
     {/* Billetterie */}

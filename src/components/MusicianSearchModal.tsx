@@ -115,7 +115,7 @@ export default function MusicianSearchModal({
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedInstruments, setSelectedInstruments] = useState<string[]>([]);
-  const [distance, setDistance] = useState<number>(50);
+  const [distance, setDistance] = useState<string>("50");
   const [onlyLookingForGroup, setOnlyLookingForGroup] = useState(true);
 
   // ✅ Récupère l'ID de l'utilisateur actuel pour l'exclure des résultats
@@ -150,7 +150,8 @@ export default function MusicianSearchModal({
       if (error) throw error;
 
       let filteredProfiles = data || [];
-      if (groupCity && distance > 0) {
+      const distanceValue = distance.trim() === "" ? null : Number(distance);
+      if (groupCity && distanceValue !== null && !Number.isNaN(distanceValue) && distanceValue > 0) {
         filteredProfiles = filteredProfiles.filter(
           (profile) => profile.city?.toLowerCase() === groupCity.toLowerCase()
         );
@@ -225,7 +226,8 @@ export default function MusicianSearchModal({
               <Input
                 type="number"
                 value={distance}
-                onChange={(e) => setDistance(Number(e.target.value) || 0)}
+                onChange={(e) => setDistance(e.target.value)}
+                placeholder="Toutes distances"
                 min="0"
                 max="200"
                 className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"

@@ -210,8 +210,15 @@ export default function JamList() {
     const fetchAll = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUserId(user?.id ?? null);
-      const { data: jamsData, error: jamsError } = await supabase
-        .from("jam_sessions").select("*").order("start_time", { ascending: true });
+
+     const now = new Date();
+const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString();
+
+const { data: jamsData, error: jamsError } = await supabase
+  .from("jam_sessions")
+  .select("*")
+  .or(`end_at.gte.${now.toISOString()},and(end_at.is.null,start_time.gte.${twoHoursAgo})`)
+  .order("start_time", { ascending: true });
       if (jamsError) { setError("Impossible de charger les jams"); setIsLoading(false); return; }
       setJams(jamsData ?? []);
       const jamIds = (jamsData ?? []).map((j) => j.id);

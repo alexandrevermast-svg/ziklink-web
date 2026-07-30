@@ -58,7 +58,7 @@ function Modal({ open, onClose, title, children }: { open: boolean; onClose: () 
   return createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: 99999 }}>
       {/* ✅ Overlay adapté */}
-      <div style={{ position: "absolute", inset: 0, background: "rgba(14, 11, 22, 0.8)" }} onClick={onClose} />
+      <div style={{ position: "absolute", inset: 0, background: "rgba(14, 11, 22, 0.8)" }} />
       <div style={{
         position: "absolute", top: "50%", left: "50%",
         transform: "translate(-50%, -50%)",

@@ -229,7 +229,7 @@ textarea.zik-input {
 .leaflet-bottom      { z-index: 2 !important; }
 
 /* Radix Dialog (conservé et nettoyé des doublons) */
-[data-radix-popper-content-wrapper],
+[data-radix-popper-content-wrapper] { z-index: 999999 !important; }
 [role="dialog"]        { z-index: 9999 !important; }
 [data-radix-dialog-overlay] {
   z-index: 100 !important;

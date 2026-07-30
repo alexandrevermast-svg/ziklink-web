@@ -19,12 +19,12 @@ function Calendar({
       className={cn("p-3 bg-zik-card text-zik-text", className)}
       
       classNames={{
-        months: "flex flex-col gap-4",
+        months: "relative flex flex-col gap-4",
         month: "flex w-full flex-col gap-4",
-        nav: "flex items-center justify-between w-full px-1",
-        button_previous: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover rounded-md order-first", // ✅ Modifié
-        button_next: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover rounded-md order-last", // ✅ Modifié
-        month_caption: "flex items-center justify-center text-zik-text font-medium",
+        nav: "absolute inset-x-0 top-0 z-10 flex items-center justify-between px-1",
+        button_previous: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover rounded-md",
+        button_next: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover rounded-md",
+        month_caption: "flex h-8 items-center justify-center text-zik-text font-medium",
         weekday: "text-zik-muted text-[0.9rem] font-medium",
         day: "h-8 w-8 text-[0.9rem] font-medium text-zik-text hover:bg-zik-card-hover rounded-md aria-selected:bg-zik-purple aria-selected:text-white",
         day_today: "bg-zik-purple/10 text-zik-text border border-zik-purple/30 rounded-md",
