@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import TimePicker from "@/components/ui/TimePicker";
 import { Ticket, Link as LinkIcon, Music2, Upload, X } from "lucide-react";
+import moment from 'moment-timezone';
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
@@ -34,13 +35,16 @@ export default function ConcertEditForm({ concert, onSuccess, onClose }: Concert
 
   const parsedLoc = (() => { try { return JSON.parse(concert.location); } catch { return { lat: 48.8566, lng: 2.3522, address: "" }; } })();
 
+  const startLocal = moment.tz(concert.start_time, moment.tz.guess());
+  const endLocal = concert.end_at ? moment.tz(concert.end_at, moment.tz.guess()) : null;
+
   const [title, setTitle] = useState(concert.title);
   const [description, setDescription] = useState(concert.description ?? "");
   const [artist, setArtist] = useState(concert.artist ?? "");
   const [genre, setGenre] = useState(concert.genre ?? "");
-  const [date, setDate] = useState(concert.start_time.slice(0, 10));
-  const [startHour, setStartHour] = useState(concert.start_time.slice(11, 16));
-  const [endHour, setEndHour] = useState(concert.end_at ? concert.end_at.slice(11, 16) : "");
+  const [date, setDate] = useState(startLocal.format('YYYY-MM-DD'));
+  const [startHour, setStartHour] = useState(startLocal.format('HH:mm'));
+  const [endHour, setEndHour] = useState(endLocal ? endLocal.format('HH:mm') : "");
   const [isFree, setIsFree] = useState(concert.is_free);
   const [price, setPrice] = useState(concert.price ? String(concert.price) : "");
   const [ticketUrl, setTicketUrl] = useState(concert.ticket_url ?? "");
@@ -70,6 +74,15 @@ export default function ConcertEditForm({ concert, onSuccess, onClose }: Concert
         setIsLoading(false);
         return;
       }
+      const start_timeLocal = `${date}T${startHour}:00`;
+      const start_time = moment.tz(start_timeLocal, moment.tz.guess()).utc().format();
+      const end_atLocal = endHour ? `${date}T${endHour}:00` : null;
+      if (end_atLocal && end_atLocal <= start_timeLocal) {
+        setError("L'heure de fin doit être après l'heure de début");
+        setIsLoading(false);
+        return;
+      }
+      const end_at = end_atLocal ? moment.tz(end_atLocal, moment.tz.guess()).utc().format() : null;
 
       let posterUrl = concert.poster_url;
       if (posterFile) {
@@ -89,8 +102,8 @@ export default function ConcertEditForm({ concert, onSuccess, onClose }: Concert
           description: description || null,
           artist: artist || null,
           genre: genre || null,
-          start_time: `${date}T${startHour}:00`,
-          end_at: endHour ? `${date}T${endHour}:00` : null,
+          start_time,
+          end_at,
           location: JSON.stringify(location),
           is_free: isFree,
           price: !isFree && price ? parseFloat(price) : null,

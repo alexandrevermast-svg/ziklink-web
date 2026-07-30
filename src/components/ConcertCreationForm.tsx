@@ -15,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import TimePicker from "@/components/ui/TimePicker";
 import AddressSearchInput from '@/components/AddressSearchInput';
+import moment from 'moment-timezone';
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
@@ -89,6 +90,15 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
         setIsLoading(false);
         return;
       }
+      const start_timeLocal = `${date}T${startHour}:00`;
+      const start_time = moment.tz(start_timeLocal, moment.tz.guess()).utc().format();
+      const end_atLocal = endHour ? `${date}T${endHour}:00` : null;
+      if (end_atLocal && end_atLocal <= start_timeLocal) {
+        setError("L'heure de fin doit être après l'heure de début");
+        setIsLoading(false);
+        return;
+      }
+      const end_at = end_atLocal ? moment.tz(end_atLocal, moment.tz.guess()).utc().format() : null;
 
       let posterUrl: string | null = null;
       if (posterFile) {
@@ -108,8 +118,8 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
         p_description: description || null,
         p_artist: artist || null,
         p_genre: genre || null,
-        p_start_time: `${date}T${startHour}:00`,
-        p_end_at: endHour ? `${date}T${endHour}:00` : null,
+        p_start_time: start_time,
+        p_end_at: end_at,
         p_location: JSON.stringify(location),
         p_is_free: isFree,
         p_price: !isFree && price ? parseFloat(price) : null,

@@ -139,8 +139,9 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
       }
       const start_timeLocal = `${formData.date}T${formData.start_hour}:00`;
       const start_time = moment.tz(start_timeLocal, moment.tz.guess()).utc().format();
-      const end_at = formData.end_hour ? `${formData.date}T${formData.end_hour}:00` : null;
-      if (end_at && end_at <= start_timeLocal) { setError("L'heure de fin doit être après l'heure de début"); setIsLoading(false); return; }
+      const end_atLocal = formData.end_hour ? `${formData.date}T${formData.end_hour}:00` : null;
+      if (end_atLocal && end_atLocal <= start_timeLocal) { setError("L'heure de fin doit être après l'heure de début"); setIsLoading(false); return; }
+      const end_at = end_atLocal ? moment.tz(end_atLocal, moment.tz.guess()).utc().format() : null;
 
       const groupId = selectedGroupId || null;
 

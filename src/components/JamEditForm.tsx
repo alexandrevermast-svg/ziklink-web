@@ -39,12 +39,15 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
     catch { return { lat: 48.8566, lng: 2.3522, address: "" }; }
   })();
 
+  const startLocal = moment.tz(jam.start_time, moment.tz.guess());
+  const endLocal = jam.end_at ? moment.tz(jam.end_at, moment.tz.guess()) : null;
+
   // ── États séparés par champ (pattern de JamEditForm) ─────────────────
   const [title, setTitle] = useState(jam.title);
   const [description, setDescription] = useState(jam.description);
-  const [date, setDate] = useState(jam.start_time.slice(0, 10));
-  const [startHour, setStartHour] = useState(jam.start_time.slice(11, 16));
-  const [endHour, setEndHour] = useState(jam.end_at ? jam.end_at.slice(11, 16) : "");
+  const [date, setDate] = useState(startLocal.format('YYYY-MM-DD'));
+  const [startHour, setStartHour] = useState(startLocal.format('HH:mm'));
+  const [endHour, setEndHour] = useState(endLocal ? endLocal.format('HH:mm') : "");
   const [isOpen, setIsOpen] = useState(jam.is_open);
   const [location, setLocation] = useState<{ lat: number; lng: number; address: string }>(parsedLoc);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(
@@ -65,12 +68,13 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
       }
       const start_timeLocal = `${date}T${startHour}:00`;
       const start_time = moment.tz(start_timeLocal, moment.tz.guess()).utc().format();
-      const end_at = endHour ? `${date}T${endHour}:00` : null;
-      if (end_at && end_at <= start_time) {
+      const end_atLocal = endHour ? `${date}T${endHour}:00` : null;
+      if (end_atLocal && end_atLocal <= start_timeLocal) {
         setError("L'heure de fin doit être après l'heure de début");
         setIsLoading(false);
         return;
       }
+      const end_at = end_atLocal ? moment.tz(end_atLocal, moment.tz.guess()).utc().format() : null;
 
       const { error: updateError } = await supabase
         .from("jam_sessions")
