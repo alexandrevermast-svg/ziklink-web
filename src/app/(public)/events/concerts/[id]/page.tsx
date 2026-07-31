@@ -16,6 +16,7 @@ import {
 import ConcertEditForm from "@/components/ConcertEditForm";
 import ReportButton from '@/components/ReportButton';
 import Modal from "@/components/Modal";
+import ShareButton from "@/components/ShareButton";
 import type { Concert } from "@/types";
 import { isOwner } from "@/lib/permissions";
 
@@ -78,15 +79,17 @@ export default function ConcertDetailPage() {
     setInterestedProfiles(profiles);
     setIsInterested((intData ?? []).some((r: any) => r.user_id === user?.id));
 
-    const { data: convData } = await supabase.from("conversations").select("id").eq('entity_id', id).eq('type', 'concert').maybeSingle();
-    if (convData) {
-      setConversationId(convData.id);
-      const { data: msgs } = await supabase
-        .from("messages")
-        .select("id, user_id, content, created_at, profile:profiles(id, username, avatar_url)")
-        .eq("conversation_id", convData.id)
-        .order("created_at", { ascending: true });
-      setMessages((msgs ?? []).map((m: any) => ({ ...m, profile: m.profile ?? null })));
+    if (user) {
+      const { data: convData } = await supabase.from("conversations").select("id").eq('entity_id', id).eq('type', 'concert').maybeSingle();
+      if (convData) {
+        setConversationId(convData.id);
+        const { data: msgs } = await supabase
+          .from("messages")
+          .select("id, user_id, content, created_at, profile:profiles(id, username, avatar_url)")
+          .eq("conversation_id", convData.id)
+          .order("created_at", { ascending: true });
+        setMessages((msgs ?? []).map((m: any) => ({ ...m, profile: m.profile ?? null })));
+      }
     }
     setIsLoading(false);
   }, [id]);
@@ -108,7 +111,8 @@ export default function ConcertDetailPage() {
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
   const handleToggleInterest = async () => {
-    if (!currentUserId || isToggling) return;
+    if (isToggling) return;
+    if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/concerts/${id}`)}`); return; }
     setIsToggling(true);
     if (isInterested) {
       await supabase.from("concert_interested").delete().eq("concert_id", id).eq("user_id", currentUserId);
@@ -181,13 +185,17 @@ export default function ConcertDetailPage() {
                 className="flex items-center gap-1.5 text-sm text-white bg-black/30 hover:bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm transition-colors">
                 <ArrowLeft className="h-4 w-4" /> Retour
               </button>
-              {/* Bouton Modifier pour l'organisateur */}
-              {isOrganizer && (
-                <button onClick={() => setIsEditOpen(true)}
-                  className="flex items-center gap-1.5 text-sm text-white bg-black/30 hover:bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm transition-colors">
-                  <Pencil className="h-3.5 w-3.5" /> Modifier
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                <ShareButton url={`/events/concerts/${id}`} title={concert.title} text={concert.description ?? undefined}
+                  className="h-8 w-8 flex items-center justify-center rounded-full text-white bg-black/30 hover:bg-black/50 backdrop-blur-sm transition-colors" />
+                {/* Bouton Modifier pour l'organisateur */}
+                {isOrganizer && (
+                  <button onClick={() => setIsEditOpen(true)}
+                    className="flex items-center gap-1.5 text-sm text-white bg-black/30 hover:bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm transition-colors">
+                    <Pencil className="h-3.5 w-3.5" /> Modifier
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ) : (
@@ -197,17 +205,20 @@ export default function ConcertDetailPage() {
                 className="flex items-center gap-1.5 text-sm text-zik-muted hover:text-zik-text transition-colors">
                 <ArrowLeft className="h-4 w-4" /> Retour
               </button>
-              {/* Bouton Modifier pour l'organisateur */}
-              {isOrganizer && (
-                <Button size="sm" variant="outline"
-                  className="text-xs flex items-center gap-1.5 border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
-                  onClick={() => setIsEditOpen(true)}>
-                  <Pencil className="h-3.5 w-3.5" /> Modifier
-                </Button>
-              )}
-              {!isOrganizer && currentUserId && (
-                <ReportButton targetType="concert" targetId={id} variant="icon" />
-              )}
+              <div className="flex items-center gap-2">
+                <ShareButton url={`/events/concerts/${id}`} title={concert.title} text={concert.description ?? undefined} />
+                {/* Bouton Modifier pour l'organisateur */}
+                {isOrganizer && (
+                  <Button size="sm" variant="outline"
+                    className="text-xs flex items-center gap-1.5 border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
+                    onClick={() => setIsEditOpen(true)}>
+                    <Pencil className="h-3.5 w-3.5" /> Modifier
+                  </Button>
+                )}
+                {!isOrganizer && currentUserId && (
+                  <ReportButton targetType="concert" targetId={id} variant="icon" />
+                )}
+              </div>
             </div>
             {/* ✅ Fond adapté à ton thème */}
             <div className="h-28 rounded-xl bg-linear-to-br from-zik-purple/20 to-zik-indigo/20 flex items-center justify-center mb-3">
@@ -282,7 +293,7 @@ export default function ConcertDetailPage() {
               </a>
             )}
           </div>
-          {currentUserId && !isOrganizer && (
+          {!isOrganizer && (
             <div className="mt-3">
               {/* ✅ Bouton "Ça m'intéresse" adapté */}
               <Button
@@ -343,7 +354,11 @@ export default function ConcertDetailPage() {
         </TabsContent>
 
         <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden px-0 py-0">
-          {!isInterested && !isOrganizer ? (
+          {!currentUserId ? (
+            <div className="flex-1 flex items-center justify-center text-sm text-zik-muted p-4 text-center">
+              Connecte-toi pour voir la discussion 💬
+            </div>
+          ) : !isInterested && !isOrganizer ? (
             <div className="flex-1 flex items-center justify-center text-sm text-zik-muted p-4 text-center">
               Marque ton intérêt pour accéder au chat 🎤
             </div>

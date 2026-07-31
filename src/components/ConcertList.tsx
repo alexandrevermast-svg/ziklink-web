@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { MapPin, Clock, Ticket, Music2, Heart, ChevronDown } from "lucide-react";
+import ShareButton from "@/components/ShareButton";
 import type { EventMarker } from "@/components/EventMap";
 import type { Concert } from "@/types";
 
@@ -178,7 +179,8 @@ const { data: concertsData } = await supabase
 
   const handleToggleInterest = async (concertId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!currentUserId || togglingId) return;
+    if (togglingId) return;
+    if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/concerts/${concertId}`)}`); return; }
     setTogglingId(concertId);
     const isInterested = myInterests.has(concertId);
     if (isInterested) {
@@ -282,7 +284,8 @@ const { data: concertsData } = await supabase
                         <Ticket className="h-3 w-3" />
                         {concert.is_free ? "Gratuit" : concert.price ? `${concert.price} €` : "Payant"}
                       </span>
-                      {currentUserId && (
+                      <div className="flex items-center gap-1.5">
+                        <ShareButton url={`/events/concerts/${concert.id}`} title={concert.title} text={concert.artist ?? undefined} />
                         <button
                           onClick={(e) => handleToggleInterest(concert.id, e)}
                           disabled={togglingId === concert.id}
@@ -295,7 +298,7 @@ const { data: concertsData } = await supabase
                           {interestedCount > 0 && <span>{interestedCount}</span>}
                           {isInterested ? "Intéressé" : "M'intéresse"}
                         </button>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Plus, Users, Mic2 } from "lucide-react";
@@ -11,8 +13,23 @@ import ConcertList from "@/components/ConcertList";
 import Modal from "@/components/Modal";
 
 export default function EventsTab() {
+  const router = useRouter();
+  const supabase = createClient();
+  const [currentUserId, setCurrentUserId] = React.useState<string | null>(null);
   const [isJamModalOpen, setIsJamModalOpen] = React.useState(false);
   const [isConcertModalOpen, setIsConcertModalOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setCurrentUserId(user?.id ?? null));
+  }, []);
+
+  const requireAuth = (openModal: () => void) => {
+    if (!currentUserId) {
+      router.push(`/login?next=${encodeURIComponent("/events")}`);
+      return;
+    }
+    openModal();
+  };
 
    return (
     <Tabs defaultValue="jams" className="w-full">
@@ -44,7 +61,7 @@ export default function EventsTab() {
             <Button
               size="sm"
               className="bg-zik-purple hover:bg-zik-indigo text-white"
-              onClick={() => setIsJamModalOpen(true)}
+              onClick={() => requireAuth(() => setIsJamModalOpen(true))}
             >
               <Plus className="mr-1.5 h-4 w-4" /> Ajouter une jam
             </Button>
@@ -61,7 +78,7 @@ export default function EventsTab() {
             <Button
               size="sm"
               className="bg-zik-purple hover:bg-zik-indigo text-white"
-              onClick={() => setIsConcertModalOpen(true)}
+              onClick={() => requireAuth(() => setIsConcertModalOpen(true))}
             >
               <Plus className="mr-1.5 h-4 w-4" /> Ajouter un concert
             </Button>

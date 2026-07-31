@@ -8,6 +8,7 @@ import { Lock, Unlock, MapPin, Clock, UserPlus, Check, ChevronDown, Drum, Piano,
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import ShareButton from "@/components/ShareButton";
 import type { EventMarker } from "@/components/EventMap";
 import type { JamSession, Profile as ProfileRow } from "@/types";
 import { haversineDistanceKm, formatDistanceKm, type LatLng } from "@/lib/geo";
@@ -257,10 +258,10 @@ const { data: jamsData, error: jamsError } = await supabase
 
   const handleJoin = useCallback(async (jamId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if (!currentUserId) return;
+    if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${jamId}`)}`); return; }
     await joinJam(jamId, currentUserId);
     await fetchParticipants(jams.map((j) => j.id));
-  }, [currentUserId, jams, fetchParticipants, joinJam]);
+  }, [currentUserId, jams, fetchParticipants, joinJam, router]);
 
   const handleLeave = useCallback(async (jamId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -271,7 +272,7 @@ const { data: jamsData, error: jamsError } = await supabase
 
   const handleToggleInterest = useCallback(async (jamId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if (!currentUserId) return;
+    if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${jamId}`)}`); return; }
     if (myJamInterests.has(jamId)) {
       await unmarkInterested(jamId, currentUserId);
       setMyJamInterests((prev) => { const s = new Set(prev); s.delete(jamId); return s; });
@@ -279,7 +280,7 @@ const { data: jamsData, error: jamsError } = await supabase
       await markInterested(jamId, currentUserId);
       setMyJamInterests((prev) => new Set([...prev, jamId]));
     }
-  }, [currentUserId, myJamInterests, markInterested, unmarkInterested]);
+  }, [currentUserId, myJamInterests, markInterested, unmarkInterested, router]);
 
   const handleToggleNearMe = useCallback((checked: boolean) => {
     setNearMe(checked);
@@ -551,7 +552,8 @@ const { data: jamsData, error: jamsError } = await supabase
                 <div className="flex items-center justify-between mt-3">
                   <ParticipantAvatars participants={participants} />
                   <div className="flex items-center gap-1.5">
-                    {!isCreator && currentUserId && (
+                    <ShareButton url={`/events/jams/${jam.id}`} title={jam.title} text={jam.description ?? undefined} />
+                    {!isCreator && (
                       <button
                         onClick={(e) => handleToggleInterest(jam.id, e)}
                         disabled={isInterestPending}
@@ -561,7 +563,7 @@ const { data: jamsData, error: jamsError } = await supabase
                         <Heart className={`h-4 w-4 ${isInterested ? "text-zik-red fill-zik-red" : ""}`} />
                       </button>
                     )}
-                    {!isCreator && currentUserId && (
+                    {!isCreator && (
                       isParticipant ? (
                         <Button
                           size="sm"

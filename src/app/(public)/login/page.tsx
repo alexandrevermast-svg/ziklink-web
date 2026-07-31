@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+  const next = searchParams.get('next') || '';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,21 +30,21 @@ export default function LoginPage() {
       if (mode === 'login') {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) { setErrorMsg(error.message); return; }
-        router.push('/');
+        router.push(next || '/');
       } else {
         // Inscription
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: `${location.origin}/onboarding`,
+            emailRedirectTo: `${location.origin}/onboarding${next ? `?next=${encodeURIComponent(next)}` : ''}`,
           },
         });
         if (error) { setErrorMsg(error.message); return; }
         // Si confirmation email désactivée dans Supabase → connexion directe
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData.session) {
-          router.push('/onboarding');
+          router.push(`/onboarding${next ? `?next=${encodeURIComponent(next)}` : ''}`);
         } else {
           // Confirmation email activée → message d'attente
           setSuccessMsg('Un email de confirmation a été envoyé. Vérifie ta boîte mail !');
@@ -60,7 +62,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${location.origin}/auth/callback`,
+        redirectTo: `${location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ''}`,
       },
     });
     if (error) {
@@ -178,5 +180,13 @@ export default function LoginPage() {
 
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

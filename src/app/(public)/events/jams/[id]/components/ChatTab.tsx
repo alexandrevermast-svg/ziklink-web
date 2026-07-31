@@ -8,8 +8,8 @@ import type { Message, Profile } from "../types";
 interface ChatTabProps {
   conversationId: string | null;
   canInteract: boolean;
-  messages: Message[];
   currentUserId: string | null;
+  messages: Message[];
   messageInput: string;
   onMessageInputChange: (v: string) => void;
   isSending: boolean;
@@ -19,12 +19,16 @@ interface ChatTabProps {
 }
 
 export function ChatTab({
-  conversationId, canInteract, messages, currentUserId,
+  conversationId, canInteract, currentUserId, messages,
   messageInput, onMessageInputChange, isSending, onSendMessage, onAvatarClick, messagesEndRef,
 }: ChatTabProps) {
   return (
     <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden px-0 py-0">
-      {!conversationId ? (
+      {!currentUserId ? (
+        <div className="flex-1 flex items-center justify-center text-sm text-zik-muted p-4 text-center">
+          Connecte-toi pour voir la discussion 💬
+        </div>
+      ) : !conversationId ? (
         <div className="flex-1 flex items-center justify-center text-sm text-zik-muted p-4">
           Le chat sera disponible une fois la conversation créée.
         </div>

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -260,9 +260,11 @@ function StepSuccess({ username }: { username: string }) {
 }
 
 // Page principale
-export default function OnboardingPage() {
+function OnboardingForm() {
   const supabase = createClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next') || '';
 
   const [step, setStep] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
@@ -351,7 +353,7 @@ export default function OnboardingPage() {
   };
 
   const handleGoToApp = () => {
-    router.push('/');
+    router.push(next || '/');
     router.refresh();
   };
 
@@ -451,5 +453,13 @@ export default function OnboardingPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={null}>
+      <OnboardingForm />
+    </Suspense>
   );
 }

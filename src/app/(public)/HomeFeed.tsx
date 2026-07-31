@@ -168,7 +168,7 @@ export default function HomeFeed({
 
   const handleJoinJam = useCallback(async (jamId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if (!currentUserId) { router.push("/login"); return; }
+    if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${jamId}`)}`); return; }
     await joinJam(jamId, currentUserId, "confirmed");
     await refetch();
   }, [currentUserId, joinJam, refetch]);
@@ -182,7 +182,7 @@ export default function HomeFeed({
 
   const handleToggleJamInterest = useCallback(async (jamId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if (!currentUserId) { router.push("/login"); return; }
+    if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${jamId}`)}`); return; }
     if (myJamInterests.has(jamId)) {
       await unmarkInterested(jamId, currentUserId);
       setMyJamInterests((prev) => { const s = new Set(prev); s.delete(jamId); return s; });
@@ -312,7 +312,7 @@ export default function HomeFeed({
 
   {/* Bouton "Voir plus" */}
   <button
-    onClick={() => router.push(currentUserId ? '/events' : '/login')}
+    onClick={() => router.push('/events')}
     className="flex items-center justify-center px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150"
     style={{
       background: 'rgba(255,255,255,0.04)',
@@ -396,7 +396,7 @@ export default function HomeFeed({
                   <div className="flex items-center justify-between">
                     <ParticipantAvatars participants={participants} />
                     <div className="flex items-center gap-1.5">
-                      {currentUserId && !isCreator && (
+                      {!isCreator && (
                         <button
                           onClick={(e) => handleToggleJamInterest(jam.id, e)}
                           disabled={isInterestPending}
@@ -429,7 +429,7 @@ export default function HomeFeed({
                         <span className="text-xs text-zik-muted italic">Organisateur</span>
                       ) : (
                         <Button size="sm" className="text-xs bg-zik-emerald/80 hover:bg-zik-emerald text-white"
-                          onClick={(e) => { e.stopPropagation(); router.push('/login'); }}>
+                          onClick={(e) => { e.stopPropagation(); router.push(`/login?next=${encodeURIComponent(`/events/jams/${jam.id}`)}`); }}>
                           <UserPlus className="h-3.5 w-3.5 mr-1" /> Rejoindre
                         </Button>
                       )}

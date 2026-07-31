@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import JamEditForm from "@/components/JamEditForm";
 import Modal from "@/components/Modal";
+import ShareButton from "@/components/ShareButton";
 import type { JamSession } from "@/types";
 import { useJamParticipation } from "@/hooks/useJamParticipation";
 import { useJamInterest } from "@/hooks/useJamInterest";
@@ -101,16 +102,16 @@ export default function JamDetailPage() {
         .from("jam_interested").select("jam_id")
         .eq("jam_id", id).eq("user_id", user.id).maybeSingle();
       setIsInterested(!!interestData);
-    }
 
-    const { data: convData } = await supabase
-      .from("conversations").select("id").eq('entity_id', id).eq('type', 'jam').single();
-    if (convData) {
-      setConversationId(convData.id);
-      const { data: messagesData } = await supabase
-        .from("messages").select("id, user_id, content, created_at, profile:profiles(id, username, avatar_url)")
-        .eq("conversation_id", convData.id).order("created_at", { ascending: true });
-      setMessages((messagesData ?? []).map((m: any) => ({ ...m, profile: m.profile ?? null })));
+      const { data: convData } = await supabase
+        .from("conversations").select("id").eq('entity_id', id).eq('type', 'jam').single();
+      if (convData) {
+        setConversationId(convData.id);
+        const { data: messagesData } = await supabase
+          .from("messages").select("id, user_id, content, created_at, profile:profiles(id, username, avatar_url)")
+          .eq("conversation_id", convData.id).order("created_at", { ascending: true });
+        setMessages((messagesData ?? []).map((m: any) => ({ ...m, profile: m.profile ?? null })));
+      }
     }
 
     const { data: slotsData } = await supabase
@@ -204,7 +205,8 @@ export default function JamDetailPage() {
   }, [isOrganizer, jam, slots, id, currentUserId]);
 
   const handleJoin = async () => {
-    if (!currentUserId || !jam) return;
+    if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${id}`)}`); return; }
+    if (!jam) return;
     const status = jam.is_open ? "confirmed" : "pending";
     await joinJam(id, currentUserId, status);
     if (conversationId) await supabase.from("conversation_participants").insert({ conversation_id: conversationId, user_id: currentUserId });
@@ -218,7 +220,7 @@ export default function JamDetailPage() {
   };
 
   const handleToggleInterest = async () => {
-    if (!currentUserId) return;
+    if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${id}`)}`); return; }
     if (isInterested) {
       await unmarkInterested(id, currentUserId);
       setIsInterested(false);
@@ -442,20 +444,23 @@ export default function JamDetailPage() {
             style={{ color: jam.poster_url ? 'rgba(255,255,255,0.80)' : 'rgba(255,255,255,0.45)' }}>
             <ArrowLeft className="h-4 w-4" /> Retour
           </button>
-          {isOrganizer && (
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline"
-                className="text-xs flex items-center gap-1.5 border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
-                onClick={() => setIsEditOpen(true)}>
-                <Pencil className="h-3.5 w-3.5" /> Modifier
-              </Button>
-              <Button size="sm" variant="outline"
-                className="text-xs flex items-center gap-1.5 border-zik-red/30 text-zik-red hover:border-zik-red hover:text-zik-red hover:bg-zik-red/10"
-                onClick={() => setShowDeleteConfirm(true)}>
-                <Trash2 className="h-3.5 w-3.5" /> Supprimer
-              </Button>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <ShareButton url={`/events/jams/${id}`} title={jam.title} text={jam.description ?? undefined} />
+            {isOrganizer && (
+              <>
+                <Button size="sm" variant="outline"
+                  className="text-xs flex items-center gap-1.5 border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
+                  onClick={() => setIsEditOpen(true)}>
+                  <Pencil className="h-3.5 w-3.5" /> Modifier
+                </Button>
+                <Button size="sm" variant="outline"
+                  className="text-xs flex items-center gap-1.5 border-zik-red/30 text-zik-red hover:border-zik-red hover:text-zik-red hover:bg-zik-red/10"
+                  onClick={() => setShowDeleteConfirm(true)}>
+                  <Trash2 className="h-3.5 w-3.5" /> Supprimer
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="flex items-start justify-between gap-2">
@@ -508,7 +513,7 @@ export default function JamDetailPage() {
           </div>
         )}
 
-        {!isOrganizer && currentUserId && (
+        {!isOrganizer && (
           <div className="mt-3 flex items-center gap-2">
             <Button size="sm" variant="outline"
               className="text-xs border-zik-border text-zik-muted hover:bg-zik-red/10 hover:border-zik-red/30 hover:text-zik-red transition-colors"
@@ -516,7 +521,11 @@ export default function JamDetailPage() {
               <Heart className={`h-3.5 w-3.5 mr-1 ${isInterested ? "text-zik-red fill-zik-red" : ""}`} />
               {isInterested ? "Intéressé" : "M'intéresse"}
             </Button>
-            {isParticipant ? (
+            {!currentUserId ? (
+              <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo" onClick={handleJoin}>
+                <UserPlus className="h-3.5 w-3.5 mr-1" /> Rejoindre
+              </Button>
+            ) : isParticipant ? (
               <Button size="sm" variant="outline"
                 className="text-xs border-zik-emerald/30 text-zik-emerald hover:bg-zik-red/10 hover:border-zik-red/30 hover:text-zik-red transition-colors"
                 onClick={handleLeave}>
