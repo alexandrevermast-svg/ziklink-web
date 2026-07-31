@@ -13,6 +13,7 @@ export type JamSessionUpdate = Tables["jam_sessions"]["Update"];
 export type JamParticipant = Tables["jam_participants"]["Row"];
 export type JamMessage = Tables["jam_messages"]["Row"];
 export type JamSlot = Tables["jam_slots"]["Row"];
+export type JamInterested = Tables["jam_interested"]["Row"];
 
 export type Concert = Tables["concerts"]["Row"];
 export type ConcertInsert = Tables["concerts"]["Insert"];

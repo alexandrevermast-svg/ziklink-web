@@ -3,284 +3,30 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { createPortal } from 'react-dom';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
-  ArrowLeft, Lock, Unlock, MapPin, Clock, Send,
-  UserPlus, Check, X, Crown, ShieldCheck, Pencil,
-  MessageCircle, Music, Play, Radio, User, Trash2,
-  ChevronUp, ChevronDown, Camera, Loader2, ImagePlus
+  ArrowLeft, Lock, Unlock, MapPin, Clock,
+  UserPlus, Check, Crown, ShieldCheck, Pencil,
+  Radio, Trash2, ChevronUp, ChevronDown, Heart
 } from 'lucide-react';
 import JamEditForm from "@/components/JamEditForm";
+import Modal from "@/components/Modal";
 import type { JamSession } from "@/types";
 import { useJamParticipation } from "@/hooks/useJamParticipation";
+import { useJamInterest } from "@/hooks/useJamInterest";
 import { isOwner } from "@/lib/permissions";
+import { canJoinJam, joinOpensAt } from "@/lib/jamJoinWindow";
+import type { Profile, Participant, Message, JamSlot } from "./types";
+import { TRAILING_EMPTY_ROWS } from "./types";
+import { formatDate, formatTime, getAddress } from "./utils";
+import { ParticipantPicker } from "./components/ParticipantPicker";
+import { ProfilePopup } from "./components/ProfilePopup";
+import { JamPoster } from "./components/JamPoster";
+import { ParticipantsTab } from "./components/ParticipantsTab";
+import { SlotsTab } from "./components/SlotsTab";
+import { ChatTab } from "./components/ChatTab";
 
-interface Profile { id: string; username: string | null; avatar_url: string | null; }
-interface Participant { user_id: string; status: string; is_organizer: boolean; profile: Profile | null; }
-interface Message { id: string; user_id: string; content: string; created_at: string; profile: Profile | null; }
-interface JamSlot {
-  id: string; jam_id: string; user_id: string | null;
-  instrument: string; slot_index: number; song?: string | null; profile?: Profile | null;
-}
-
-const INSTRUMENTS = [
-  { key: "chant",    label: "Chant",    emoji: "🎤" },
-  { key: "guitare",  label: "Guitare",  emoji: "🎸" },
-  { key: "basse",    label: "Basse",    emoji: "🎵" },
-  { key: "batterie", label: "Batterie", emoji: "🥁" },
-  { key: "clavier",  label: "Clavier",  emoji: "🎹" },
-  { key: "autres",   label: "Autres",   emoji: "🎶" },
-] as const;
-
-const TRAILING_EMPTY_ROWS = 3;
-
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-}
-function formatTime(d: string) {
-  return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-}
-function getAddress(s: string | null) { if (!s) return null; try { return JSON.parse(s)?.address ?? null; } catch { return null; } }
-
-function Avatar({ profile, size = "md", onClick }: {
-  profile: Profile | null; size?: "sm" | "md";
-  onClick?: (e: React.MouseEvent) => void;
-}) {
-  const cls = size === "sm" ? "h-6 w-6 text-[9px]" : "h-9 w-9 text-xs";
-  const initials = profile?.username ? profile.username.slice(0, 2).toUpperCase() : "?";
-  const interactClass = onClick ? "cursor-pointer hover:ring-2 hover:ring-zik-purple/50 hover:ring-offset-1 transition-all" : "";
-  return profile?.avatar_url ? (
-    <img src={profile.avatar_url} alt={profile.username ?? ""} onClick={onClick}
-      className={`${cls} ${interactClass} rounded-full object-cover shrink-0`} />
-  ) : (
-    <div onClick={onClick}
-      className={`${cls} ${interactClass} rounded-full bg-zik-purple flex items-center justify-center text-white font-semibold shrink-0`}>
-      {initials}
-    </div>
-  );
-}
-
-interface ParticipantPickerProps {
-  instrument: string; slot_index: number; participants: Participant[];
-  slots: JamSlot[]; anchorEl: HTMLElement;
-  onPick: (userId: string, instrument: string, slot_index: number) => void;
-  onClose: () => void;
-}
-
-function ParticipantPicker({ instrument, slot_index, participants, slots, anchorEl, onPick, onClose }: ParticipantPickerProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const alreadyOnThisRow = useMemo(
-  () => new Set(slots.filter((s) => s.slot_index === slot_index && !!s.user_id).map((s) => s.user_id as string)),
-  [slots, slot_index]
-);
-const available = participants.filter((p) => p.status === "confirmed" && !alreadyOnThisRow.has(p.user_id));
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node) && !anchorEl.contains(e.target as Node)) onClose();
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [onClose, anchorEl]);
-
-  const rect = anchorEl.getBoundingClientRect();
-  return createPortal(
-    <div ref={ref}
-      style={{ position: "fixed", top: rect.bottom + 4, left: Math.min(rect.left, window.innerWidth - 200), zIndex: 99999, width: "min(90vw, 200px)" }}
-      className="bg-zik-card rounded-xl shadow-xl border border-zik-border overflow-hidden">
-      <div className="px-3 py-2 border-b border-zik-border">
-        <p className="text-xs font-semibold text-zik-text">Assigner un participant</p>
-        <p className="text-[10px] text-zik-muted mt-0.5">Ligne {slot_index + 1}</p>
-      </div>
-      {available.length === 0 ? (
-        <p className="text-xs text-zik-muted text-center py-4 px-3">Tous les participants sont déjà sur cette ligne.</p>
-      ) : (
-        <div className="max-h-48 overflow-y-auto py-1">
-          {available.map((p) => (
-            <button key={p.user_id} onClick={() => { onPick(p.user_id, instrument, slot_index); onClose(); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-zik-card-hover transition-colors text-left">
-              {p.profile?.avatar_url ? (
-                <img src={p.profile.avatar_url} alt="" className="h-6 w-6 rounded-full object-cover shrink-0" />
-              ) : (
-                <div className="h-6 w-6 rounded-full bg-zik-purple flex items-center justify-center text-white text-[9px] font-semibold shrink-0">
-                  {p.profile?.username?.slice(0, 2).toUpperCase() ?? "?"}
-                </div>
-              )}
-              <span className="text-xs font-medium text-zik-text truncate">{p.profile?.username ?? "Inconnu"}</span>
-              {p.is_organizer && <ShieldCheck className="h-3 w-3 text-zik-indigo shrink-0 ml-auto" />}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>,
-    document.body
-  );
-}
-
-function ProfilePopup({ profile, anchorRef, onClose, onMessage, onViewProfile }: {
-  profile: Profile; anchorRef: React.RefObject<HTMLElement>;
-  onClose: () => void; onMessage: (userId: string) => void; onViewProfile: (userId: string) => void;
-}) {
-  const popupRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (popupRef.current && !popupRef.current.contains(e.target as Node) &&
-        anchorRef.current && !anchorRef.current.contains(e.target as Node)) onClose();
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [onClose, anchorRef]);
-  const rect = anchorRef.current?.getBoundingClientRect();
-  return createPortal(
-    <div ref={popupRef} className="fixed z-99998 bg-zik-card rounded-xl shadow-xl border border-zik-border p-3 min-w-45"
-      style={{ top: (rect?.bottom ?? 0) + 6, left: Math.min(rect?.left ?? 0, window.innerWidth - 200) }}>
-      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-zik-border">
-        <div className="h-8 w-8 rounded-full bg-zik-purple flex items-center justify-center text-white text-xs font-semibold shrink-0">
-          {profile.username?.slice(0, 2).toUpperCase() ?? "?"}
-        </div>
-        <span className="text-sm font-semibold text-zik-text truncate">{profile.username ?? "Inconnu"}</span>
-      </div>
-      <button onClick={() => { onViewProfile(profile.id); onClose(); }}
-        className="w-full flex items-center gap-2 text-xs text-zik-text font-medium hover:bg-zik-card-hover rounded-lg px-2 py-1.5 transition-colors mb-1">
-        <User className="h-3.5 w-3.5 text-zik-muted" /> Voir le profil
-      </button>
-      <button onClick={() => { onMessage(profile.id); onClose(); }}
-        className="w-full flex items-center gap-2 text-xs text-zik-purple font-medium hover:bg-zik-purple/10 rounded-lg px-2 py-1.5 transition-colors">
-        <MessageCircle className="h-3.5 w-3.5" /> Envoyer un message
-      </button>
-    </div>,
-    document.body
-  );
-}
-
-function Modal({ open, onClose, title, children }: {
-  open: boolean; onClose: () => void; title: string; children: React.ReactNode;
-}) {
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [open, onClose]);
-  if (!open) return null;
-  return createPortal(
-    <div style={{ position: 'fixed', inset: 0, zIndex: 99999 }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(14, 11, 22, 0.8)' }} />
-      <div style={{
-        position: 'absolute', top: '50%', left: '50%',
-        transform: 'translate(-50%, -50%)',
-        background: 'var(--zik-card)', borderRadius: '12px', padding: '24px',
-        width: 'min(90vw, 640px)', maxHeight: '90vh', overflowY: 'auto',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.5)', color: 'var(--zik-text)',
-      }}>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-zik-text">{title}</h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-zik-card-hover text-zik-muted hover:text-zik-text transition-colors">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>,
-    document.body
-  );
-}
-
-// ── Composant poster de jam ────────────────────────────────────────────────
-function JamPoster({
-  posterUrl, isOrganizer, onUpload, isUploading,
-}: {
-  posterUrl: string | null;
-  isOrganizer: boolean;
-  onUpload: (file: File) => void;
-  isUploading: boolean;
-}) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  if (!posterUrl && !isOrganizer) return null;
-
-  return (
-    <div className="relative w-full overflow-hidden" style={{ borderRadius: '0 0 16px 16px' }}>
-      {posterUrl ? (
-        <>
-          {/* Image existante */}
-          <div className="relative h-48 w-full">
-            <img
-              src={posterUrl}
-              alt="Affiche de la jam"
-              className="w-full h-full object-cover"
-            />
-            {/* Dégradé bas pour lisibilité du texte header */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background: 'linear-gradient(to bottom, rgba(14,11,22,0.7) 0%, transparent 40%, transparent 60%, rgba(14,11,22,0.9) 100%)',
-              }}
-            />
-            {/* Bouton changer la photo */}
-            {isOrganizer && (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all"
-                style={{
-                  background: 'rgba(14,11,22,0.7)',
-                  backdropFilter: 'blur(8px)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  color: 'rgba(255,255,255,0.75)',
-                }}
-              >
-                {isUploading
-                  ? <><Loader2 size={12} className="animate-spin" /> Envoi...</>
-                  : <><Camera size={12} /> Changer</>
-                }
-              </button>
-            )}
-          </div>
-        </>
-      ) : (
-        /* Zone d'upload vide (organisateur uniquement) */
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isUploading}
-          className="w-full flex flex-col items-center justify-center gap-2 py-6 transition-all"
-          style={{
-            background: 'rgba(192,132,252,0.04)',
-            border: '1px dashed rgba(192,132,252,0.20)',
-            borderRadius: 12,
-            margin: '0 16px 8px',
-            width: 'calc(100% - 32px)',
-          }}
-        >
-          {isUploading ? (
-            <><Loader2 size={20} className="animate-spin" style={{ color: '#C084FC' }} />
-              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.40)' }}>Envoi en cours...</span></>
-          ) : (
-            <><ImagePlus size={20} style={{ color: 'rgba(192,132,252,0.50)' }} />
-              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                Ajouter une affiche
-              </span></>
-          )}
-        </button>
-      )}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) onUpload(file);
-        }}
-      />
-    </div>
-  );
-}
-
-// ===================== PAGE =====================
 export default function JamDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -314,12 +60,15 @@ export default function JamDetailPage() {
   const [isUploadingPoster, setIsUploadingPoster] = useState(false);
 
   const { joinJam, leaveJam } = useJamParticipation();
+  const { markInterested, unmarkInterested, pendingJamId: interestPendingId } = useJamInterest();
+  const [isInterested, setIsInterested] = useState(false);
   const isMainOrganizer = isOwner(jam, currentUserId);
   const isCoOrganizer = participants.some((p) => p.user_id === currentUserId && p.is_organizer && p.status === "confirmed");
   const isOrganizer = isMainOrganizer || isCoOrganizer;
   const isParticipant = participants.some((p) => p.user_id === currentUserId && p.status === "confirmed");
   const isPending = participants.some((p) => p.user_id === currentUserId && p.status === "pending");
   const canInteract = isParticipant || isOrganizer;
+  const joinOpen = jam ? canJoinJam(jam.start_time) : false;
 
   const numRows = useMemo(() => {
     if (slots.length === 0) return TRAILING_EMPTY_ROWS;
@@ -346,6 +95,13 @@ export default function JamDetailPage() {
       user_id: p.user_id, status: p.status ?? "confirmed",
       is_organizer: p.is_organizer ?? false, profile: p.profile ?? null,
     })));
+
+    if (user) {
+      const { data: interestData } = await supabase
+        .from("jam_interested").select("jam_id")
+        .eq("jam_id", id).eq("user_id", user.id).maybeSingle();
+      setIsInterested(!!interestData);
+    }
 
     const { data: convData } = await supabase
       .from("conversations").select("id").eq('entity_id', id).eq('type', 'jam').single();
@@ -461,6 +217,17 @@ export default function JamDetailPage() {
     await fetchAll();
   };
 
+  const handleToggleInterest = async () => {
+    if (!currentUserId) return;
+    if (isInterested) {
+      await unmarkInterested(id, currentUserId);
+      setIsInterested(false);
+    } else {
+      await markInterested(id, currentUserId);
+      setIsInterested(true);
+    }
+  };
+
   const handleAccept = async (userId: string) => {
     await supabase.from("jam_participants").update({ status: "confirmed" }).eq("jam_id", id).eq("user_id", userId);
     if (conversationId) await supabase.from("conversation_participants").upsert({ conversation_id: conversationId, user_id: userId });
@@ -503,9 +270,9 @@ export default function JamDetailPage() {
     if (!currentUserId || !canInteract) return;
     if (getSlot(instrument, slot_index)) return;
     const alreadyOnThisRow = slots.some(
-  (s) => s.user_id === currentUserId && s.slot_index === slot_index
-);
-if (alreadyOnThisRow) return;
+      (s) => s.user_id === currentUserId && s.slot_index === slot_index
+    );
+    if (alreadyOnThisRow) return;
     setClaimingCell({ instrument, slot_index });
     await supabase.from("jam_slots").insert({ jam_id: id, user_id: currentUserId, instrument, slot_index });
     await fetchAll();
@@ -515,8 +282,8 @@ if (alreadyOnThisRow) return;
   const handleAssign = async (userId: string, instrument: string, slot_index: number) => {
     if (!isOrganizer) return;
     const alreadyOnThisRow = slots.some(
-  (s) => s.user_id === userId && s.slot_index === slot_index);
-if (alreadyOnThisRow) return;
+      (s) => s.user_id === userId && s.slot_index === slot_index);
+    if (alreadyOnThisRow) return;
     setClaimingCell({ instrument, slot_index });
     await supabase.from("jam_slots").insert({ jam_id: id, user_id: userId, instrument, slot_index });
     await fetchAll();
@@ -664,7 +431,6 @@ if (alreadyOnThisRow) return;
         className="px-4 pt-4 pb-3"
         style={{
           borderBottom: '1px solid rgba(255,255,255,0.06)',
-          // Si poster présent : on superpose le header par-dessus l'image
           marginTop: jam.poster_url ? -48 : 0,
           position: jam.poster_url ? 'relative' : 'static',
           zIndex: 2,
@@ -722,21 +488,18 @@ if (alreadyOnThisRow) return;
         </div>
 
         <div className="mt-2 text-xs text-zik-muted">
-  {/* Ligne 1 : Date et heure */}
-  <div className="flex items-center gap-1">
-    <Clock className="h-3.5 w-3.5" />
-    {formatDate(jam.start_time)} · {formatTime(jam.start_time)}
-    {jam.end_at && ` → ${formatTime(jam.end_at)}`}
-  </div>
-
-  {/* Ligne 2 : Adresse (sur une nouvelle ligne) */}
-  {address && (
-    <div className="flex items-center gap-1 mt-1">
-      <MapPin className="h-3.5 w-3.5 shrink-0" />
-      <span className="whitespace-normal">{address}</span> {/* ✅ whitespace-normal pour éviter la coupure */}
-    </div>
-  )}
-</div>
+          <div className="flex items-center gap-1">
+            <Clock className="h-3.5 w-3.5" />
+            {formatDate(jam.start_time)} · {formatTime(jam.start_time)}
+            {jam.end_at && ` → ${formatTime(jam.end_at)}`}
+          </div>
+          {address && (
+            <div className="flex items-center gap-1 mt-1">
+              <MapPin className="h-3.5 w-3.5 shrink-0" />
+              <span className="whitespace-normal">{address}</span>
+            </div>
+          )}
+        </div>
 
         {myActiveSlot && (
           <div className="mt-3 flex items-center gap-2 bg-zik-emerald/10 border border-zik-emerald/30 rounded-lg px-3 py-2">
@@ -746,7 +509,13 @@ if (alreadyOnThisRow) return;
         )}
 
         {!isOrganizer && currentUserId && (
-          <div className="mt-3">
+          <div className="mt-3 flex items-center gap-2">
+            <Button size="sm" variant="outline"
+              className="text-xs border-zik-border text-zik-muted hover:bg-zik-red/10 hover:border-zik-red/30 hover:text-zik-red transition-colors"
+              onClick={handleToggleInterest} disabled={interestPendingId === id}>
+              <Heart className={`h-3.5 w-3.5 mr-1 ${isInterested ? "text-zik-red fill-zik-red" : ""}`} />
+              {isInterested ? "Intéressé" : "M'intéresse"}
+            </Button>
             {isParticipant ? (
               <Button size="sm" variant="outline"
                 className="text-xs border-zik-emerald/30 text-zik-emerald hover:bg-zik-red/10 hover:border-zik-red/30 hover:text-zik-red transition-colors"
@@ -755,11 +524,15 @@ if (alreadyOnThisRow) return;
               </Button>
             ) : isPending ? (
               <span className="text-xs text-zik-orange font-medium">⏳ En attente d'approbation</span>
-            ) : (
+            ) : joinOpen ? (
               <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo" onClick={handleJoin}>
                 <UserPlus className="h-3.5 w-3.5 mr-1" />
                 {jam.is_open ? "Rejoindre" : "Demander à rejoindre"}
               </Button>
+            ) : (
+              <span className="text-xs text-zik-muted italic">
+                Inscriptions dès {formatTime(joinOpensAt(jam.start_time).toISOString())}
+              </span>
             )}
           </div>
         )}
@@ -802,299 +575,61 @@ if (alreadyOnThisRow) return;
           </TabsTrigger>
         </TabsList>
 
-        {/* PARTICIPANTS */}
-        <TabsContent value="participants" className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
-          {isOrganizer && pendingParticipants.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold text-zik-orange uppercase tracking-wide mb-2">
-                En attente · {pendingParticipants.length}
-              </p>
-              <div className="space-y-2">
-                {pendingParticipants.map((p) => (
-                  <div key={p.user_id} className="flex items-center justify-between gap-2 p-3 rounded-lg bg-zik-orange/10 border border-zik-orange/20">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <Avatar profile={p.profile} onClick={p.profile && p.user_id !== currentUserId ? (e) => handleAvatarClick(p.profile!, e) : undefined} />
-                      <span className="text-sm font-medium text-zik-text truncate">{p.profile?.username ?? "Inconnu"}</span>
-                    </div>
-                    <div className="flex gap-1.5 shrink-0">
-                      <Button size="sm" className="h-7 text-xs bg-zik-emerald hover:bg-zik-emerald/80 px-2" onClick={() => handleAccept(p.user_id)}>
-                        <Check className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="h-7 text-xs border-zik-red/30 text-zik-red hover:bg-zik-red/10 px-2" onClick={() => handleReject(p.user_id)}>
-                        <X className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          <div>
-            <p className="text-xs font-semibold text-zik-muted uppercase tracking-wide mb-2">
-              Confirmés · {confirmedParticipants.length}
-            </p>
-            {confirmedParticipants.length === 0 ? (
-              <p className="text-sm text-zik-muted text-center py-4">Aucun participant pour l'instant</p>
-            ) : (
-              <div className="space-y-2">
-                {confirmedParticipants.map((p) => {
-                  const isMainOrga = p.user_id === jam.created_by;
-                  const isCoOrga = p.is_organizer && !isMainOrga;
-                  return (
-                    <div key={p.user_id} className={`flex items-center gap-2.5 p-3 rounded-lg border ${
-                      isCoOrga ? "bg-zik-purple/10 border-zik-purple/20" : "bg-zik-card/50 border-zik-border"
-                    }`}>
-                      <Avatar profile={p.profile} onClick={p.profile && p.user_id !== currentUserId ? (e) => handleAvatarClick(p.profile!, e) : undefined} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-zik-text truncate">{p.profile?.username ?? "Inconnu"}</p>
-                        {isMainOrga && <p className="text-xs text-zik-indigo flex items-center gap-1"><Crown className="h-3 w-3" /> Organisateur</p>}
-                        {isCoOrga && <p className="text-xs text-zik-purple flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> Co-organisateur</p>}
-                      </div>
-                      {isMainOrganizer && p.user_id !== currentUserId && (
-                        <div className="flex gap-1.5 shrink-0">
-                          <Button size="sm" variant="outline"
-                            title={isCoOrga ? "Révoquer" : "Nommer co-organisateur"}
-                            className={`h-7 w-7 p-0 shrink-0 transition-colors ${
-                              isCoOrga
-                                ? "border-zik-purple/30 text-zik-purple hover:bg-zik-purple/10"
-                                : "border-zik-border text-zik-muted hover:border-zik-purple/30 hover:text-zik-purple hover:bg-zik-purple/10"
-                            }`}
-                            onClick={() => handleToggleCoOrganizer(p.user_id, p.is_organizer)}>
-                            <ShieldCheck className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button size="sm" variant="ghost"
-                            className="h-7 w-7 p-0 text-zik-muted hover:text-zik-red hover:bg-zik-red/10 shrink-0"
-                            onClick={() => handleReject(p.user_id)}>
-                            <X className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </TabsContent>
+        <ParticipantsTab
+          isOrganizer={isOrganizer}
+          isMainOrganizer={isMainOrganizer}
+          currentUserId={currentUserId}
+          jamCreatedBy={jam.created_by}
+          pendingParticipants={pendingParticipants}
+          confirmedParticipants={confirmedParticipants}
+          onAvatarClick={handleAvatarClick}
+          onAccept={handleAccept}
+          onReject={handleReject}
+          onToggleCoOrganizer={handleToggleCoOrganizer}
+        />
 
-        {/* TABLEAU PASSAGES */}
-        <TabsContent value="slots" className="flex-1 overflow-auto px-2 py-3">
-          {!canInteract && <p className="text-xs text-zik-muted text-center mb-3">Rejoins la jam pour t'inscrire dans un créneau 🎸</p>}
-          {isOrganizer && (
-            <p className="text-xs text-zik-muted text-center mb-3">
-              ▶️ pour marquer un passage · <span className="text-zik-purple">clic sur + pour assigner un participant</span>
-            </p>
-          )}
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-xs" style={{ minWidth: 600 }}>
-              <thead>
-                <tr>
-                  {isOrganizer && <th className="w-8 py-2 border-b border-zik-border" />}
-                  <th className="w-8 py-2 text-zik-muted font-normal text-center border-b border-zik-border">#</th>
-                  {INSTRUMENTS.map((inst) => (
-                    <th key={inst.key} className="py-2 px-1 text-center font-semibold text-zik-text border-b border-zik-border">
-                      <span className="block text-base leading-none mb-0.5">{inst.emoji}</span>
-                      {inst.label}
-                    </th>
-                  ))}
-                  <th className="py-2 px-2 text-center font-semibold text-zik-text border-b border-zik-border min-w-25">
-                    <span className="block text-base leading-none mb-0.5">🎵</span>
-                    Morceau
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.from({ length: numRows }, (_, rowIdx) => {
-                  const maxOccupiedIndex = slots.length > 0 ? Math.max(...slots.map((s) => s.slot_index)) : -1;
-                  const isTrailing = rowIdx > maxOccupiedIndex;
-                  const isCurrentSlot = currentSlotIndex === rowIdx;
-                  const rowSlots = slots.filter((s) => s.slot_index === rowIdx && !!s.user_id);
-                  const songSlot = rowSlots.find((s) => s.user_id === currentUserId) ?? rowSlots[0] ?? null;
+        <SlotsTab
+          canInteract={canInteract}
+          isOrganizer={isOrganizer}
+          currentUserId={currentUserId}
+          hasDrums={jam.has_drums}
+          hasKeyboard={jam.has_keyboard}
+          slots={slots}
+          numRows={numRows}
+          currentSlotIndex={currentSlotIndex}
+          draggedSlot={draggedSlot}
+          dragOverCell={dragOverCell}
+          claimingCell={claimingCell}
+          pickerCell={pickerCell}
+          editingSongSlotId={editingSongSlotId}
+          songInputValue={songInputValue}
+          onSongInputChange={setSongInputValue}
+          onSetCurrentSlot={handleSetCurrentSlot}
+          onEmptyCellClick={handleEmptyCellClick}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          onDragEnd={handleDragEnd}
+          onDragLeave={() => setDragOverCell(null)}
+          onRelease={handleRelease}
+          onAvatarClick={handleAvatarClick}
+          onStartEditSong={handleStartEditSong}
+          onSaveSong={handleSaveSong}
+          onCancelEditSong={() => { setEditingSongSlotId(null); setSongInputValue(""); }}
+        />
 
-                  return (
-                    <tr key={rowIdx} className={`transition-colors duration-150 ${
-                      isCurrentSlot
-                        ? "bg-zik-emerald/10 border-l-4 border-l-zik-emerald"
-                        : rowIdx % 2 === 0 ? "bg-zik-card/30" : "bg-zik-card/10"
-                    }`}>
-                      {isOrganizer && (
-                        <td className="px-1 py-1 text-center">
-                          <button onClick={() => handleSetCurrentSlot(rowIdx)}
-                            title={isCurrentSlot ? "Désactiver ce passage" : "Marquer comme en cours"}
-                            className={`h-6 w-6 flex items-center justify-center rounded-full transition-all duration-150 mx-auto ${
-                              isCurrentSlot
-                                ? "bg-zik-emerald text-white shadow-md shadow-zik-emerald/20 hover:bg-zik-red"
-                                : "text-zik-muted hover:text-zik-emerald hover:bg-zik-emerald/10"
-                            }`}>
-                            {isCurrentSlot ? <Radio className="h-3.5 w-3.5 animate-pulse" /> : <Play className="h-3.5 w-3.5" />}
-                          </button>
-                        </td>
-                      )}
-                      <td className={`text-center font-medium py-1.5 border-r border-zik-border ${
-                        isCurrentSlot ? "text-zik-emerald font-bold" : isTrailing ? "text-zik-muted/50" : "text-zik-muted"
-                      }`}>
-                        {isCurrentSlot && <span className="mr-0.5">▶</span>}{rowIdx + 1}
-                      </td>
-                      {INSTRUMENTS.map((inst) => {
-                        const slot = getSlot(inst.key, rowIdx);
-                        const isMe = slot?.user_id === currentUserId;
-                        const isEmpty = !slot;
-                        const isDragOver = dragOverCell?.instrument === inst.key && dragOverCell?.slot_index === rowIdx;
-                        const isDragging = draggedSlot?.instrument === inst.key && draggedSlot?.slot_index === rowIdx;
-                        const isClaiming = claimingCell?.instrument === inst.key && claimingCell?.slot_index === rowIdx;
-                        const isPickerOpen = pickerCell?.instrument === inst.key && pickerCell?.slot_index === rowIdx;
-
-                        return (
-                          <td key={inst.key}
-                            className={`px-1 py-1 border border-zik-border transition-all
-                              ${isDragOver && !isDragging ? "bg-zik-purple/10 border-zik-purple/30" : ""}
-                              ${isEmpty && canInteract ? "cursor-pointer hover:bg-zik-purple/5" : ""}
-                              ${isDragging ? "opacity-40" : ""}
-                              ${isPickerOpen ? "bg-zik-purple/10 border-zik-purple/30" : ""}
-                            `}
-                            onClick={(e) => isEmpty && canInteract ? handleEmptyCellClick(inst.key, rowIdx, e) : undefined}
-                            onDragOver={(e) => handleDragOver(e, inst.key, rowIdx)}
-                            onDrop={() => handleDrop(inst.key, rowIdx)}
-                            onDragLeave={() => setDragOverCell(null)}
-                          >
-                            {slot ? (
-                              <div draggable={isMe || isOrganizer}
-                                onDragStart={() => handleDragStart(slot)} onDragEnd={handleDragEnd}
-                                className={`flex items-center gap-1 px-1.5 py-1 rounded-md text-[11px] font-medium
-                                  ${isMe && isCurrentSlot
-                                    ? "bg-zik-emerald/10 text-zik-emerald border border-zik-emerald/30 cursor-grab active:cursor-grabbing"
-                                    : isMe
-                                    ? "bg-zik-purple/10 text-zik-purple border border-zik-purple/30 cursor-grab active:cursor-grabbing"
-                                    : "bg-zik-card/50 text-zik-text border border-zik-border"
-                                  }
-                                  ${isOrganizer && !isMe ? "cursor-grab active:cursor-grabbing" : ""}
-                                `}>
-                                <Avatar profile={slot.profile ?? null} size="sm"
-                                  onClick={slot.profile && slot.user_id !== currentUserId
-                                    ? (e) => handleAvatarClick(slot.profile!, e) : undefined} />
-                                <span className="truncate flex-1 max-w-15">{slot.profile?.username ?? "?"}</span>
-                                {(isMe || isOrganizer) && (
-                                  <button onClick={(e) => { e.stopPropagation(); handleRelease(slot.id); }}
-                                    className="text-zik-muted hover:text-zik-red transition-colors shrink-0 ml-0.5">
-                                    <X className="h-3 w-3" />
-                                  </button>
-                                )}
-                              </div>
-                            ) : (
-                              <div className={`h-7 rounded-md border border-dashed text-center flex items-center justify-center transition-all ${
-                                isClaiming || isPickerOpen
-                                  ? "border-zik-purple/50 bg-zik-purple/10"
-                                  : canInteract
-                                    ? isTrailing
-                                      ? "border-zik-border/30 text-zik-muted/50 hover:border-zik-purple/30 hover:text-zik-purple/70"
-                                      : "border-zik-border/50 text-zik-muted hover:border-zik-purple/50 hover:text-zik-purple"
-                                    : "border-zik-border/30 text-zik-muted/50"
-                              }`}>
-                                {isClaiming
-                                  ? <span className="text-[10px] text-zik-purple animate-pulse font-medium">...</span>
-                                  : canInteract
-                                    ? isOrganizer
-                                      ? <UserPlus className={`h-3.5 w-3.5 ${isPickerOpen ? "text-zik-purple" : "text-zik-muted"}`} />
-                                      : <span className="text-lg leading-none text-zik-muted">+</span>
-                                    : null
-                                }
-                              </div>
-                            )}
-                          </td>
-                        );
-                      })}
-                      <td className="px-1 py-1 border border-zik-border">
-                        {songSlot ? (
-                          editingSongSlotId === songSlot.id ? (
-                            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                              <input autoFocus value={songInputValue}
-                                onChange={(e) => setSongInputValue(e.target.value)}
-                                onBlur={() => handleSaveSong(songSlot.id)}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") handleSaveSong(songSlot.id);
-                                  if (e.key === "Escape") { setEditingSongSlotId(null); setSongInputValue(""); }
-                                }}
-                                placeholder="Ex: Wonderwall"
-                                className="flex-1 text-[11px] border border-zik-purple/30 rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-zik-purple/50 min-w-0 bg-zik-card text-zik-text placeholder:text-zik-muted"
-                              />
-                            </div>
-                          ) : (
-                            <div onClick={(e) => (songSlot.user_id === currentUserId || isOrganizer) ? handleStartEditSong(songSlot, e) : undefined}
-                              className={`flex items-center gap-1 px-1.5 py-1 rounded text-[11px] min-h-7 group
-                                ${(songSlot.user_id === currentUserId || isOrganizer) ? "cursor-pointer hover:bg-zik-card-hover" : ""}`}>
-                              {songSlot.song ? (
-                                <><Music className="h-3 w-3 text-zik-purple shrink-0" />
-                                  <span className="truncate text-zik-text max-w-22.5">{songSlot.song}</span></>
-                              ) : (
-                                (songSlot.user_id === currentUserId || isOrganizer) &&
-                                <span className="text-zik-muted group-hover:text-zik-purple transition-colors">+ Morceau</span>
-                              )}
-                            </div>
-                          )
-                        ) : <div className="h-7" />}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </TabsContent>
-
-        {/* CHAT */}
-        <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden px-0 py-0">
-          {!conversationId ? (
-            <div className="flex-1 flex items-center justify-center text-sm text-zik-muted p-4">
-              Le chat sera disponible une fois la conversation créée.
-            </div>
-          ) : !canInteract ? (
-            <div className="flex-1 flex items-center justify-center text-sm text-zik-muted p-4 text-center">
-              Rejoins la jam pour accéder au chat 🎸
-            </div>
-          ) : (
-            <>
-              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-                {messages.length === 0 ? (
-                  <p className="text-sm text-zik-muted text-center py-8">Pas encore de messages — soyez les premiers ! 🎵</p>
-                ) : messages.map((msg) => {
-                  const isMe = msg.user_id === currentUserId;
-                  return (
-                    <div key={msg.id} className={`flex gap-2.5 ${isMe ? "flex-row-reverse" : ""}`}>
-                      {!isMe && <Avatar profile={msg.profile} size="sm"
-                        onClick={msg.profile ? (e) => handleAvatarClick(msg.profile!, e) : undefined} />}
-                      <div className={`max-w-[75%] ${isMe ? "items-end" : "items-start"} flex flex-col gap-0.5`}>
-                        {!isMe && (
-                          <span className="text-xs text-zik-muted ml-0.5">{msg.profile?.username ?? "Inconnu"}</span>
-                        )}
-                        <div className={`px-3 py-2 rounded-2xl text-sm ${
-                          isMe
-                            ? "bg-zik-purple text-white rounded-tr-sm"
-                            : "bg-zik-card/80 text-zik-text rounded-tl-sm border border-zik-border"
-                        }`}>
-                          {msg.content}
-                        </div>
-                        <span className="text-[10px] text-zik-muted mx-1">
-                          {new Date(msg.created_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-                <div ref={messagesEndRef} />
-              </div>
-              <form onSubmit={handleSendMessage} className="border-t border-zik-border px-4 py-3 flex gap-2 items-center shrink-0">
-                <Input value={messageInput} onChange={(e) => setMessageInput(e.target.value)}
-                  placeholder="Envoyer un message..."
-                  className="flex-1 text-sm bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
-                  disabled={isSending} />
-                <Button type="submit" size="sm" className="bg-zik-purple hover:bg-zik-indigo shrink-0 disabled:opacity-50"
-                  disabled={!messageInput.trim() || isSending}>
-                  <Send className="h-4 w-4" />
-                </Button>
-              </form>
-            </>
-          )}
-        </TabsContent>
+        <ChatTab
+          conversationId={conversationId}
+          canInteract={canInteract}
+          messages={messages}
+          currentUserId={currentUserId}
+          messageInput={messageInput}
+          onMessageInputChange={setMessageInput}
+          isSending={isSending}
+          onSendMessage={handleSendMessage}
+          onAvatarClick={handleAvatarClick}
+          messagesEndRef={messagesEndRef}
+        />
       </Tabs>
 
       <Modal open={isEditOpen} onClose={() => setIsEditOpen(false)} title="Modifier la jam">

@@ -10,7 +10,9 @@ import { Button } from "@/components/ui/button";
 import type { EventMarker } from "@/components/EventMap";
 import type { JamSession, Concert, ParticipantWithProfile } from "./page";
 import { useJamParticipation } from "@/hooks/useJamParticipation";
+import { useJamInterest } from "@/hooks/useJamInterest";
 import { isOwner } from "@/lib/permissions";
+import { canJoinJam, joinOpensAt } from "@/lib/jamJoinWindow";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
@@ -81,6 +83,7 @@ interface HomeFeedProps {
   initialConcerts: Concert[];
   initialParticipantsMap: Record<string, ParticipantWithProfile[]>;
   initialMyInterests: string[];
+  initialMyJamInterests: string[];
 }
 
 export default function HomeFeed({
@@ -89,6 +92,7 @@ export default function HomeFeed({
   initialConcerts,
   initialParticipantsMap,
   initialMyInterests,
+  initialMyJamInterests,
 }: HomeFeedProps) {
   const supabase = createClient();
   const router = useRouter();
@@ -98,8 +102,10 @@ export default function HomeFeed({
   const [concerts, setConcerts] = useState<Concert[]>(initialConcerts);
   const [participantsMap, setParticipantsMap] = useState(initialParticipantsMap);
   const [myInterests, setMyInterests] = useState<Set<string>>(new Set(initialMyInterests));
+  const [myJamInterests, setMyJamInterests] = useState<Set<string>>(new Set(initialMyJamInterests));
   const [dayFilter, setDayFilter] = useState<DayFilter>("today");
   const { joinJam, leaveJam, pendingJamId: joiningId } = useJamParticipation();
+  const { markInterested, unmarkInterested, pendingJamId: interestPendingId } = useJamInterest();
 
   const { today, tomorrow, dayAfterTomorrow } = useMemo(() => dayBounds(), []);
 
@@ -134,6 +140,13 @@ export default function HomeFeed({
         map[p.jam_id].push({ user_id: p.user_id, profile: p.profile ?? null });
       }
       setParticipantsMap(map);
+
+      if (user) {
+        const { data: jamIntData } = await supabase
+          .from("jam_interested").select("jam_id")
+          .eq("user_id", user.id).in("jam_id", ids);
+        setMyJamInterests(new Set((jamIntData ?? []).map((r) => r.jam_id)));
+      }
     }
 
     const { data: concertsData } = await supabase
@@ -166,6 +179,18 @@ export default function HomeFeed({
     await leaveJam(jamId, currentUserId);
     await refetch();
   }, [currentUserId, leaveJam, refetch]);
+
+  const handleToggleJamInterest = useCallback(async (jamId: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (!currentUserId) { router.push("/login"); return; }
+    if (myJamInterests.has(jamId)) {
+      await unmarkInterested(jamId, currentUserId);
+      setMyJamInterests((prev) => { const s = new Set(prev); s.delete(jamId); return s; });
+    } else {
+      await markInterested(jamId, currentUserId);
+      setMyJamInterests((prev) => new Set([...prev, jamId]));
+    }
+  }, [currentUserId, myJamInterests, markInterested, unmarkInterested, router]);
 
   const filteredJams = useMemo(() =>
     jams.filter((j) => {
@@ -316,6 +341,9 @@ export default function HomeFeed({
             const isParticipant = participants.some((p) => p.user_id === currentUserId);
             const isCreator = isOwner(jam, currentUserId);
             const isJoining = joiningId === jam.id;
+            const isInterested = myJamInterests.has(jam.id);
+            const isInterestPending = interestPendingId === jam.id;
+            const joinOpen = canJoinJam(jam.start_time);
 
             return (
               <div key={jam.id}
@@ -367,29 +395,45 @@ export default function HomeFeed({
 
                   <div className="flex items-center justify-between">
                     <ParticipantAvatars participants={participants} />
-                    {currentUserId && !isCreator ? (
-                      isParticipant ? (
-                        <Button size="sm" variant="outline"
-                          className="text-xs border-zik-emerald/30 text-zik-emerald hover:bg-zik-red/10 hover:border-zik-red/30 hover:text-zik-red"
-                          onClick={(e) => handleLeaveJam(jam.id, e)} disabled={isJoining}>
-                          <Check className="h-3.5 w-3.5 mr-1" />
-                          {isJoining ? "..." : "Inscrit"}
-                        </Button>
+                    <div className="flex items-center gap-1.5">
+                      {currentUserId && !isCreator && (
+                        <button
+                          onClick={(e) => handleToggleJamInterest(jam.id, e)}
+                          disabled={isInterestPending}
+                          title={isInterested ? "Ne plus être intéressé" : "Je suis intéressé"}
+                          className="h-7 w-7 flex items-center justify-center rounded-full text-zik-muted hover:text-zik-red hover:bg-zik-red/10 transition-colors disabled:opacity-50"
+                        >
+                          <Heart className={`h-4 w-4 ${isInterested ? "text-zik-red fill-zik-red" : ""}`} />
+                        </button>
+                      )}
+                      {currentUserId && !isCreator ? (
+                        isParticipant ? (
+                          <Button size="sm" variant="outline"
+                            className="text-xs border-zik-emerald/30 text-zik-emerald hover:bg-zik-red/10 hover:border-zik-red/30 hover:text-zik-red"
+                            onClick={(e) => handleLeaveJam(jam.id, e)} disabled={isJoining}>
+                            <Check className="h-3.5 w-3.5 mr-1" />
+                            {isJoining ? "..." : "Inscrit"}
+                          </Button>
+                        ) : joinOpen ? (
+                          <Button size="sm" className="text-xs bg-zik-emerald/80 hover:bg-zik-emerald text-white"
+                            onClick={(e) => handleJoinJam(jam.id, e)} disabled={isJoining}>
+                            <UserPlus className="h-3.5 w-3.5 mr-1" />
+                            {isJoining ? "..." : jam.is_open ? "Rejoindre" : "Demander"}
+                          </Button>
+                        ) : (
+                          <span className="text-[10px] text-zik-muted italic">
+                            Inscriptions dès {formatTime(joinOpensAt(jam.start_time).toISOString())}
+                          </span>
+                        )
+                      ) : isCreator ? (
+                        <span className="text-xs text-zik-muted italic">Organisateur</span>
                       ) : (
                         <Button size="sm" className="text-xs bg-zik-emerald/80 hover:bg-zik-emerald text-white"
-                          onClick={(e) => handleJoinJam(jam.id, e)} disabled={isJoining}>
-                          <UserPlus className="h-3.5 w-3.5 mr-1" />
-                          {isJoining ? "..." : jam.is_open ? "Rejoindre" : "Demander"}
+                          onClick={(e) => { e.stopPropagation(); router.push('/login'); }}>
+                          <UserPlus className="h-3.5 w-3.5 mr-1" /> Rejoindre
                         </Button>
-                      )
-                    ) : isCreator ? (
-                      <span className="text-xs text-zik-muted italic">Organisateur</span>
-                    ) : (
-                      <Button size="sm" className="text-xs bg-zik-emerald/80 hover:bg-zik-emerald text-white"
-                        onClick={(e) => { e.stopPropagation(); router.push('/login'); }}>
-                        <UserPlus className="h-3.5 w-3.5 mr-1" /> Rejoindre
-                      </Button>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

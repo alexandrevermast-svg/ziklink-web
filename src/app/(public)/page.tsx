@@ -58,6 +58,15 @@ export default async function HomePage() {
     myInterests = (intData ?? []).map((r) => r.concert_id);
   }
 
+  let myJamInterests: string[] = [];
+  if (user && jams.length > 0) {
+    const ids = jams.map((j) => j.id);
+    const { data: jamIntData } = await supabase
+      .from("jam_interested").select("jam_id")
+      .eq("user_id", user.id).in("jam_id", ids);
+    myJamInterests = (jamIntData ?? []).map((r) => r.jam_id);
+  }
+
   return (
     <HomeFeed
       currentUserId={user?.id ?? null}
@@ -65,6 +74,7 @@ export default async function HomePage() {
       initialConcerts={concerts}
       initialParticipantsMap={participantsMap}
       initialMyInterests={myInterests}
+      initialMyJamInterests={myJamInterests}
     />
   );
 }

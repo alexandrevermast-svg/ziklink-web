@@ -262,6 +262,42 @@ export type Database = {
         }
         Relationships: []
       }
+      jam_interested: {
+        Row: {
+          created_at: string
+          id: string
+          jam_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          jam_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          jam_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jam_interested_jam_id_fkey"
+            columns: ["jam_id"]
+            isOneToOne: false
+            referencedRelation: "jam_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jam_interested_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jam_messages: {
         Row: {
           content: string
@@ -352,6 +388,7 @@ export type Database = {
           end_at: string | null
           group_id: string | null
           has_drums: boolean
+          has_keyboard: boolean
           id: string
           is_open: boolean
           location: string | null
@@ -367,6 +404,7 @@ export type Database = {
           end_at?: string | null
           group_id?: string | null
           has_drums?: boolean
+          has_keyboard?: boolean
           id?: string
           is_open?: boolean
           location?: string | null
@@ -382,6 +420,7 @@ export type Database = {
           end_at?: string | null
           group_id?: string | null
           has_drums?: boolean
+          has_keyboard?: boolean
           id?: string
           is_open?: boolean
           location?: string | null
@@ -810,6 +849,7 @@ export type Database = {
           p_description: string
           p_group_id: string
           p_has_drums?: boolean
+          p_has_keyboard?: boolean
           p_is_open: boolean
           p_location: string
           p_occurrences: Json

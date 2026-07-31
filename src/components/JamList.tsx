@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useMemo, useRef } from "react"
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Lock, Unlock, MapPin, Clock, UserPlus, Check, ChevronDown, Drum, LocateFixed } from "lucide-react";
+import { Lock, Unlock, MapPin, Clock, UserPlus, Check, ChevronDown, Drum, Piano, LocateFixed, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -12,7 +12,9 @@ import type { EventMarker } from "@/components/EventMap";
 import type { JamSession, Profile as ProfileRow } from "@/types";
 import { haversineDistanceKm, formatDistanceKm, type LatLng } from "@/lib/geo";
 import { useJamParticipation } from "@/hooks/useJamParticipation";
+import { useJamInterest } from "@/hooks/useJamInterest";
 import { isOwner } from "@/lib/permissions";
+import { canJoinJam, joinOpensAt } from "@/lib/jamJoinWindow";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
@@ -197,10 +199,13 @@ export default function JamList() {
   const [participantsMap, setParticipantsMap] = useState<Record<string, ParticipantWithProfile[]>>({});
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { joinJam, leaveJam, pendingJamId: joiningJamId } = useJamParticipation();
+  const { markInterested, unmarkInterested, pendingJamId: interestPendingId } = useJamInterest();
+  const [myJamInterests, setMyJamInterests] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(startOfDay(new Date()));
   const [drumsOnly, setDrumsOnly] = useState(false);
+  const [keyboardOnly, setKeyboardOnly] = useState(false);
   const [nearMe, setNearMe] = useState(false);
   const [userPosition, setUserPosition] = useState<LatLng | null>(null);
   const [geoLoading, setGeoLoading] = useState(false);
@@ -236,7 +241,15 @@ const { data: jamsData, error: jamsError } = await supabase
       if (jamsError) { setError("Impossible de charger les jams"); setIsLoading(false); return; }
       setJams(jamsData ?? []);
       const jamIds = (jamsData ?? []).map((j) => j.id);
-      if (jamIds.length > 0) await fetchParticipants(jamIds);
+      if (jamIds.length > 0) {
+        await fetchParticipants(jamIds);
+        if (user) {
+          const { data: jamIntData } = await supabase
+            .from("jam_interested").select("jam_id")
+            .eq("user_id", user.id).in("jam_id", jamIds);
+          setMyJamInterests(new Set((jamIntData ?? []).map((r) => r.jam_id)));
+        }
+      }
       setIsLoading(false);
     };
     fetchAll();
@@ -255,6 +268,18 @@ const { data: jamsData, error: jamsError } = await supabase
     await leaveJam(jamId, currentUserId);
     setParticipantsMap((prev) => ({ ...prev, [jamId]: (prev[jamId] ?? []).filter((p) => p.user_id !== currentUserId) }));
   }, [currentUserId, leaveJam]);
+
+  const handleToggleInterest = useCallback(async (jamId: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (!currentUserId) return;
+    if (myJamInterests.has(jamId)) {
+      await unmarkInterested(jamId, currentUserId);
+      setMyJamInterests((prev) => { const s = new Set(prev); s.delete(jamId); return s; });
+    } else {
+      await markInterested(jamId, currentUserId);
+      setMyJamInterests((prev) => new Set([...prev, jamId]));
+    }
+  }, [currentUserId, myJamInterests, markInterested, unmarkInterested]);
 
   const handleToggleNearMe = useCallback((checked: boolean) => {
     setNearMe(checked);
@@ -286,6 +311,7 @@ const { data: jamsData, error: jamsError } = await supabase
     const filtered = jams.filter((j) => {
       if (selectedDate && !isSameDay(new Date(j.start_time), selectedDate)) return false;
       if (drumsOnly && !j.has_drums) return false;
+      if (keyboardOnly && !j.has_keyboard) return false;
       return true;
     });
     if (!nearMe || !userPosition) return filtered;
@@ -301,7 +327,7 @@ const { data: jamsData, error: jamsError } = await supabase
       return a.distance - b.distance;
     });
     return withDistance.map((w) => w.jam);
-  }, [jams, selectedDate, drumsOnly, nearMe, userPosition, radiusKm]);
+  }, [jams, selectedDate, drumsOnly, keyboardOnly, nearMe, userPosition, radiusKm]);
 
   const distanceById = useMemo(() => {
     if (!nearMe || !userPosition) return {} as Record<string, number>;
@@ -338,12 +364,13 @@ const { data: jamsData, error: jamsError } = await supabase
   const emptyMessage = useMemo(() => {
     if (nearMe && radiusKm !== null) return `Aucune jam à moins de ${radiusKm} km 🎸 — essaie un rayon plus large`;
     if (drumsOnly) return "Aucune jam avec batterie ne correspond 🥁 — essaie de désactiver ce filtre";
+    if (keyboardOnly) return "Aucune jam avec clavier ne correspond 🎹 — essaie de désactiver ce filtre";
     if (!selectedDate) return "Aucune jam à venir 🎸";
     const diff = Math.round((startOfDay(selectedDate).getTime() - startOfDay(new Date()).getTime()) / 86400000);
     if (diff === 0) return "Pas de jam aujourd'hui 🎸 — clique sur un autre jour ou crée la tienne !";
     if (diff === 1) return "Pas de jam demain 🎸";
     return "Aucune jam ce jour-là 🎸";
-  }, [selectedDate, nearMe, radiusKm, drumsOnly]);
+  }, [selectedDate, nearMe, radiusKm, drumsOnly, keyboardOnly]);
 
   // ✅ Loading skeleton avec ton thème
   if (isLoading) return (
@@ -365,9 +392,9 @@ const { data: jamsData, error: jamsError } = await supabase
       />
       <DayFilter selectedDate={selectedDate} onChange={setSelectedDate} availableDates={availableDates} />
 
-      {/* Filtres batterie + proximité */}
-      <div className="flex gap-2">
-        <div className="flex-1 flex items-center justify-between gap-2 rounded-lg border border-zik-border p-3 bg-zik-card/50 min-w-0">
+      {/* Filtres batterie + clavier + proximité */}
+      <div className="flex flex-wrap gap-2">
+        <div className="flex-1 min-w-35 flex items-center justify-between gap-2 rounded-lg border border-zik-border p-3 bg-zik-card/50">
           <span className="flex items-center gap-1.5 text-sm font-medium text-zik-text truncate">
             <Drum className="h-4 w-4 text-zik-muted shrink-0" />
             <span className="truncate">Avec batterie</span>
@@ -379,11 +406,23 @@ const { data: jamsData, error: jamsError } = await supabase
           />
         </div>
 
+        <div className="flex-1 min-w-35 flex items-center justify-between gap-2 rounded-lg border border-zik-border p-3 bg-zik-card/50">
+          <span className="flex items-center gap-1.5 text-sm font-medium text-zik-text truncate">
+            <Piano className="h-4 w-4 text-zik-muted shrink-0" />
+            <span className="truncate">Avec clavier</span>
+          </span>
+          <Switch
+            checked={keyboardOnly}
+            onCheckedChange={setKeyboardOnly}
+            className="shrink-0 data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+          />
+        </div>
+
         <Popover>
           <PopoverTrigger asChild>
             <button
               onClick={() => { if (!nearMe) handleToggleNearMe(true); }}
-              className={`flex-1 flex items-center justify-between gap-2 rounded-lg border p-3 min-w-0 text-left transition-colors ${
+              className={`flex-1 min-w-35 flex items-center justify-between gap-2 rounded-lg border p-3 text-left transition-colors ${
                 nearMe ? "border-zik-purple/40 bg-zik-purple/10" : "border-zik-border bg-zik-card/50 hover:border-zik-purple/30"
               }`}
             >
@@ -449,6 +488,9 @@ const { data: jamsData, error: jamsError } = await supabase
             const isParticipant = participants.some((p) => p.user_id === currentUserId);
             const isCreator = isOwner(jam, currentUserId);
             const isJoining = joiningJamId === jam.id;
+            const isInterested = myJamInterests.has(jam.id);
+            const isInterestPending = interestPendingId === jam.id;
+            const joinOpen = canJoinJam(jam.start_time);
 
             return (
               <div key={jam.id}
@@ -474,57 +516,81 @@ const { data: jamsData, error: jamsError } = await supabase
                 </div>
 
                 {/* ✅ Infos date/lieu adaptées */}
-                <div className="flex flex-wrap gap-3 mt-3 text-xs text-zik-muted">
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5" />
-                    {formatDate(jam.start_time)} · {formatTime(jam.start_time)}
-                    {jam.end_at && ` → ${formatTime(jam.end_at)}`}
-                  </span>
-                  {address && (
-                    <span className="flex items-center gap-1 truncate max-w-xs">
-                      <MapPin className="h-3.5 w-3.5 shrink-0" />{address}
+                <div className="mt-3 space-y-1.5 text-xs text-zik-muted">
+                  <div className="flex flex-wrap gap-3">
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      {formatDate(jam.start_time)} · {formatTime(jam.start_time)}
+                      {jam.end_at && ` → ${formatTime(jam.end_at)}`}
                     </span>
-                  )}
-                  {distanceById[jam.id] !== undefined && (
-                    <span className="flex items-center gap-1 text-zik-purple font-medium">
-                      <LocateFixed className="h-3.5 w-3.5" />
-                      {formatDistanceKm(distanceById[jam.id])}
+                    {address && (
+                      <span className="flex items-center gap-1 truncate max-w-xs">
+                        <MapPin className="h-3.5 w-3.5 shrink-0" />{address}
+                      </span>
+                    )}
+                    {distanceById[jam.id] !== undefined && (
+                      <span className="flex items-center gap-1 text-zik-purple font-medium">
+                        <LocateFixed className="h-3.5 w-3.5" />
+                        {formatDistanceKm(distanceById[jam.id])}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <span className="flex items-center gap-1">
+                      <Drum className="h-3.5 w-3.5" />
+                      {jam.has_drums ? "Avec batterie" : "Sans batterie"}
                     </span>
-                  )}
-                  <span className="flex items-center gap-1">
-                    <Drum className="h-3.5 w-3.5" />
-                    {jam.has_drums ? "Avec batterie" : "Sans batterie"}
-                  </span>
+                    <span className="flex items-center gap-1">
+                      <Piano className="h-3.5 w-3.5" />
+                      {jam.has_keyboard ? "Avec clavier" : "Sans clavier"}
+                    </span>
+                  </div>
                 </div>
 
                 {/* ✅ Participants et boutons adaptés */}
                 <div className="flex items-center justify-between mt-3">
                   <ParticipantAvatars participants={participants} />
-                  {!isCreator && currentUserId && (
-                    isParticipant ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-xs border-zik-emerald/30 text-zik-emerald hover:bg-zik-red/10 hover:border-zik-red/30 hover:text-zik-red transition-colors"
-                        onClick={(e) => handleLeave(jam.id, e)}
-                        disabled={isJoining}
+                  <div className="flex items-center gap-1.5">
+                    {!isCreator && currentUserId && (
+                      <button
+                        onClick={(e) => handleToggleInterest(jam.id, e)}
+                        disabled={isInterestPending}
+                        title={isInterested ? "Ne plus être intéressé" : "Je suis intéressé"}
+                        className="h-7 w-7 flex items-center justify-center rounded-full text-zik-muted hover:text-zik-red hover:bg-zik-red/10 transition-colors disabled:opacity-50"
                       >
-                        <Check className="h-3.5 w-3.5 mr-1" />
-                        {isJoining ? "..." : "Inscrit"}
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        className="text-xs bg-zik-purple hover:bg-zik-indigo"
-                        onClick={(e) => handleJoin(jam.id, e)}
-                        disabled={isJoining}
-                      >
-                        <UserPlus className="h-3.5 w-3.5 mr-1" />
-                        {isJoining ? "..." : "Rejoindre"}
-                      </Button>
-                    )
-                  )}
-                  {isCreator && <span className="text-xs text-zik-muted italic">Organisateur</span>}
+                        <Heart className={`h-4 w-4 ${isInterested ? "text-zik-red fill-zik-red" : ""}`} />
+                      </button>
+                    )}
+                    {!isCreator && currentUserId && (
+                      isParticipant ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs border-zik-emerald/30 text-zik-emerald hover:bg-zik-red/10 hover:border-zik-red/30 hover:text-zik-red transition-colors"
+                          onClick={(e) => handleLeave(jam.id, e)}
+                          disabled={isJoining}
+                        >
+                          <Check className="h-3.5 w-3.5 mr-1" />
+                          {isJoining ? "..." : "Inscrit"}
+                        </Button>
+                      ) : joinOpen ? (
+                        <Button
+                          size="sm"
+                          className="text-xs bg-zik-purple hover:bg-zik-indigo"
+                          onClick={(e) => handleJoin(jam.id, e)}
+                          disabled={isJoining}
+                        >
+                          <UserPlus className="h-3.5 w-3.5 mr-1" />
+                          {isJoining ? "..." : "Rejoindre"}
+                        </Button>
+                      ) : (
+                        <span className="text-[10px] text-zik-muted italic">
+                          Inscriptions dès {formatTime(joinOpensAt(jam.start_time).toISOString())}
+                        </span>
+                      )
+                    )}
+                    {isCreator && <span className="text-xs text-zik-muted italic">Organisateur</span>}
+                  </div>
                 </div>
               </div>
             );

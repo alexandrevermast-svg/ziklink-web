@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Lock, Unlock, CalendarDays, MapPin, Drum } from "lucide-react";
+import { Lock, Unlock, CalendarDays, MapPin, Drum, Piano } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { fr } from "date-fns/locale";
 import { format } from "date-fns";
@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import TimePicker from "@/components/ui/TimePicker";
 import AddressSearchInput from "@/components/AddressSearchInput";
 import moment from 'moment-timezone';
+import { toUtcDateTime, resolveEndDateTime } from '@/lib/eventDateTime';
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
@@ -25,7 +26,7 @@ const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap")
 interface JamEditFormProps {
   jam: {
     id: string; title: string; description: string; start_time: string;
-    end_at: string | null; location: string | null; is_open: boolean; has_drums: boolean;
+    end_at: string | null; location: string | null; is_open: boolean; has_drums: boolean; has_keyboard: boolean;
   };
   onSuccess?: () => void;
   onClose?: () => void;
@@ -51,6 +52,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
   const [endHour, setEndHour] = useState(endLocal ? endLocal.format('HH:mm') : "");
   const [isOpen, setIsOpen] = useState(jam.is_open);
   const [hasDrums, setHasDrums] = useState(jam.has_drums);
+  const [hasKeyboard, setHasKeyboard] = useState(jam.has_keyboard);
   const [location, setLocation] = useState<{ lat: number; lng: number; address: string }>(parsedLoc);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(
     { lat: parsedLoc.lat, lng: parsedLoc.lng }
@@ -68,15 +70,8 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
         setIsLoading(false);
         return;
       }
-      const start_timeLocal = `${date}T${startHour}:00`;
-      const start_time = moment.tz(start_timeLocal, moment.tz.guess()).utc().format();
-      const end_atLocal = endHour ? `${date}T${endHour}:00` : null;
-      if (end_atLocal && end_atLocal <= start_timeLocal) {
-        setError("L'heure de fin doit être après l'heure de début");
-        setIsLoading(false);
-        return;
-      }
-      const end_at = end_atLocal ? moment.tz(end_atLocal, moment.tz.guess()).utc().format() : null;
+      const start_time = toUtcDateTime(date, startHour);
+      const end_at = endHour ? resolveEndDateTime(date, startHour, endHour) : null;
 
       const { error: updateError } = await supabase
         .from("jam_sessions")
@@ -88,6 +83,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
           location: JSON.stringify(location),
           is_open: isOpen,
           has_drums: hasDrums,
+          has_keyboard: hasKeyboard,
         })
         .eq("id", jam.id);
 
@@ -257,6 +253,28 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
         <Switch
           checked={hasDrums}
           onCheckedChange={setHasDrums}
+          className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+        />
+      </div>
+
+      {/* Clavier */}
+      <div className="flex items-center justify-between rounded-lg border border-zik-border p-4 bg-zik-card/50">
+        <div className="flex items-center gap-3">
+          <Piano className={`h-5 w-5 ${hasKeyboard ? "text-zik-purple" : "text-zik-muted"}`} />
+          <div>
+            <p className="text-sm font-medium text-zik-text">
+              {hasKeyboard ? "Clavier disponible" : "Sans clavier"}
+            </p>
+            <p className="text-xs text-zik-muted">
+              {hasKeyboard
+                ? "Un clavier sera sur place"
+                : "Pas de clavier prévu sur place"}
+            </p>
+          </div>
+        </div>
+        <Switch
+          checked={hasKeyboard}
+          onCheckedChange={setHasKeyboard}
           className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
         />
       </div>

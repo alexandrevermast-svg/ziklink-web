@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import TimePicker from "@/components/ui/TimePicker";
 import AddressSearchInput from '@/components/AddressSearchInput';
-import moment from 'moment-timezone';
+import { toUtcDateTime, resolveEndDateTime } from '@/lib/eventDateTime';
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
@@ -90,15 +90,8 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
         setIsLoading(false);
         return;
       }
-      const start_timeLocal = `${date}T${startHour}:00`;
-      const start_time = moment.tz(start_timeLocal, moment.tz.guess()).utc().format();
-      const end_atLocal = endHour ? `${date}T${endHour}:00` : null;
-      if (end_atLocal && end_atLocal <= start_timeLocal) {
-        setError("L'heure de fin doit être après l'heure de début");
-        setIsLoading(false);
-        return;
-      }
-      const end_at = end_atLocal ? moment.tz(end_atLocal, moment.tz.guess()).utc().format() : null;
+      const start_time = toUtcDateTime(date, startHour);
+      const end_at = endHour ? resolveEndDateTime(date, startHour, endHour) : null;
 
       let posterUrl: string | null = null;
       if (posterFile) {

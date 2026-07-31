@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import TimePicker from "@/components/ui/TimePicker";
 import { Ticket, Link as LinkIcon, Music2, Upload, X } from "lucide-react";
 import moment from 'moment-timezone';
+import { toUtcDateTime, resolveEndDateTime } from '@/lib/eventDateTime';
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
@@ -77,15 +78,8 @@ export default function ConcertEditForm({ concert, onSuccess, onClose }: Concert
         setIsLoading(false);
         return;
       }
-      const start_timeLocal = `${date}T${startHour}:00`;
-      const start_time = moment.tz(start_timeLocal, moment.tz.guess()).utc().format();
-      const end_atLocal = endHour ? `${date}T${endHour}:00` : null;
-      if (end_atLocal && end_atLocal <= start_timeLocal) {
-        setError("L'heure de fin doit être après l'heure de début");
-        setIsLoading(false);
-        return;
-      }
-      const end_at = end_atLocal ? moment.tz(end_atLocal, moment.tz.guess()).utc().format() : null;
+      const start_time = toUtcDateTime(date, startHour);
+      const end_at = endHour ? resolveEndDateTime(date, startHour, endHour) : null;
 
       let posterUrl = concert.poster_url;
       if (posterFile) {

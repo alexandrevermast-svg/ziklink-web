@@ -7,9 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Lock, Unlock, Repeat2, Users, MapPin, CalendarDays, Clock, Drum } from "lucide-react";
+import { Lock, Unlock, Repeat2, Users, MapPin, CalendarDays, Clock, Drum, Piano } from "lucide-react";
 import AddressSearchInput from '@/components/AddressSearchInput';
-import moment from 'moment-timezone';
+import { toUtcDateTime, resolveEndDateTime } from '@/lib/eventDateTime';
 import { Calendar } from "@/components/ui/calendar";
 import { fr } from "date-fns/locale";
 import { format } from "date-fns";
@@ -41,7 +41,7 @@ interface RecurrenceData {
 
 interface JamFormData {
   title: string; description: string; date: string;
-  start_hour: string; end_hour: string; is_open: boolean; has_drums: boolean;
+  start_hour: string; end_hour: string; is_open: boolean; has_drums: boolean; has_keyboard: boolean;
   location: { lat: number; lng: number; address: string };
 }
 
@@ -81,7 +81,7 @@ function formatDateShort(d: Date) {
 export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormProps) {
   const supabase = createClient();
   const [formData, setFormData] = useState<JamFormData>({
-    title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true,
+    title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true,
     location: { lat: 48.8566, lng: 2.3522, address: "" },
   });
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -137,11 +137,10 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
       if (!formData.title || !formData.description || !formData.date || !formData.start_hour) {
         setError("Veuillez remplir tous les champs obligatoires"); setIsLoading(false); return;
       }
-      const start_timeLocal = `${formData.date}T${formData.start_hour}:00`;
-      const start_time = moment.tz(start_timeLocal, moment.tz.guess()).utc().format();
-      const end_atLocal = formData.end_hour ? `${formData.date}T${formData.end_hour}:00` : null;
-      if (end_atLocal && end_atLocal <= start_timeLocal) { setError("L'heure de fin doit être après l'heure de début"); setIsLoading(false); return; }
-      const end_at = end_atLocal ? moment.tz(end_atLocal, moment.tz.guess()).utc().format() : null;
+      const start_time = toUtcDateTime(formData.date, formData.start_hour);
+      const end_at = formData.end_hour
+        ? resolveEndDateTime(formData.date, formData.start_hour, formData.end_hour)
+        : null;
 
       const groupId = selectedGroupId || null;
 
@@ -151,9 +150,9 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         if (recurrence.days.length === 0) { setError("Sélectionnez au moins un jour"); setIsLoading(false); return; }
         for (const occ of occurrences) {
           const dateStr = occ.toISOString().split("T")[0];
-          const occStart = moment.tz(`${dateStr}T${formData.start_hour}:00`, moment.tz.guess()).utc().format();
+          const occStart = toUtcDateTime(dateStr, formData.start_hour);
           const occEnd = formData.end_hour
-            ? moment.tz(`${dateStr}T${formData.end_hour}:00`, moment.tz.guess()).utc().format()
+            ? resolveEndDateTime(dateStr, formData.start_hour, formData.end_hour)
             : null;
           occurrencesPayload.push({ start_time: occStart, end_at: occEnd });
         }
@@ -170,6 +169,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         p_group_id: groupId,
         p_occurrences: occurrencesPayload,
         p_has_drums: formData.has_drums,
+        p_has_keyboard: formData.has_keyboard,
       } as any);
 
       if (rpcError) {
@@ -178,7 +178,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         return;
       }
 
-      setFormData({ title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, location: { lat: 48.8566, lng: 2.3522, address: "" } });
+      setFormData({ title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true, location: { lat: 48.8566, lng: 2.3522, address: "" } });
       setSelectedLocation(null);
       setSelectedGroupId("");
       setRecurrence({ enabled: false, frequency: 1, days: [], endType: "count", endDate: "", count: 8 });
@@ -486,6 +486,28 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         <Switch
           checked={formData.has_drums}
           onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, has_drums: checked }))}
+          className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+        />
+      </div>
+
+      {/* Clavier */}
+      <div className="flex items-center justify-between rounded-lg border border-zik-border p-4 bg-zik-card/50">
+        <div className="flex items-center gap-3">
+          <Piano className={`h-5 w-5 ${formData.has_keyboard ? "text-zik-purple" : "text-zik-muted"}`} />
+          <div>
+            <p className="text-sm font-medium text-zik-text">
+              {formData.has_keyboard ? "Clavier disponible" : "Sans clavier"}
+            </p>
+            <p className="text-xs text-zik-muted">
+              {formData.has_keyboard
+                ? "Un clavier sera sur place"
+                : "Pas de clavier prévu sur place"}
+            </p>
+          </div>
+        </div>
+        <Switch
+          checked={formData.has_keyboard}
+          onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, has_keyboard: checked }))}
           className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
         />
       </div>
