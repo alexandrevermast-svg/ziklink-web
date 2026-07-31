@@ -9,6 +9,8 @@ import { Lock, Unlock, MapPin, Clock, UserPlus, Check, Heart } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import type { EventMarker } from "@/components/EventMap";
 import type { JamSession, Concert, ParticipantWithProfile } from "./page";
+import { useJamParticipation } from "@/hooks/useJamParticipation";
+import { isOwner } from "@/lib/permissions";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
@@ -96,8 +98,8 @@ export default function HomeFeed({
   const [concerts, setConcerts] = useState<Concert[]>(initialConcerts);
   const [participantsMap, setParticipantsMap] = useState(initialParticipantsMap);
   const [myInterests, setMyInterests] = useState<Set<string>>(new Set(initialMyInterests));
-  const [joiningId, setJoiningId] = useState<string | null>(null);
   const [dayFilter, setDayFilter] = useState<DayFilter>("today");
+  const { joinJam, leaveJam, pendingJamId: joiningId } = useJamParticipation();
 
   const { today, tomorrow, dayAfterTomorrow } = useMemo(() => dayBounds(), []);
 
@@ -154,20 +156,16 @@ export default function HomeFeed({
   const handleJoinJam = useCallback(async (jamId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (!currentUserId) { router.push("/login"); return; }
-    setJoiningId(jamId);
-    await supabase.from("jam_participants").insert({ jam_id: jamId, user_id: currentUserId, status: "confirmed" });
+    await joinJam(jamId, currentUserId, "confirmed");
     await refetch();
-    setJoiningId(null);
-  }, [currentUserId, refetch]);
+  }, [currentUserId, joinJam, refetch]);
 
   const handleLeaveJam = useCallback(async (jamId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (!currentUserId) return;
-    setJoiningId(jamId);
-    await supabase.from("jam_participants").delete().eq("jam_id", jamId).eq("user_id", currentUserId);
+    await leaveJam(jamId, currentUserId);
     await refetch();
-    setJoiningId(null);
-  }, [currentUserId, refetch]);
+  }, [currentUserId, leaveJam, refetch]);
 
   const filteredJams = useMemo(() =>
     jams.filter((j) => {
@@ -203,7 +201,7 @@ export default function HomeFeed({
         lat: pos.lat, lng: pos.lng, type: "jam" as const,
         is_open: jam.is_open,
         isParticipant: (participantsMap[jam.id] ?? []).some((p) => p.user_id === currentUserId),
-        isCreator: jam.created_by === currentUserId,
+        isCreator: isOwner(jam, currentUserId),
       }];
     }),
     ...filteredConcerts.flatMap((concert) => {
@@ -316,7 +314,7 @@ export default function HomeFeed({
             const address = getAddress(jam.location);
             const participants = participantsMap[jam.id] ?? [];
             const isParticipant = participants.some((p) => p.user_id === currentUserId);
-            const isCreator = jam.created_by === currentUserId;
+            const isCreator = isOwner(jam, currentUserId);
             const isJoining = joiningId === jam.id;
 
             return (

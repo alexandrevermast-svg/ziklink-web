@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Lock, Unlock, Repeat2, Users, MapPin, CalendarDays, Clock } from "lucide-react";
+import { Lock, Unlock, Repeat2, Users, MapPin, CalendarDays, Clock, Drum } from "lucide-react";
 import AddressSearchInput from '@/components/AddressSearchInput';
 import moment from 'moment-timezone';
 import { Calendar } from "@/components/ui/calendar";
@@ -41,7 +41,7 @@ interface RecurrenceData {
 
 interface JamFormData {
   title: string; description: string; date: string;
-  start_hour: string; end_hour: string; is_open: boolean;
+  start_hour: string; end_hour: string; is_open: boolean; has_drums: boolean;
   location: { lat: number; lng: number; address: string };
 }
 
@@ -81,7 +81,7 @@ function formatDateShort(d: Date) {
 export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormProps) {
   const supabase = createClient();
   const [formData, setFormData] = useState<JamFormData>({
-    title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true,
+    title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true,
     location: { lat: 48.8566, lng: 2.3522, address: "" },
   });
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -169,6 +169,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         p_is_open: formData.is_open,
         p_group_id: groupId,
         p_occurrences: occurrencesPayload,
+        p_has_drums: formData.has_drums,
       } as any);
 
       if (rpcError) {
@@ -177,7 +178,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         return;
       }
 
-      setFormData({ title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, location: { lat: 48.8566, lng: 2.3522, address: "" } });
+      setFormData({ title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, location: { lat: 48.8566, lng: 2.3522, address: "" } });
       setSelectedLocation(null);
       setSelectedGroupId("");
       setRecurrence({ enabled: false, frequency: 1, days: [], endType: "count", endDate: "", count: 8 });
@@ -463,6 +464,28 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         <Switch
           checked={formData.is_open}
           onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, is_open: checked }))}
+          className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+        />
+      </div>
+
+      {/* Batterie */}
+      <div className="flex items-center justify-between rounded-lg border border-zik-border p-4 bg-zik-card/50">
+        <div className="flex items-center gap-3">
+          <Drum className={`h-5 w-5 ${formData.has_drums ? "text-zik-purple" : "text-zik-muted"}`} />
+          <div>
+            <p className="text-sm font-medium text-zik-text">
+              {formData.has_drums ? "Batterie disponible" : "Sans batterie"}
+            </p>
+            <p className="text-xs text-zik-muted">
+              {formData.has_drums
+                ? "Un kit de batterie sera sur place"
+                : "Pas de batterie prévue sur place"}
+            </p>
+          </div>
+        </div>
+        <Switch
+          checked={formData.has_drums}
+          onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, has_drums: checked }))}
           className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
         />
       </div>

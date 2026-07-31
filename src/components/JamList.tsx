@@ -4,10 +4,15 @@ import React, { useEffect, useState, useCallback, useMemo, useRef } from "react"
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Lock, Unlock, MapPin, Clock, UserPlus, Check, ChevronDown } from "lucide-react";
+import { Lock, Unlock, MapPin, Clock, UserPlus, Check, ChevronDown, Drum, LocateFixed } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { EventMarker } from "@/components/EventMap";
 import type { JamSession, Profile as ProfileRow } from "@/types";
+import { haversineDistanceKm, formatDistanceKm, type LatLng } from "@/lib/geo";
+import { useJamParticipation } from "@/hooks/useJamParticipation";
+import { isOwner } from "@/lib/permissions";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
@@ -17,6 +22,12 @@ const EventMap = dynamic(() => import("@/components/EventMap"), {
 
 type Profile = Pick<ProfileRow, "id" | "username" | "avatar_url">;
 interface ParticipantWithProfile { user_id: string; profile: Profile | null; }
+
+function getLatLng(location: string | null): LatLng | null {
+  if (!location) return null;
+  try { const p = JSON.parse(location); return p?.lat && p?.lng ? { lat: p.lat, lng: p.lng } : null; }
+  catch { return null; }
+}
 
 function startOfDay(d: Date) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 function isSameDay(a: Date, b: Date) { return startOfDay(a).getTime() === startOfDay(b).getTime(); }
@@ -185,10 +196,16 @@ export default function JamList() {
   const [jams, setJams] = useState<JamSession[]>([]);
   const [participantsMap, setParticipantsMap] = useState<Record<string, ParticipantWithProfile[]>>({});
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [joiningJamId, setJoiningJamId] = useState<string | null>(null);
+  const { joinJam, leaveJam, pendingJamId: joiningJamId } = useJamParticipation();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(startOfDay(new Date()));
+  const [drumsOnly, setDrumsOnly] = useState(false);
+  const [nearMe, setNearMe] = useState(false);
+  const [userPosition, setUserPosition] = useState<LatLng | null>(null);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
+  const [radiusKm, setRadiusKm] = useState<number | null>(null);
 
   const fetchParticipants = useCallback(async (jamIds: string[]) => {
     const { data } = await supabase.from("jam_participants")
@@ -228,26 +245,73 @@ const { data: jamsData, error: jamsError } = await supabase
   const handleJoin = useCallback(async (jamId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (!currentUserId) return;
-    setJoiningJamId(jamId);
-    await supabase.from("jam_participants").insert({ jam_id: jamId, user_id: currentUserId });
+    await joinJam(jamId, currentUserId);
     await fetchParticipants(jams.map((j) => j.id));
-    setJoiningJamId(null);
-  }, [currentUserId, jams, fetchParticipants]);
+  }, [currentUserId, jams, fetchParticipants, joinJam]);
 
   const handleLeave = useCallback(async (jamId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (!currentUserId) return;
-    setJoiningJamId(jamId);
-    await supabase.from("jam_participants").delete().eq("jam_id", jamId).eq("user_id", currentUserId);
+    await leaveJam(jamId, currentUserId);
     setParticipantsMap((prev) => ({ ...prev, [jamId]: (prev[jamId] ?? []).filter((p) => p.user_id !== currentUserId) }));
-    setJoiningJamId(null);
-  }, [currentUserId]);
+  }, [currentUserId, leaveJam]);
+
+  const handleToggleNearMe = useCallback((checked: boolean) => {
+    setNearMe(checked);
+    setGeoError(null);
+    setRadiusKm(null);
+    if (!checked) return;
+    if (!navigator.geolocation) {
+      setGeoError("La géolocalisation n'est pas disponible sur cet appareil.");
+      setNearMe(false);
+      return;
+    }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setGeoLoading(false);
+      },
+      () => {
+        setGeoError("Localisation refusée ou indisponible.");
+        setGeoLoading(false);
+        setNearMe(false);
+      },
+      { enableHighAccuracy: false, timeout: 10000 }
+    );
+  }, []);
 
   const availableDates = useMemo(() => jams.map((j) => new Date(j.start_time)), [jams]);
   const filteredJams = useMemo(() => {
-    if (!selectedDate) return jams;
-    return jams.filter((j) => isSameDay(new Date(j.start_time), selectedDate));
-  }, [jams, selectedDate]);
+    const filtered = jams.filter((j) => {
+      if (selectedDate && !isSameDay(new Date(j.start_time), selectedDate)) return false;
+      if (drumsOnly && !j.has_drums) return false;
+      return true;
+    });
+    if (!nearMe || !userPosition) return filtered;
+    const withDistance = filtered
+      .map((j) => {
+        const pos = getLatLng(j.location);
+        return { jam: j, distance: pos ? haversineDistanceKm(userPosition, pos) : null };
+      })
+      .filter((w) => radiusKm === null || (w.distance !== null && w.distance <= radiusKm));
+    withDistance.sort((a, b) => {
+      if (a.distance === null) return 1;
+      if (b.distance === null) return -1;
+      return a.distance - b.distance;
+    });
+    return withDistance.map((w) => w.jam);
+  }, [jams, selectedDate, drumsOnly, nearMe, userPosition, radiusKm]);
+
+  const distanceById = useMemo(() => {
+    if (!nearMe || !userPosition) return {} as Record<string, number>;
+    const map: Record<string, number> = {};
+    for (const j of jams) {
+      const pos = getLatLng(j.location);
+      if (pos) map[j.id] = haversineDistanceKm(userPosition, pos);
+    }
+    return map;
+  }, [jams, nearMe, userPosition]);
 
   const jamMarkers = useMemo<EventMarker[]>(() =>
     filteredJams.flatMap((jam) => {
@@ -261,7 +325,7 @@ const { data: jamsData, error: jamsError } = await supabase
           lat: loc.lat, lng: loc.lng, type: "jam" as const,
           is_open: jam.is_open,
           isParticipant: participants.some((p) => p.user_id === currentUserId),
-          isCreator: jam.created_by === currentUserId,
+          isCreator: isOwner(jam, currentUserId),
         }];
       } catch { return []; }
     }), [filteredJams, participantsMap, currentUserId]);
@@ -272,12 +336,14 @@ const { data: jamsData, error: jamsError } = await supabase
   const getAddress = (s: string | null) => { if (!s) return null; try { return JSON.parse(s)?.address ?? null; } catch { return null; } };
 
   const emptyMessage = useMemo(() => {
+    if (nearMe && radiusKm !== null) return `Aucune jam à moins de ${radiusKm} km 🎸 — essaie un rayon plus large`;
+    if (drumsOnly) return "Aucune jam avec batterie ne correspond 🥁 — essaie de désactiver ce filtre";
     if (!selectedDate) return "Aucune jam à venir 🎸";
     const diff = Math.round((startOfDay(selectedDate).getTime() - startOfDay(new Date()).getTime()) / 86400000);
     if (diff === 0) return "Pas de jam aujourd'hui 🎸 — clique sur un autre jour ou crée la tienne !";
     if (diff === 1) return "Pas de jam demain 🎸";
     return "Aucune jam ce jour-là 🎸";
-  }, [selectedDate]);
+  }, [selectedDate, nearMe, radiusKm, drumsOnly]);
 
   // ✅ Loading skeleton avec ton thème
   if (isLoading) return (
@@ -298,6 +364,81 @@ const { data: jamsData, error: jamsError } = await supabase
         emptyMessage="Aucune jam à venir 🎸"
       />
       <DayFilter selectedDate={selectedDate} onChange={setSelectedDate} availableDates={availableDates} />
+
+      {/* Filtres batterie + proximité */}
+      <div className="flex gap-2">
+        <div className="flex-1 flex items-center justify-between gap-2 rounded-lg border border-zik-border p-3 bg-zik-card/50 min-w-0">
+          <span className="flex items-center gap-1.5 text-sm font-medium text-zik-text truncate">
+            <Drum className="h-4 w-4 text-zik-muted shrink-0" />
+            <span className="truncate">Avec batterie</span>
+          </span>
+          <Switch
+            checked={drumsOnly}
+            onCheckedChange={setDrumsOnly}
+            className="shrink-0 data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+          />
+        </div>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              onClick={() => { if (!nearMe) handleToggleNearMe(true); }}
+              className={`flex-1 flex items-center justify-between gap-2 rounded-lg border p-3 min-w-0 text-left transition-colors ${
+                nearMe ? "border-zik-purple/40 bg-zik-purple/10" : "border-zik-border bg-zik-card/50 hover:border-zik-purple/30"
+              }`}
+            >
+              <span className="flex items-center gap-1.5 text-sm font-medium text-zik-text truncate">
+                <LocateFixed className={`h-4 w-4 shrink-0 ${nearMe ? "text-zik-purple" : "text-zik-muted"}`} />
+                <span className="truncate">
+                  {geoLoading
+                    ? "Localisation..."
+                    : nearMe && userPosition
+                    ? `Près de moi · ${radiusKm === null ? "Tout" : radiusKm + " km"}`
+                    : "Près de moi"}
+                </span>
+              </span>
+              {nearMe && <ChevronDown className="h-3.5 w-3.5 text-zik-muted shrink-0" />}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 bg-zik-card border-zik-border p-4 space-y-3" align="end">
+            {geoError && <p className="text-xs text-zik-red">{geoError}</p>}
+            {nearMe && userPosition && (
+              <div>
+                <p className="text-xs text-zik-muted mb-1.5">Rayon</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {([
+                    { key: null, label: "Tout" },
+                    { key: 1, label: "1 km" },
+                    { key: 5, label: "5 km" },
+                    { key: 10, label: "10 km" },
+                    { key: 25, label: "25 km" },
+                  ] as const).map(({ key, label }) => {
+                    const isActive = radiusKm === key;
+                    return (
+                      <button
+                        key={label}
+                        onClick={() => setRadiusKm(key)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                          isActive ? "bg-zik-purple text-white" : "bg-zik-card-hover text-zik-muted hover:bg-zik-border"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => handleToggleNearMe(false)}
+                  className="mt-3 text-xs text-zik-muted hover:text-zik-red transition-colors"
+                >
+                  Désactiver la localisation
+                </button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
+      </div>
+
       {filteredJams.length === 0 ? (
         <p className="text-zik-muted text-sm text-center py-6">{emptyMessage}</p>
       ) : (
@@ -306,7 +447,7 @@ const { data: jamsData, error: jamsError } = await supabase
             const address = getAddress(jam.location);
             const participants = participantsMap[jam.id] ?? [];
             const isParticipant = participants.some((p) => p.user_id === currentUserId);
-            const isCreator = jam.created_by === currentUserId;
+            const isCreator = isOwner(jam, currentUserId);
             const isJoining = joiningJamId === jam.id;
 
             return (
@@ -344,6 +485,16 @@ const { data: jamsData, error: jamsError } = await supabase
                       <MapPin className="h-3.5 w-3.5 shrink-0" />{address}
                     </span>
                   )}
+                  {distanceById[jam.id] !== undefined && (
+                    <span className="flex items-center gap-1 text-zik-purple font-medium">
+                      <LocateFixed className="h-3.5 w-3.5" />
+                      {formatDistanceKm(distanceById[jam.id])}
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1">
+                    <Drum className="h-3.5 w-3.5" />
+                    {jam.has_drums ? "Avec batterie" : "Sans batterie"}
+                  </span>
                 </div>
 
                 {/* ✅ Participants et boutons adaptés */}

@@ -1,7 +1,11 @@
 // src/components/TimePicker.tsx
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 interface TimePickerProps {
   value: string;
@@ -21,7 +25,34 @@ export default function TimePicker({
   label,
   optional,
 }: TimePickerProps) {
+  const [open, setOpen] = useState(false);
+  const hourListRef = useRef<HTMLDivElement>(null);
+  const minuteListRef = useRef<HTMLDivElement>(null);
   const [h, m] = value ? value.split(':') : ['', ''];
+
+  // Recentre les colonnes sur la valeur déjà sélectionnée à l'ouverture.
+  // rAF nécessaire : le contenu du Popover Radix (portalé) n'est pas encore
+  // monté dans le DOM au moment où `open` bascule à true.
+  useEffect(() => {
+    if (!open) return;
+    const raf = requestAnimationFrame(() => {
+      for (const ref of [hourListRef, minuteListRef]) {
+        const selected = ref.current?.querySelector('[data-selected="true"]');
+        selected?.scrollIntoView({ block: 'center', behavior: 'instant' });
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [open]);
+
+  const selectHour = (newH: string) => {
+    onChange(`${newH}:${m || '00'}`);
+  };
+
+  const selectMinute = (newM: string) => {
+    if (!h) return;
+    onChange(`${h}:${newM}`);
+    setOpen(false);
+  };
 
   return (
     <div>
@@ -33,32 +64,58 @@ export default function TimePicker({
           {optional && <span className="text-zik-muted font-normal">(opt.)</span>}
         </label>
       )}
-      <div className="flex items-center h-9 w-full bg-zik-card border border-zik-border rounded-md shadow-sm overflow-hidden transition-colors hover:bg-zik-card-hover focus-within:outline-none focus-within:ring-1 focus-within:ring-zik-purple/50">
-        <select
-          value={h || ''}
-          onChange={(e) => onChange(e.target.value ? `${e.target.value}:${m || '00'}` : '')}
-          required={required}
-          className="flex-1 bg-transparent border-0 py-1 pl-3 pr-0 text-sm text-zik-text focus:outline-none appearance-none text-center cursor-pointer"
-        >
-          <option value="">--</option>
-          {HOURS.map((hour) => (
-            <option key={hour} value={hour}>{hour}</option>
-          ))}
-        </select>
-
-        <span className="text-zik-muted font-bold shrink-0 select-none text-sm">:</span>
-
-        <select
-          value={m || ''}
-          onChange={(e) => onChange(h ? `${h}:${e.target.value}` : '')}
-          className="flex-1 bg-transparent border-0 py-1 pr-3 pl-0 text-sm text-zik-text focus:outline-none appearance-none text-center cursor-pointer"
-        >
-          <option value="">--</option>
-          {MINUTES.map((min) => (
-            <option key={min} value={min}>{min}</option>
-          ))}
-        </select>
-      </div>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="outline"
+            className={cn(
+              'w-full h-9 justify-start text-left font-normal bg-zik-card border-zik-border text-zik-text hover:bg-zik-card-hover gap-2',
+              !value && 'text-zik-muted'
+            )}
+          >
+            <Clock className="h-4 w-4 text-zik-purple shrink-0" />
+            {value ? value : <span>--:--</span>}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-36 p-0 bg-zik-card border-zik-border shadow-lg" align="start">
+          <div className="flex divide-x divide-zik-border">
+            <div ref={hourListRef} className="flex-1 max-h-56 overflow-y-auto py-1">
+              {HOURS.map((hour) => (
+                <button
+                  type="button"
+                  key={hour}
+                  data-selected={h === hour}
+                  onClick={() => selectHour(hour)}
+                  className={cn(
+                    'w-full text-center text-sm py-1.5 transition-colors',
+                    h === hour ? 'bg-zik-purple text-white hover:bg-zik-purple/90' : 'text-zik-text hover:bg-zik-card-hover'
+                  )}
+                >
+                  {hour}
+                </button>
+              ))}
+            </div>
+            <div ref={minuteListRef} className="flex-1 max-h-56 overflow-y-auto py-1">
+              {MINUTES.map((min) => (
+                <button
+                  type="button"
+                  key={min}
+                  data-selected={!!h && m === min}
+                  onClick={() => selectMinute(min)}
+                  disabled={!h}
+                  className={cn(
+                    'w-full text-center text-sm py-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed',
+                    h && m === min ? 'bg-zik-purple text-white hover:bg-zik-purple/90' : 'text-zik-text hover:bg-zik-card-hover'
+                  )}
+                >
+                  {min}
+                </button>
+              ))}
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }

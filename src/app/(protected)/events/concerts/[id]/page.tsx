@@ -17,6 +17,7 @@ import {
 import ConcertEditForm from "@/components/ConcertEditForm";
 import ReportButton from '@/components/ReportButton';
 import type { Concert } from "@/types";
+import { isOwner } from "@/lib/permissions";
 
 interface Profile { id: string; username: string | null; avatar_url: string | null; }
 interface Message { id: string; user_id: string; content: string; created_at: string; profile: Profile | null; }
@@ -99,7 +100,7 @@ export default function ConcertDetailPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
 
-  const isOrganizer = concert?.created_by === currentUserId;
+  const isOrganizer = isOwner(concert, currentUserId);
 
   const fetchAll = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();

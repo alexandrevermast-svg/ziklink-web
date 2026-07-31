@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Lock, Unlock, CalendarDays, MapPin } from "lucide-react";
+import { Lock, Unlock, CalendarDays, MapPin, Drum } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { fr } from "date-fns/locale";
 import { format } from "date-fns";
@@ -25,7 +25,7 @@ const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap")
 interface JamEditFormProps {
   jam: {
     id: string; title: string; description: string; start_time: string;
-    end_at: string | null; location: string | null; is_open: boolean;
+    end_at: string | null; location: string | null; is_open: boolean; has_drums: boolean;
   };
   onSuccess?: () => void;
   onClose?: () => void;
@@ -50,6 +50,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
   const [startHour, setStartHour] = useState(startLocal.format('HH:mm'));
   const [endHour, setEndHour] = useState(endLocal ? endLocal.format('HH:mm') : "");
   const [isOpen, setIsOpen] = useState(jam.is_open);
+  const [hasDrums, setHasDrums] = useState(jam.has_drums);
   const [location, setLocation] = useState<{ lat: number; lng: number; address: string }>(parsedLoc);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(
     { lat: parsedLoc.lat, lng: parsedLoc.lng }
@@ -86,6 +87,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
           end_at,
           location: JSON.stringify(location),
           is_open: isOpen,
+          has_drums: hasDrums,
         })
         .eq("id", jam.id);
 
@@ -233,6 +235,28 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
         <Switch
           checked={isOpen}
           onCheckedChange={setIsOpen}
+          className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+        />
+      </div>
+
+      {/* Batterie */}
+      <div className="flex items-center justify-between rounded-lg border border-zik-border p-4 bg-zik-card/50">
+        <div className="flex items-center gap-3">
+          <Drum className={`h-5 w-5 ${hasDrums ? "text-zik-purple" : "text-zik-muted"}`} />
+          <div>
+            <p className="text-sm font-medium text-zik-text">
+              {hasDrums ? "Batterie disponible" : "Sans batterie"}
+            </p>
+            <p className="text-xs text-zik-muted">
+              {hasDrums
+                ? "Un kit de batterie sera sur place"
+                : "Pas de batterie prévue sur place"}
+            </p>
+          </div>
+        </div>
+        <Switch
+          checked={hasDrums}
+          onCheckedChange={setHasDrums}
           className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
         />
       </div>

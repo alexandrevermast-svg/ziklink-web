@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import JamEditForm from "@/components/JamEditForm";
 import type { JamSession } from "@/types";
+import { useJamParticipation } from "@/hooks/useJamParticipation";
+import { isOwner } from "@/lib/permissions";
 
 interface Profile { id: string; username: string | null; avatar_url: string | null; }
 interface Participant { user_id: string; status: string; is_organizer: boolean; profile: Profile | null; }
@@ -304,13 +306,15 @@ export default function JamDetailPage() {
   const [claimingCell, setClaimingCell] = useState<{ instrument: string; slot_index: number } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [pickerCell, setPickerCell] = useState<{ instrument: string; slot_index: number; anchorEl: HTMLElement } | null>(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
 
   // ── État upload poster ─────────────────────────────────────────────────
   const [isUploadingPoster, setIsUploadingPoster] = useState(false);
 
-  const isMainOrganizer = jam?.created_by === currentUserId;
+  const { joinJam, leaveJam } = useJamParticipation();
+  const isMainOrganizer = isOwner(jam, currentUserId);
   const isCoOrganizer = participants.some((p) => p.user_id === currentUserId && p.is_organizer && p.status === "confirmed");
   const isOrganizer = isMainOrganizer || isCoOrganizer;
   const isParticipant = participants.some((p) => p.user_id === currentUserId && p.status === "confirmed");
@@ -446,14 +450,14 @@ export default function JamDetailPage() {
   const handleJoin = async () => {
     if (!currentUserId || !jam) return;
     const status = jam.is_open ? "confirmed" : "pending";
-    await supabase.from("jam_participants").insert({ jam_id: id, user_id: currentUserId, status });
+    await joinJam(id, currentUserId, status);
     if (conversationId) await supabase.from("conversation_participants").insert({ conversation_id: conversationId, user_id: currentUserId });
     await fetchAll();
   };
 
   const handleLeave = async () => {
     if (!currentUserId) return;
-    await supabase.from("jam_participants").delete().eq("jam_id", id).eq("user_id", currentUserId);
+    await leaveJam(id, currentUserId);
     await fetchAll();
   };
 
@@ -592,9 +596,10 @@ if (alreadyOnThisRow) return;
   const handleDeleteJam = async () => {
     if (!isMainOrganizer) return;
     setIsDeleting(true);
+    setDeleteError(null);
     const { error } = await supabase.rpc('delete_jam', { p_jam_id: id });
     if (error) {
-      alert(`Erreur lors de la suppression: ${error.message}`);
+      setDeleteError(`Erreur lors de la suppression : ${error.message}`);
       setIsDeleting(false);
       return;
     }
@@ -1096,12 +1101,13 @@ if (alreadyOnThisRow) return;
         <JamEditForm jam={jam} onSuccess={() => { setIsEditOpen(false); fetchAll(); }} onClose={() => setIsEditOpen(false)} />
       </Modal>
 
-      <Modal open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Supprimer la jam ?">
+      <Modal open={showDeleteConfirm} onClose={() => { setShowDeleteConfirm(false); setDeleteError(null); }} title="Supprimer la jam ?">
         <p className="text-sm text-zik-muted mb-4">
           Cette action est irréversible. Tous les participants, passages et messages seront définitivement supprimés.
         </p>
+        {deleteError && <p className="text-zik-red text-sm mb-4">{deleteError}</p>}
         <div className="flex gap-2 justify-end">
-          <Button variant="outline" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting}
+          <Button variant="outline" onClick={() => { setShowDeleteConfirm(false); setDeleteError(null); }} disabled={isDeleting}
             className="border-zik-border text-zik-text hover:bg-zik-card-hover">
             Annuler
           </Button>

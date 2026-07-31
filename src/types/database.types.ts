@@ -351,6 +351,7 @@ export type Database = {
           description: string
           end_at: string | null
           group_id: string | null
+          has_drums: boolean
           id: string
           is_open: boolean
           location: string | null
@@ -365,6 +366,7 @@ export type Database = {
           description: string
           end_at?: string | null
           group_id?: string | null
+          has_drums?: boolean
           id?: string
           is_open?: boolean
           location?: string | null
@@ -379,6 +381,7 @@ export type Database = {
           description?: string
           end_at?: string | null
           group_id?: string | null
+          has_drums?: boolean
           id?: string
           is_open?: boolean
           location?: string | null
@@ -806,6 +809,7 @@ export type Database = {
         Args: {
           p_description: string
           p_group_id: string
+          p_has_drums?: boolean
           p_is_open: boolean
           p_location: string
           p_occurrences: Json

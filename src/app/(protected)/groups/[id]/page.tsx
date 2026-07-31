@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import type { Group } from "@/types";
+import { isOwner } from "@/lib/permissions";
 
 const GENRES = ['Rock', 'Jazz', 'Blues', 'Metal', 'Pop', 'Électro', 'Folk', 'Classique', 'Hip-Hop', 'Reggae', 'Autre'];
 
@@ -222,6 +223,7 @@ export default function GroupDetailPage() {
   const [isContactingGroup, setIsContactingGroup] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState(false);
 
   const [editName, setEditName] = useState('');
@@ -236,7 +238,7 @@ export default function GroupDetailPage() {
   const myMembership = members.find((m) => m.user_id === currentUserId);
   const isMember = myMembership?.status === 'confirmed';
   const isPendingMember = myMembership?.status === 'pending';
-  const isAdmin = myMembership?.role === 'admin' || group?.created_by === currentUserId;
+  const isAdmin = myMembership?.role === 'admin' || isOwner(group, currentUserId);
 
   const pendingMembers = members.filter((m) => m.status === 'pending');
   const confirmedMembers = members.filter((m) => m.status !== 'pending');
@@ -404,9 +406,10 @@ const [isSearchLoading, setIsSearchLoading] = useState(false);
   const handleDeleteGroup = async () => {
     if (!isAdmin) return;
     setIsDeleting(true);
+    setDeleteError(null);
     const { error } = await supabase.rpc('delete_group', { p_group_id: id });
     if (error) {
-      alert(`Erreur lors de la suppression: ${error.message}`);
+      setDeleteError(`Erreur lors de la suppression : ${error.message}`);
       setIsDeleting(false);
       return;
     }
@@ -1114,14 +1117,15 @@ const handleInviteById = async (userId: string) => {
       </Modal>
 
       {/* Modale suppression */}
-      <Modal open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Supprimer le groupe ?">
+      <Modal open={showDeleteConfirm} onClose={() => { setShowDeleteConfirm(false); setDeleteError(null); }} title="Supprimer le groupe ?">
         <p className="text-sm text-zik-muted mb-4">
           Cette action est irréversible. Tous les participants, événements et messages seront définitivement supprimés.
         </p>
+        {deleteError && <p className="text-zik-red text-sm mb-4">{deleteError}</p>}
         <div className="flex gap-2 justify-end">
           <Button
             variant="outline"
-            onClick={() => setShowDeleteConfirm(false)}
+            onClick={() => { setShowDeleteConfirm(false); setDeleteError(null); }}
             disabled={isDeleting}
             className="border-zik-border text-zik-text hover:bg-zik-card-hover"
           >
