@@ -8,62 +8,12 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Plus, MapPin, Users, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
 import GroupCreationForm from '@/components/GroupCreationForm';
+import Modal from '@/components/Modal';
 import { GroupAvatar } from "./GroupAvatar";
 import type { Group as GroupRow } from "@/types";
 
 type Group = Pick<GroupRow, "id" | "name" | "bio" | "city" | "genre" | "avatar_url" | "created_by"> & { member_count?: number };
-
-function Modal({ open, onClose, title, children }: {
-  open: boolean; onClose: () => void; title: string; children: React.ReactNode;
-}) {
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [open, onClose]);
-
-  if (!open) return null;
-
-  return createPortal(
-    <div style={{ position: 'fixed', inset: 0, zIndex: 99999 }}>
-      {/* ✅ Overlay adapté à ton thème */}
-      <div
-        style={{ position: 'absolute', inset: 0, background: 'rgba(14, 11, 22, 0.8)' }}
-        onClick={onClose}
-      />
-      <div style={{
-        position: 'absolute', top: '50%', left: '50%',
-        transform: 'translate(-50%, -50%)',
-        background: 'var(--zik-card)',
-        borderRadius: '12px',
-        padding: '24px',
-        width: 'min(90vw, 560px)',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-        color: 'var(--zik-text)',
-      }}>
-        <div className="flex items-center justify-between mb-4">
-          {/* ✅ Titre de la modale adapté */}
-          <h2 className="text-xl font-bold text-zik-text">{title}</h2>
-          {/* ✅ Bouton de fermeture adapté */}
-          <button
-            onClick={onClose}
-            className="p-1 rounded hover:bg-zik-card-hover text-zik-muted hover:text-zik-text transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>,
-    document.body
-  );
-}
 
 export default function GroupsPage() {
   const supabase = createClient();

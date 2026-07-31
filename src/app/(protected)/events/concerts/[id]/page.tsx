@@ -6,16 +6,16 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { createPortal } from "react-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   ArrowLeft, MapPin, Clock, Ticket, Music2, Heart,
-  ExternalLink, Send, Users, Pencil, X, ChevronUp, ChevronDown
+  ExternalLink, Send, Users, Pencil, ChevronUp, ChevronDown
 } from "lucide-react";
 import ConcertEditForm from "@/components/ConcertEditForm";
 import ReportButton from '@/components/ReportButton';
+import Modal from "@/components/Modal";
 import type { Concert } from "@/types";
 import { isOwner } from "@/lib/permissions";
 
@@ -39,45 +39,6 @@ function Avatar({ profile, size = "md" }: { profile: Profile | null; size?: "sm"
     <div className={`${cls} rounded-full bg-zik-purple flex items-center justify-center text-white font-semibold shrink-0`}>
       {initials}
     </div>
-  );
-}
-
-function Modal({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [open, onClose]);
-  if (!open) return null;
-  return createPortal(
-    <div style={{ position: "fixed", inset: 0, zIndex: 99999 }}>
-      {/* ✅ Overlay adapté */}
-      <div style={{ position: "absolute", inset: 0, background: "rgba(14, 11, 22, 0.8)" }} />
-      <div style={{
-        position: "absolute", top: "50%", left: "50%",
-        transform: "translate(-50%, -50%)",
-        background: "var(--zik-card)",
-        borderRadius: "12px",
-        padding: "24px",
-        width: "min(90vw, 640px)",
-        maxHeight: "90vh",
-        overflowY: "auto",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
-        color: "var(--zik-text)",
-      }}>
-        <div className="flex items-center justify-between mb-4">
-          {/* ✅ Titre adapté */}
-          <h2 className="text-xl font-bold text-zik-text">{title}</h2>
-          {/* ✅ Bouton de fermeture adapté */}
-          <button onClick={onClose} className="p-1 rounded hover:bg-zik-card-hover text-zik-muted hover:text-zik-text transition-colors">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>,
-    document.body
   );
 }
 

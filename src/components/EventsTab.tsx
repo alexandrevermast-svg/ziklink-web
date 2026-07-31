@@ -1,68 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { createPortal } from "react-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Plus, Users, Mic2, X } from "lucide-react";
+import { Plus, Users, Mic2 } from "lucide-react";
 import JamCreationForm from "@/components/JamCreationForm";
 import JamList from "@/components/JamList";
 import ConcertCreationForm from "@/components/ConcertCreationForm";
 import ConcertList from "@/components/ConcertList";
-
-interface ModalProps {
-  open: boolean;
-  onClose: () => void;
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-}
-
-function Modal({ open, onClose, title, description, children }: ModalProps) {
-  React.useEffect(() => {
-    if (!open) return;
-    const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, [open, onClose]);
-
-  if (!open) return null;
-
-  return createPortal(
-    <div style={{ position: "fixed", inset: 0, zIndex: 99999 }} aria-modal="true" role="dialog">
-      {/* ✅ Remplace le fond blanc par ton thème */}
-      <div style={{ position: "absolute", inset: 0, background: "rgba(14, 11, 22, 0.8)" }} />
-      <div style={{
-        position: "absolute", top: "50%", left: "50%",
-        transform: "translate(-50%, -50%)",
-        background: "var(--zik-card)",  // ✅ Utilise ta variable CSS
-        borderRadius: "12px",
-        padding: "24px",
-        width: "min(90vw, 640px)",
-        maxHeight: "90vh",
-        overflowY: "auto",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-        color: "var(--zik-text)",  // ✅ Texte selon ton thème
-      }}>
-        <div className="flex items-start justify-between mb-2">
-          <div>
-            {/* ✅ Remplace text-gray-900 par ta classe ou variable */}
-            <h2 className="text-xl font-bold text-zik-text">{title}</h2>
-            {description && <p className="text-sm text-zik-muted mt-1">{description}</p>}
-          </div>
-          <button
-            onClick={onClose}
-            className="ml-4 p-1 rounded hover:bg-zik-card-hover text-zik-muted hover:text-zik-text transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>,
-    document.body
-  );
-}
+import Modal from "@/components/Modal";
 
 export default function EventsTab() {
   const [isJamModalOpen, setIsJamModalOpen] = React.useState(false);
