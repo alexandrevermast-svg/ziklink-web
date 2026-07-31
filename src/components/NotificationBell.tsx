@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell } from 'lucide-react';
+import { Bell, BellRing } from 'lucide-react';
 import { useNotifications, Notification, NotificationType } from '@/hooks/useNotifications';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { createPortal } from 'react-dom';
 
 function timeAgo(dateStr: string) {
@@ -103,7 +104,15 @@ function NotifItem({
 export default function NotificationBell({ userId }: { userId: string | null }) {
   const router = useRouter();
   const { notifications, unreadCount, markAllRead, markRead } = useNotifications(userId);
+  const { isSupported, isSubscribed, isLoading: isPushLoading, subscribe } = usePushNotifications();
+  const [pushError, setPushError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleEnablePush = async () => {
+    setPushError(null);
+    const { error } = await subscribe();
+    if (error) setPushError(error);
+  };
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -222,6 +231,24 @@ export default function NotificationBell({ userId }: { userId: string | null }) 
               </button>
             )}
           </div>
+
+          {/* Activer les notifications push */}
+          {isSupported && !isSubscribed && userId && (
+            <div className="px-4 py-3 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <button
+                onClick={handleEnablePush}
+                disabled={isPushLoading}
+                className="w-full flex items-center gap-2.5 text-xs font-medium rounded-xl px-3 py-2.5 transition-colors disabled:opacity-50"
+                style={{ background: 'rgba(192,132,252,0.10)', color: '#C084FC' }}
+              >
+                <BellRing size={14} strokeWidth={1.75} />
+                {isPushLoading ? 'Activation...' : 'Activer les notifications push'}
+              </button>
+              {pushError && (
+                <p className="text-[10px] mt-1.5" style={{ color: '#F87171' }}>{pushError}</p>
+              )}
+            </div>
+          )}
 
           {/* Liste */}
           <div className="overflow-y-auto flex-1">
