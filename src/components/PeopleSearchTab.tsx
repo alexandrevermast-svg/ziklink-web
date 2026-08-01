@@ -8,9 +8,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import Modal from "@/components/Modal";
 import AdForm from "@/components/AdForm";
 import ReportButton from "@/components/ReportButton";
-import { Plus, User, Users, MapPin, MessageCircle, Pencil, Trash2, LocateFixed, ChevronDown, Play } from "lucide-react";
+import { Plus, User, Users, MapPin, MessageCircle, Pencil, Trash2, LocateFixed, ChevronDown } from "lucide-react";
 import { haversineDistanceKm, formatDistanceKm, type LatLng } from "@/lib/geo";
-import { getYouTubeVideoId, getYouTubeThumbnail, getYouTubeEmbedUrl } from "@/lib/youtube";
 import { GroupAvatar } from "@/app/(protected)/groups/GroupAvatar";
 import type { MusicianAd, Profile as ProfileRow } from "@/types";
 
@@ -37,10 +36,6 @@ const MODE_CONFIG = {
   groupe: { label: "Groupes", icon: Users, className: "bg-zik-emerald/10 text-zik-emerald" },
 } as const;
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
-}
-
 export default function PeopleSearchTab() {
   const supabase = createClient();
   const router = useRouter();
@@ -52,7 +47,6 @@ export default function PeopleSearchTab() {
   const [editingAd, setEditingAd] = useState<MusicianAd | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [contactingId, setContactingId] = useState<string | null>(null);
-  const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
 
   const [modeFilter, setModeFilter] = useState<"tous" | "musicien" | "groupe">("tous");
   const [instrumentFilterMusicien, setInstrumentFilterMusicien] = useState<string[]>([]);
@@ -347,18 +341,20 @@ export default function PeopleSearchTab() {
             const instrument = INSTRUMENTS.find((i) => i.key === ad.instrument);
             const config = MODE_CONFIG[ad.mode as keyof typeof MODE_CONFIG] ?? MODE_CONFIG.musicien;
             const ModeIcon = config.icon;
-            const videoId = ad.video_url ? getYouTubeVideoId(ad.video_url) : null;
-            const isPlaying = playingVideoId === ad.id;
             return (
-              <div key={ad.id} className="rounded-lg border border-zik-border overflow-hidden bg-zik-card">
+              <div
+                key={ad.id}
+                onClick={() => router.push(`/ads/${ad.id}`)}
+                className="rounded-lg border border-zik-border overflow-hidden bg-zik-card hover:border-zik-purple/30 hover:shadow-sm transition-all cursor-pointer active:scale-[0.99]"
+              >
                 <div className="flex">
                   {ad.photo_url && (
-                    <img src={ad.photo_url} alt={ad.title} className="w-24 shrink-0 object-cover self-stretch" />
+                    <img src={ad.photo_url} alt={ad.title} className="w-20 shrink-0 object-cover self-stretch" />
                   )}
-                  <div className="flex-1 min-w-0 p-4">
+                  <div className="flex-1 min-w-0 p-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full mb-1.5 ${config.className}`}>
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full mb-1 ${config.className}`}>
                           <ModeIcon className="h-3 w-3" />
                           {config.label}
                         </span>
@@ -378,9 +374,7 @@ export default function PeopleSearchTab() {
                       {!isOwner && <ReportButton targetType="musician_ad" targetId={ad.id} variant="icon" />}
                     </div>
 
-                    {ad.description && <p className="text-sm text-zik-muted mt-2 line-clamp-2">{ad.description}</p>}
-
-                    <div className="flex flex-wrap gap-3 mt-2 text-xs text-zik-muted">
+                    <div className="flex flex-wrap gap-3 mt-1.5 text-xs text-zik-muted">
                       {instrument && <span>{instrument.emoji} {instrument.label}</span>}
                       {ad.city && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{ad.city}</span>}
                       {distanceById[ad.id] !== undefined && (
@@ -390,61 +384,25 @@ export default function PeopleSearchTab() {
                         </span>
                       )}
                       <span className="text-zik-purple">{STATUS_LABELS[ad.status] ?? ad.status}</span>
-                      <span>{formatDate(ad.created_at)}</span>
                     </div>
 
-                    {ad.genres.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {ad.genres.map((g) => (
-                          <span key={g} className="text-[10px] bg-zik-purple/10 text-zik-purple px-2 py-0.5 rounded-full">{g}</span>
-                        ))}
-                      </div>
-                    )}
-
-                    {videoId && (
-                      <div className="mt-3 rounded-lg overflow-hidden bg-black aspect-video max-w-sm">
-                        {isPlaying ? (
-                          <iframe
-                            src={getYouTubeEmbedUrl(videoId)}
-                            title={ad.title}
-                            className="w-full h-full"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          />
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setPlayingVideoId(ad.id)}
-                            className="relative w-full h-full group"
-                          >
-                            <img src={getYouTubeThumbnail(videoId)} alt="" className="w-full h-full object-cover" />
-                            <span className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
-                              <span className="h-12 w-12 rounded-full bg-white/90 flex items-center justify-center">
-                                <Play className="h-5 w-5 text-black ml-0.5" fill="black" />
-                              </span>
-                            </span>
-                          </button>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-end gap-2 mt-3">
+                    <div className="flex items-center justify-end gap-2 mt-2">
                       {isOwner ? (
                         <>
                           <Button size="sm" variant="outline"
                             className="text-xs border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
-                            onClick={() => setEditingAd(ad)}>
+                            onClick={(e) => { e.stopPropagation(); setEditingAd(ad); }}>
                             <Pencil className="h-3.5 w-3.5 mr-1" /> Modifier
                           </Button>
                           <Button size="sm" variant="outline"
                             className="text-xs border-zik-red/30 text-zik-red hover:bg-zik-red/10"
-                            onClick={() => handleDelete(ad.id)} disabled={deletingId === ad.id}>
+                            onClick={(e) => { e.stopPropagation(); handleDelete(ad.id); }} disabled={deletingId === ad.id}>
                             <Trash2 className="h-3.5 w-3.5 mr-1" /> {deletingId === ad.id ? "..." : "Supprimer"}
                           </Button>
                         </>
                       ) : (
                         <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo"
-                          onClick={() => handleContact(ad.created_by)}
+                          onClick={(e) => { e.stopPropagation(); handleContact(ad.created_by); }}
                           disabled={contactingId === ad.created_by}>
                           <MessageCircle className="h-3.5 w-3.5 mr-1" />
                           {contactingId === ad.created_by ? "..." : "Contacter"}
