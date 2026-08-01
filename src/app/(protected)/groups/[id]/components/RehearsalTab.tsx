@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
-import { CalendarClock, MapPin, Loader2, Sparkles, CalendarRange, CheckCircle2, Pencil } from "lucide-react";
+import { CalendarClock, MapPin, Loader2, Sparkles, CalendarRange, CheckCircle2, Pencil, Trash2, X, Check } from "lucide-react";
 
 type Mode = "disponibilite" | "indisponibilite";
 type PeriodKey = "matin" | "apres_midi" | "soir";
@@ -51,6 +51,16 @@ function formatSlot(d: string) {
   });
 }
 
+function toDatetimeLocal(iso: string) {
+  const d = new Date(iso);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const h = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${y}-${m}-${day}T${h}:${min}`;
+}
+
 export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, memberCount }: RehearsalTabProps) {
   const supabase = createClient();
 
@@ -78,6 +88,12 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
   const [forceEdit, setForceEdit] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   useEffect(() => { setForceEdit(false); }, [weekStart]);
+
+  const [editingRehearsalId, setEditingRehearsalId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editTime, setEditTime] = useState("");
+  const [editLocation, setEditLocation] = useState("");
+  const [isSavingRehearsal, setIsSavingRehearsal] = useState(false);
 
   const fetchAll = useCallback(async () => {
     const nowIso = new Date().toISOString();
@@ -264,6 +280,39 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
     await fetchAll();
   };
 
+  const handleStartEditRehearsal = (r: Rehearsal) => {
+    setEditingRehearsalId(r.id);
+    setEditTitle(r.title ?? "");
+    setEditTime(toDatetimeLocal(r.start_time));
+    setEditLocation(r.location ?? "");
+  };
+
+  const handleCancelEditRehearsal = () => {
+    setEditingRehearsalId(null);
+    setEditTitle("");
+    setEditTime("");
+    setEditLocation("");
+  };
+
+  const handleSaveRehearsal = async () => {
+    if (!editingRehearsalId || !editTime) return;
+    setIsSavingRehearsal(true);
+    await supabase.from("group_rehearsals").update({
+      title: editTitle.trim() || null,
+      start_time: new Date(editTime).toISOString(),
+      location: editLocation.trim() || null,
+    }).eq("id", editingRehearsalId);
+    setIsSavingRehearsal(false);
+    handleCancelEditRehearsal();
+    await fetchAll();
+  };
+
+  const handleDeleteRehearsal = async (id: string) => {
+    if (!confirm("Supprimer cette répétition ?")) return;
+    await supabase.from("group_rehearsals").delete().eq("id", id);
+    await fetchAll();
+  };
+
   if (isLoading) {
     return (
       <TabsContent value="repetition" className="px-4 py-3">
@@ -290,18 +339,67 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
         ) : (
           <div className="space-y-2">
             {upcoming.map((r) => (
-              <div key={r.id} className="flex items-center gap-2.5 p-3 rounded-xl border border-zik-border bg-zik-card/50">
-                <CalendarClock className="h-4 w-4 text-zik-purple shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-zik-text truncate">{r.title || "Répétition"}</p>
-                  <p className="text-xs text-zik-muted">{formatSlot(r.start_time)}</p>
+              editingRehearsalId === r.id ? (
+                <div key={r.id} className="p-3 rounded-xl border border-zik-purple/30 bg-zik-card/50 space-y-1.5">
+                  <input
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    placeholder="Titre (optionnel)"
+                    className="zik-input text-sm"
+                  />
+                  <input
+                    type="datetime-local"
+                    value={editTime}
+                    onChange={(e) => setEditTime(e.target.value)}
+                    className="zik-input text-sm"
+                  />
+                  <input
+                    value={editLocation}
+                    onChange={(e) => setEditLocation(e.target.value)}
+                    placeholder="Lieu (optionnel)"
+                    className="zik-input text-sm"
+                  />
+                  <div className="flex gap-2 justify-end pt-1">
+                    <Button
+                      type="button" size="sm" variant="outline"
+                      className="text-xs border-zik-border text-zik-text hover:bg-zik-card-hover"
+                      onClick={handleCancelEditRehearsal}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      type="button" size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo"
+                      disabled={isSavingRehearsal || !editTime}
+                      onClick={handleSaveRehearsal}
+                    >
+                      {isSavingRehearsal ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                    </Button>
+                  </div>
                 </div>
-                {r.location && (
-                  <span className="flex items-center gap-1 text-xs text-zik-muted shrink-0 max-w-32 truncate">
-                    <MapPin className="h-3 w-3 shrink-0" /> {r.location}
-                  </span>
-                )}
-              </div>
+              ) : (
+                <div key={r.id} className="flex items-center gap-2.5 p-3 rounded-xl border border-zik-border bg-zik-card/50">
+                  <CalendarClock className="h-4 w-4 text-zik-purple shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-zik-text truncate">{r.title || "Répétition"}</p>
+                    <p className="text-xs text-zik-muted">{formatSlot(r.start_time)}</p>
+                  </div>
+                  {r.location && (
+                    <span className="flex items-center gap-1 text-xs text-zik-muted shrink-0 max-w-32 truncate">
+                      <MapPin className="h-3 w-3 shrink-0" /> {r.location}
+                    </span>
+                  )}
+                  {isAdmin && (
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button onClick={() => handleStartEditRehearsal(r)} className="text-zik-muted hover:text-zik-purple p-1">
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button onClick={() => handleDeleteRehearsal(r.id)} className="text-zik-muted hover:text-zik-red p-1">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )
             ))}
           </div>
         )}
