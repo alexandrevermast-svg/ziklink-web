@@ -269,6 +269,7 @@ function OnboardingForm() {
   const [step, setStep] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [isDone, setIsDone] = useState(false);
+  const [finishError, setFinishError] = useState<string | null>(null);
 
   // Champs
   const [username, setUsername] = useState('');
@@ -318,6 +319,7 @@ function OnboardingForm() {
 
   const handleFinish = async () => {
     setIsSaving(true);
+    setFinishError(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push('/login'); return; }
@@ -335,18 +337,31 @@ function OnboardingForm() {
         }
       }
 
-      await supabase.from('profiles').update({
+      const { data: updated, error } = await supabase.from('profiles').upsert({
+        id: user.id,
         username: username.trim(),
         instruments,
         city: city.trim() || null,
         bio: bio.trim() || null,
         avatar_url: avatarUrl,
         onboarding_completed: true,
-      }).eq('id', user.id);
+      }, { onConflict: 'id' }).select('id');
+
+      if (error) {
+        setFinishError(error.message.includes('duplicate') || error.message.includes('unique')
+          ? 'Ce pseudo est déjà pris.'
+          : `Erreur : ${error.message}`);
+        return;
+      }
+      if (!updated || updated.length === 0) {
+        setFinishError("La mise à jour du profil n'a pas pu être enregistrée. Réessaie ou contacte-nous si ça persiste.");
+        return;
+      }
 
       setIsDone(true);
     } catch (e) {
       console.error(e);
+      setFinishError("Une erreur inattendue s'est produite.");
     } finally {
       setIsSaving(false);
     }
@@ -394,6 +409,10 @@ function OnboardingForm() {
                 />
               )}
             </div>
+
+            {finishError && (
+              <p className="text-xs text-zik-red text-center px-6 pb-3">{finishError}</p>
+            )}
 
             {/* Navigation */}
             <div className="px-6 pb-6 flex items-center justify-between gap-3">
