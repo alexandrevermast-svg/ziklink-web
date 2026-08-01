@@ -8,8 +8,10 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Plus, MapPin, Users, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import GroupCreationForm from '@/components/GroupCreationForm';
 import Modal from '@/components/Modal';
+import PeopleSearchTab from '@/components/PeopleSearchTab';
 import { GroupAvatar } from "./GroupAvatar";
 import type { Group as GroupRow } from "@/types";
 
@@ -44,91 +46,96 @@ export default function GroupsPage() {
 
   useEffect(() => { fetchGroups(); }, [fetchGroups]);
 
-  // ✅ Loading skeleton adapté
-  if (isLoading) return (
-    <div className="p-4 space-y-3">
-      {[...Array(4)].map((_, i) => <div key={i} className="h-20 bg-zik-card animate-pulse rounded-xl" />)}
-    </div>
-  );
-
   return (
-    <div className="flex flex-col gap-4 p-4 pb-24">
-      <div className="flex items-center justify-between">
-        <div>
-          {/* ✅ Titre et sous-titre adaptés */}
-          <h1 className="text-xl font-bold text-zik-text">Groupes</h1>
-          <p className="text-sm text-zik-muted mt-0.5">
-            {groups.length} groupe{groups.length > 1 ? 's' : ''} sur Ziklink
-          </p>
-        </div>
-        {/* ✅ Bouton "Créer" adapté */}
-        <Button
-          size="sm"
-          className="bg-zik-purple hover:bg-zik-indigo"
-          onClick={() => setIsModalOpen(true)}
-        >
-          <Plus className="h-4 w-4 mr-1.5" /> Créer
-        </Button>
-      </div>
+    <Tabs defaultValue="groupes" className="w-full">
+      <TabsList className="grid w-full grid-cols-2 mx-4 mt-4" style={{ width: 'calc(100% - 2rem)' }}>
+        <TabsTrigger value="groupes" className="text-zik-text">
+          <Users className="mr-2 h-4 w-4" /> Groupes
+        </TabsTrigger>
+        <TabsTrigger value="recherche" className="text-zik-text">
+          Recherche
+        </TabsTrigger>
+      </TabsList>
 
-      {groups.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-          <span className="text-5xl">🎸</span>
-          {/* ✅ Message adapté */}
-          <p className="text-zik-muted text-sm">
-            Aucun groupe pour l'instant.<br />Sois le premier à en créer un !
-          </p>
-          {/* ✅ Bouton adapté */}
-          <Button
-            className="bg-zik-purple hover:bg-zik-indigo mt-2"
-            onClick={() => setIsModalOpen(true)}
-          >
-            <Plus className="h-4 w-4 mr-1.5" /> Créer un groupe
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {groups.map((group) => (
-            <button
-              key={group.id}
-              onClick={() => router.push(`/groups/${group.id}`)}
-              // ✅ Carte de groupe adaptée
-              className="w-full flex items-center gap-3 p-3 rounded-xl border border-zik-border bg-zik-card hover:border-zik-purple/30 hover:shadow-sm transition-all text-left active:scale-[0.99]"
-            >
-              <GroupAvatar group={group} />
-              <div className="flex-1 min-w-0">
-                {/* ✅ Nom du groupe adapté */}
-                <p className="font-semibold text-zik-text truncate">{group.name}</p>
-                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  {/* ✅ Genre adapté */}
-                  {group.genre && (
-                    <span className="text-xs bg-zik-purple/10 text-zik-purple font-medium px-2 py-0.5 rounded-full">
-                      {group.genre}
-                    </span>
-                  )}
-                  {/* ✅ Ville adaptée */}
-                  {group.city && (
-                    <span className="flex items-center gap-0.5 text-xs text-zik-muted">
-                      <MapPin className="h-3 w-3" />{group.city}
-                    </span>
-                  )}
-                  {/* ✅ Nombre de membres adapté */}
-                  <span className="flex items-center gap-0.5 text-xs text-zik-muted">
-                    <Users className="h-3 w-3" />
-                    {group.member_count} membre{(group.member_count ?? 0) > 1 ? 's' : ''}
-                  </span>
-                </div>
-                {/* ✅ Bio adaptée */}
-                {group.bio && (
-                  <p className="text-xs text-zik-muted mt-1 line-clamp-1">{group.bio}</p>
-                )}
+      <TabsContent value="groupes">
+        {isLoading ? (
+          <div className="p-4 space-y-3">
+            {[...Array(4)].map((_, i) => <div key={i} className="h-20 bg-zik-card animate-pulse rounded-xl" />)}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4 p-4 pb-24">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-xl font-bold text-zik-text">Groupes</h1>
+                <p className="text-sm text-zik-muted mt-0.5">
+                  {groups.length} groupe{groups.length > 1 ? 's' : ''} sur Ziklink
+                </p>
               </div>
-              {/* ✅ Flèche adaptée */}
-              <ChevronRight className="h-4 w-4 text-zik-muted shrink-0" />
-            </button>
-          ))}
-        </div>
-      )}
+              <Button
+                size="sm"
+                className="bg-zik-purple hover:bg-zik-indigo"
+                onClick={() => setIsModalOpen(true)}
+              >
+                <Plus className="h-4 w-4 mr-1.5" /> Créer
+              </Button>
+            </div>
+
+            {groups.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+                <span className="text-5xl">🎸</span>
+                <p className="text-zik-muted text-sm">
+                  Aucun groupe pour l'instant.<br />Sois le premier à en créer un !
+                </p>
+                <Button
+                  className="bg-zik-purple hover:bg-zik-indigo mt-2"
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  <Plus className="h-4 w-4 mr-1.5" /> Créer un groupe
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {groups.map((group) => (
+                  <button
+                    key={group.id}
+                    onClick={() => router.push(`/groups/${group.id}`)}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl border border-zik-border bg-zik-card hover:border-zik-purple/30 hover:shadow-sm transition-all text-left active:scale-[0.99]"
+                  >
+                    <GroupAvatar group={group} />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-zik-text truncate">{group.name}</p>
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                        {group.genre && (
+                          <span className="text-xs bg-zik-purple/10 text-zik-purple font-medium px-2 py-0.5 rounded-full">
+                            {group.genre}
+                          </span>
+                        )}
+                        {group.city && (
+                          <span className="flex items-center gap-0.5 text-xs text-zik-muted">
+                            <MapPin className="h-3 w-3" />{group.city}
+                          </span>
+                        )}
+                        <span className="flex items-center gap-0.5 text-xs text-zik-muted">
+                          <Users className="h-3 w-3" />
+                          {group.member_count} membre{(group.member_count ?? 0) > 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      {group.bio && (
+                        <p className="text-xs text-zik-muted mt-1 line-clamp-1">{group.bio}</p>
+                      )}
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-zik-muted shrink-0" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="recherche">
+        <PeopleSearchTab />
+      </TabsContent>
 
       <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} title="Créer un groupe">
         <GroupCreationForm
@@ -136,6 +143,6 @@ export default function GroupsPage() {
           onClose={() => setIsModalOpen(false)}
         />
       </Modal>
-    </div>
+    </Tabs>
   );
 }

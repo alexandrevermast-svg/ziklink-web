@@ -8,7 +8,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
   ArrowLeft, MapPin, Users, Crown, UserPlus, Pencil,
-  Camera, Loader2, Mail, Trash2, Search
+  Camera, Loader2, Mail, Trash2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,7 +23,6 @@ import { ChatTab } from "./components/ChatTab";
 import { EditGroupModal } from "./components/EditGroupModal";
 import { InviteModal } from "./components/InviteModal";
 import { DeleteGroupModal } from "./components/DeleteGroupModal";
-import { SearchMusicianModal } from "./components/SearchMusicianModal";
 
 export default function GroupDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -69,15 +68,6 @@ export default function GroupDetailPage() {
 
   const pendingMembers = members.filter((m) => m.status === 'pending');
   const confirmedMembers = members.filter((m) => m.status !== 'pending');
-
-  // États pour la modale de recherche de musiciens
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedInstruments, setSelectedInstruments] = useState<string[]>([]);
-  const [distance, setDistance] = useState<number>(50);
-  const [onlyLookingForGroup, setOnlyLookingForGroup] = useState(true);
-  const [searchResults, setSearchResults] = useState<Profile[]>([]);
-  const [isSearchLoading, setIsSearchLoading] = useState(false);
 
   const handleAvatarClick = (profile: Profile, e: React.MouseEvent<HTMLDivElement>) => {
     if (profile.id === currentUserId) return;
@@ -285,83 +275,6 @@ export default function GroupDetailPage() {
     router.push(`/profile/${userId}`);
   }, [router]);
 
-  const fetchMusicians = useCallback(async () => {
-    if (!currentUserId) return;
-    setIsSearchLoading(true);
-    try {
-      let query = supabase
-        .from("profiles")
-        .select("id, username, avatar_url, city, instruments, looking_for_group")
-        .neq("id", currentUserId)
-        .eq("looking_for_group", onlyLookingForGroup);
-
-      if (selectedInstruments.length > 0) {
-        query = query.contains("instruments", selectedInstruments);
-      }
-
-      if (searchTerm.trim()) {
-        query = query.ilike("username", `%${searchTerm.trim()}%`);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      let filteredProfiles = data || [];
-      if (group?.city && distance > 0) {
-        filteredProfiles = filteredProfiles.filter(
-          (profile) => profile.city?.toLowerCase() === group.city?.toLowerCase()
-        );
-      }
-
-      setSearchResults(filteredProfiles);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsSearchLoading(false);
-    }
-  }, [searchTerm, selectedInstruments, distance, onlyLookingForGroup, group?.city, currentUserId]);
-
-  const toggleInstrument = (instrument: string) => {
-    setSelectedInstruments((prev) =>
-      prev.includes(instrument)
-        ? prev.filter((i) => i !== instrument)
-        : [...prev, instrument]
-    );
-  };
-
-  const handleInviteById = async (userId: string) => {
-    if (!isAdmin) return;
-
-    try {
-      if (members.some((m) => m.user_id === userId)) {
-        setInviteResult('already');
-        return;
-      }
-
-      await supabase.from('group_members').insert({
-        group_id: id,
-        user_id: userId,
-        role: 'member',
-        status: 'confirmed'
-      });
-
-      if (conversationId) {
-        await supabase.from('conversation_participants').upsert({
-          conversation_id: conversationId,
-          user_id: userId
-        });
-      }
-
-      setInviteResult('success');
-      await fetchAll();
-      setIsSearchOpen(false);
-      setTimeout(() => setInviteResult('idle'), 2000);
-    } catch (error) {
-      console.error("Erreur lors de l'invitation:", error);
-      setInviteResult('notfound');
-    }
-  };
-
   if (isLoading) return (
     <div className="flex flex-col gap-4 p-4">
       <div className="h-8 w-24 bg-zik-card animate-pulse rounded" />
@@ -528,20 +441,6 @@ export default function GroupDetailPage() {
               <UserPlus className="h-3.5 w-3.5 mr-1.5" /> Inviter
             </Button>
           )}
-          {isAdmin && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-zik-purple/30 text-zik-purple hover:bg-zik-purple/10 flex items-center gap-1.5"
-              onClick={() => {
-                setIsSearchOpen(true);
-                fetchMusicians();
-              }}
-            >
-              <Search className="h-3.5 w-3.5" />
-              Chercher un musicien
-            </Button>
-          )}
         </div>
       </div>
 
@@ -639,24 +538,6 @@ export default function GroupDetailPage() {
         onConfirm={handleDeleteGroup}
       />
 
-      <SearchMusicianModal
-        open={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        searchTerm={searchTerm}
-        onSearchTermChange={setSearchTerm}
-        selectedInstruments={selectedInstruments}
-        onToggleInstrument={toggleInstrument}
-        distance={distance}
-        onDistanceChange={setDistance}
-        groupCity={group.city}
-        onlyLookingForGroup={onlyLookingForGroup}
-        onToggleOnlyLookingForGroup={() => setOnlyLookingForGroup(!onlyLookingForGroup)}
-        onSearch={fetchMusicians}
-        isSearchLoading={isSearchLoading}
-        searchResults={searchResults}
-        onAvatarClick={handleAvatarClick}
-        onInvite={handleInviteById}
-      />
     </div>
   );
 }
