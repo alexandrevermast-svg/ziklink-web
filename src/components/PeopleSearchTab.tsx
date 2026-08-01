@@ -70,10 +70,11 @@ export default function PeopleSearchTab() {
     const { data: { user } } = await supabase.auth.getUser();
     setCurrentUserId(user?.id ?? null);
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("musician_ads")
       .select("*, profile:profiles(id, username, avatar_url), group:groups(id, name, avatar_url)")
       .order("created_at", { ascending: false });
+    if (error) console.error(`musician_ads fetch failed: ${error.message} (code: ${error.code}, details: ${error.details}, hint: ${error.hint})`);
     setAds((data ?? []).map((a: any) => ({ ...a, profile: a.profile ?? null, group: a.group ?? null })));
     setIsLoading(false);
   }, []);

@@ -585,6 +585,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "musician_ads_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "musician_ads_group_id_fkey"
             columns: ["group_id"]
             isOneToOne: false
@@ -905,7 +912,15 @@ export type Database = {
           title?: string
           type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "services_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
