@@ -406,27 +406,25 @@ export default function HomeFeed({
                           <Heart className={`h-4 w-4 ${isInterested ? "text-zik-red fill-zik-red" : ""}`} />
                         </button>
                       )}
-                      {currentUserId && !isCreator ? (
-                        isParticipant ? (
-                          <Button size="sm" variant="outline"
-                            className="text-xs border-zik-emerald/30 text-zik-emerald hover:bg-zik-red/10 hover:border-zik-red/30 hover:text-zik-red"
-                            onClick={(e) => handleLeaveJam(jam.id, e)} disabled={isJoining}>
-                            <Check className="h-3.5 w-3.5 mr-1" />
-                            {isJoining ? "..." : "Inscrit"}
-                          </Button>
-                        ) : joinOpen ? (
-                          <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo text-white"
-                            onClick={(e) => handleJoinJam(jam.id, e)} disabled={isJoining}>
-                            <UserPlus className="h-3.5 w-3.5 mr-1" />
-                            {isJoining ? "..." : jam.is_open ? "Rejoindre" : "Demander"}
-                          </Button>
-                        ) : (
-                          <span className="text-[10px] text-zik-muted italic">
-                            Inscriptions dès {formatTime(joinOpensAt(jam.start_time).toISOString())}
-                          </span>
-                        )
-                      ) : isCreator ? (
+                      {isCreator ? (
                         <span className="text-xs text-zik-muted italic">Organisateur</span>
+                      ) : isParticipant ? (
+                        <Button size="sm" variant="outline"
+                          className="text-xs border-zik-emerald/30 text-zik-emerald hover:bg-zik-red/10 hover:border-zik-red/30 hover:text-zik-red"
+                          onClick={(e) => handleLeaveJam(jam.id, e)} disabled={isJoining}>
+                          <Check className="h-3.5 w-3.5 mr-1" />
+                          {isJoining ? "..." : "Inscrit"}
+                        </Button>
+                      ) : !joinOpen ? (
+                        <span className="text-[10px] text-zik-muted italic">
+                          Inscriptions dès {formatTime(joinOpensAt(jam.start_time).toISOString())}
+                        </span>
+                      ) : currentUserId ? (
+                        <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo text-white"
+                          onClick={(e) => handleJoinJam(jam.id, e)} disabled={isJoining}>
+                          <UserPlus className="h-3.5 w-3.5 mr-1" />
+                          {isJoining ? "..." : jam.is_open ? "Rejoindre" : "Demander"}
+                        </Button>
                       ) : (
                         <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo text-white"
                           onClick={(e) => { e.stopPropagation(); router.push(`/login?next=${encodeURIComponent(`/events/jams/${jam.id}`)}`); }}>

@@ -521,11 +521,7 @@ export default function JamDetailPage() {
               <Heart className={`h-3.5 w-3.5 mr-1 ${isInterested ? "text-zik-red fill-zik-red" : ""}`} />
               {isInterested ? "Intéressé" : "M'intéresse"}
             </Button>
-            {!currentUserId ? (
-              <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo" onClick={handleJoin}>
-                <UserPlus className="h-3.5 w-3.5 mr-1" /> Rejoindre
-              </Button>
-            ) : isParticipant ? (
+            {isParticipant ? (
               <Button size="sm" variant="outline"
                 className="text-xs border-zik-emerald/30 text-zik-emerald hover:bg-zik-red/10 hover:border-zik-red/30 hover:text-zik-red transition-colors"
                 onClick={handleLeave}>
@@ -533,15 +529,15 @@ export default function JamDetailPage() {
               </Button>
             ) : isPending ? (
               <span className="text-xs text-zik-orange font-medium">⏳ En attente d'approbation</span>
-            ) : joinOpen ? (
-              <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo" onClick={handleJoin}>
-                <UserPlus className="h-3.5 w-3.5 mr-1" />
-                {jam.is_open ? "Rejoindre" : "Demander à rejoindre"}
-              </Button>
-            ) : (
+            ) : !joinOpen ? (
               <span className="text-xs text-zik-muted italic">
                 Inscriptions dès {formatTime(joinOpensAt(jam.start_time).toISOString())}
               </span>
+            ) : (
+              <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo" onClick={handleJoin}>
+                <UserPlus className="h-3.5 w-3.5 mr-1" />
+                {currentUserId && !jam.is_open ? "Demander à rejoindre" : "Rejoindre"}
+              </Button>
             )}
           </div>
         )}
