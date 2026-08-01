@@ -415,7 +415,7 @@ export default function HomeFeed({
                             {isJoining ? "..." : "Inscrit"}
                           </Button>
                         ) : joinOpen ? (
-                          <Button size="sm" className="text-xs bg-zik-emerald/80 hover:bg-zik-emerald text-white"
+                          <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo text-white"
                             onClick={(e) => handleJoinJam(jam.id, e)} disabled={isJoining}>
                             <UserPlus className="h-3.5 w-3.5 mr-1" />
                             {isJoining ? "..." : jam.is_open ? "Rejoindre" : "Demander"}
@@ -428,7 +428,7 @@ export default function HomeFeed({
                       ) : isCreator ? (
                         <span className="text-xs text-zik-muted italic">Organisateur</span>
                       ) : (
-                        <Button size="sm" className="text-xs bg-zik-emerald/80 hover:bg-zik-emerald text-white"
+                        <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo text-white"
                           onClick={(e) => { e.stopPropagation(); router.push(`/login?next=${encodeURIComponent(`/events/jams/${jam.id}`)}`); }}>
                           <UserPlus className="h-3.5 w-3.5 mr-1" /> Rejoindre
                         </Button>

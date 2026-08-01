@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import NotificationBell from '@/components/NotificationBell';
-import { User, LogOut, Shield } from 'lucide-react';
+import { User, LogOut, Shield, FileText } from 'lucide-react';
 import { ZikLogo } from '@/components/ZikLogo';
 
 export default function Header() {
@@ -116,6 +116,18 @@ export default function Header() {
                   Modération
                 </Link>
               )}
+
+              <Link
+                href="/legal"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-3 text-sm transition-colors duration-150"
+                style={{ color: 'rgba(255,255,255,0.75)' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >
+                <FileText size={14} strokeWidth={1.75} style={{ color: 'rgba(255,255,255,0.45)' }} />
+                Mentions légales
+              </Link>
 
               {/* Séparateur */}
               <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '2px 0' }} />
