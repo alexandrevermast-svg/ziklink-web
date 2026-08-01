@@ -36,6 +36,55 @@ const MODE_CONFIG = {
   groupe: { label: "Groupes", icon: Users, className: "bg-zik-emerald/10 text-zik-emerald" },
 } as const;
 
+function ChipFilterPopover({
+  label, options, selected, onToggle,
+}: {
+  label: string;
+  options: { key: string; label: string; emoji?: string }[];
+  selected: string[];
+  onToggle: (key: string) => void;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+            selected.length > 0 ? "border-zik-purple/40 bg-zik-purple/10 text-zik-purple" : "border-zik-border bg-zik-card text-zik-muted hover:border-zik-purple/30"
+          }`}
+        >
+          {label}
+          {selected.length > 0 && (
+            <span className="text-[10px] font-bold bg-zik-purple text-white rounded-full h-4 w-4 flex items-center justify-center">
+              {selected.length}
+            </span>
+          )}
+          <ChevronDown className="h-3.5 w-3.5" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 bg-zik-card border-zik-border p-3" align="start">
+        <div className="flex flex-wrap gap-2">
+          {options.map((opt) => {
+            const isSelected = selected.includes(opt.key);
+            return (
+              <button
+                key={opt.key}
+                onClick={() => onToggle(opt.key)}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                  isSelected
+                    ? "bg-zik-purple text-white border-zik-purple"
+                    : "bg-zik-card-hover text-zik-muted border-zik-border hover:border-zik-purple hover:text-zik-purple"
+                }`}
+              >
+                {opt.emoji && <span>{opt.emoji}</span>} {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export default function PeopleSearchTab() {
   const supabase = createClient();
   const router = useRouter();
@@ -201,64 +250,39 @@ export default function PeopleSearchTab() {
           {Object.entries(STATUS_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
         </select>
 
-        {(modeFilter === "tous" || modeFilter === "musicien") && (
-          <div>
-            <p className="text-xs text-zik-muted mb-1.5">Instrument joué</p>
-            <div className="flex flex-wrap gap-2">
-              {INSTRUMENTS.map((i) => {
-                const isSelected = instrumentFilterMusicien.includes(i.key);
-                return (
-                  <button
-                    key={i.key}
-                    onClick={() => toggleInstrumentFilter(i.key, "musicien")}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                      isSelected
-                        ? "bg-zik-purple text-white border-zik-purple"
-                        : "bg-zik-card text-zik-muted border-zik-border hover:border-zik-purple hover:text-zik-purple"
-                    }`}
-                  >
-                    <span>{i.emoji}</span> {i.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {(modeFilter === "tous" || modeFilter === "musicien") && (
+            <ChipFilterPopover
+              label="Instrument joué"
+              options={INSTRUMENTS}
+              selected={instrumentFilterMusicien}
+              onToggle={(key) => toggleInstrumentFilter(key, "musicien")}
+            />
+          )}
+          {(modeFilter === "tous" || modeFilter === "groupe") && (
+            <ChipFilterPopover
+              label="Instrument recherché"
+              options={INSTRUMENTS}
+              selected={instrumentFilterGroupe}
+              onToggle={(key) => toggleInstrumentFilter(key, "groupe")}
+            />
+          )}
+          <ChipFilterPopover
+            label="Styles"
+            options={GENRES.map((g) => ({ key: g, label: g }))}
+            selected={genreFilters}
+            onToggle={toggleGenreFilter}
+          />
 
-        {(modeFilter === "tous" || modeFilter === "groupe") && (
-          <div>
-            <p className="text-xs text-zik-muted mb-1.5">Instrument recherché</p>
-            <div className="flex flex-wrap gap-2">
-              {INSTRUMENTS.map((i) => {
-                const isSelected = instrumentFilterGroupe.includes(i.key);
-                return (
-                  <button
-                    key={i.key}
-                    onClick={() => toggleInstrumentFilter(i.key, "groupe")}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                      isSelected
-                        ? "bg-zik-purple text-white border-zik-purple"
-                        : "bg-zik-card text-zik-muted border-zik-border hover:border-zik-purple hover:text-zik-purple"
-                    }`}
-                  >
-                    <span>{i.emoji}</span> {i.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              onClick={() => { if (!nearMe) handleToggleNearMe(true); }}
-              className={`w-full flex items-center justify-between gap-2 rounded-lg border p-2.5 text-left transition-colors ${
-                nearMe ? "border-zik-purple/40 bg-zik-purple/10" : "border-zik-border bg-zik-card hover:border-zik-purple/30"
-              }`}
-            >
-              <span className="flex items-center gap-1.5 text-sm font-medium text-zik-text truncate">
-                <LocateFixed className={`h-4 w-4 shrink-0 ${nearMe ? "text-zik-purple" : "text-zik-muted"}`} />
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                onClick={() => { if (!nearMe) handleToggleNearMe(true); }}
+                className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                  nearMe ? "border-zik-purple/40 bg-zik-purple/10 text-zik-purple" : "border-zik-border bg-zik-card text-zik-muted hover:border-zik-purple/30"
+                }`}
+              >
+                <LocateFixed className="h-4 w-4 shrink-0" />
                 <span className="truncate">
                   {geoLoading
                     ? "Localisation..."
@@ -266,65 +290,46 @@ export default function PeopleSearchTab() {
                     ? `Près de moi · ${radiusKm === null ? "Tout" : radiusKm + " km"}`
                     : "Près de moi"}
                 </span>
-              </span>
-              {nearMe && <ChevronDown className="h-3.5 w-3.5 text-zik-muted shrink-0" />}
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-64 bg-zik-card border-zik-border p-4 space-y-3" align="start">
-            {geoError && <p className="text-xs text-zik-red">{geoError}</p>}
-            {nearMe && userPosition && (
-              <div>
-                <p className="text-xs text-zik-muted mb-1.5">Rayon</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {([
-                    { key: null, label: "Tout" },
-                    { key: 1, label: "1 km" },
-                    { key: 5, label: "5 km" },
-                    { key: 10, label: "10 km" },
-                    { key: 25, label: "25 km" },
-                  ] as const).map(({ key, label }) => {
-                    const isActive = radiusKm === key;
-                    return (
-                      <button
-                        key={label}
-                        onClick={() => setRadiusKm(key)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                          isActive ? "bg-zik-purple text-white" : "bg-zik-card-hover text-zik-muted hover:bg-zik-border"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-                <button
-                  onClick={() => handleToggleNearMe(false)}
-                  className="mt-3 text-xs text-zik-muted hover:text-zik-red transition-colors"
-                >
-                  Désactiver la localisation
-                </button>
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
-
-        <div className="flex flex-wrap gap-2">
-          {GENRES.map((g) => {
-            const isSelected = genreFilters.includes(g);
-            return (
-              <button
-                key={g}
-                onClick={() => toggleGenreFilter(g)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                  isSelected
-                    ? "bg-zik-purple text-white border-zik-purple"
-                    : "bg-zik-card text-zik-muted border-zik-border hover:border-zik-purple hover:text-zik-purple"
-                }`}
-              >
-                {g}
+                <ChevronDown className="h-3.5 w-3.5 shrink-0" />
               </button>
-            );
-          })}
+            </PopoverTrigger>
+            <PopoverContent className="w-64 bg-zik-card border-zik-border p-4 space-y-3" align="start">
+              {geoError && <p className="text-xs text-zik-red">{geoError}</p>}
+              {nearMe && userPosition && (
+                <div>
+                  <p className="text-xs text-zik-muted mb-1.5">Rayon</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {([
+                      { key: null, label: "Tout" },
+                      { key: 1, label: "1 km" },
+                      { key: 5, label: "5 km" },
+                      { key: 10, label: "10 km" },
+                      { key: 25, label: "25 km" },
+                    ] as const).map(({ key, label }) => {
+                      const isActive = radiusKm === key;
+                      return (
+                        <button
+                          key={label}
+                          onClick={() => setRadiusKm(key)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                            isActive ? "bg-zik-purple text-white" : "bg-zik-card-hover text-zik-muted hover:bg-zik-border"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    onClick={() => handleToggleNearMe(false)}
+                    className="mt-3 text-xs text-zik-muted hover:text-zik-red transition-colors"
+                  >
+                    Désactiver la localisation
+                  </button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
