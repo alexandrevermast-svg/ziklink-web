@@ -19,6 +19,10 @@
 
 /* ── Variables CSS natives ───────────────────────── */
 :root {
+  /* L'app est toujours sombre : indique-le au navigateur pour que les
+     contrôles natifs (menus <select>, date/heure, scrollbars) suivent
+     ce thème au lieu du blanc par défaut. */
+  color-scheme: dark;
   --zik-bg:          #0E0B16;
   --zik-card:        #1A1628;
   --zik-card-hover:  #211D30;
@@ -110,10 +114,6 @@ textarea.zik-input {
   resize: vertical;
 }
 
-.zik-input[type="date"],
-.zik-input[type="time"] {
-  color-scheme: dark;
-}
 /* ── Boutons ─────────────────────────────────────── */
 .zik-btn-primary {
   background: linear-gradient(135deg, #C084FC 0%, #818CF8 100%);
