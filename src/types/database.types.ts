@@ -538,13 +538,16 @@ export type Database = {
           created_by: string
           description: string | null
           genres: string[]
+          group_id: string | null
           id: string
           instrument: string | null
           lat: number | null
           lng: number | null
           mode: string
+          photo_url: string | null
           status: string
           title: string
+          video_url: string | null
         }
         Insert: {
           city?: string | null
@@ -552,13 +555,16 @@ export type Database = {
           created_by: string
           description?: string | null
           genres?: string[]
+          group_id?: string | null
           id?: string
           instrument?: string | null
           lat?: number | null
           lng?: number | null
           mode: string
+          photo_url?: string | null
           status?: string
           title: string
+          video_url?: string | null
         }
         Update: {
           city?: string | null
@@ -566,15 +572,26 @@ export type Database = {
           created_by?: string
           description?: string | null
           genres?: string[]
+          group_id?: string | null
           id?: string
           instrument?: string | null
           lat?: number | null
           lng?: number | null
           mode?: string
+          photo_url?: string | null
           status?: string
           title?: string
+          video_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "musician_ads_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {

@@ -8,12 +8,15 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import Modal from "@/components/Modal";
 import AdForm from "@/components/AdForm";
 import ReportButton from "@/components/ReportButton";
-import { Plus, User, Users, MapPin, MessageCircle, Pencil, Trash2, LocateFixed, ChevronDown } from "lucide-react";
+import { Plus, User, Users, MapPin, MessageCircle, Pencil, Trash2, LocateFixed, ChevronDown, Play } from "lucide-react";
 import { haversineDistanceKm, formatDistanceKm, type LatLng } from "@/lib/geo";
+import { getYouTubeVideoId, getYouTubeThumbnail, getYouTubeEmbedUrl } from "@/lib/youtube";
+import { GroupAvatar } from "@/app/(protected)/groups/GroupAvatar";
 import type { MusicianAd, Profile as ProfileRow } from "@/types";
 
 type Profile = Pick<ProfileRow, "id" | "username" | "avatar_url">;
-type AdWithProfile = MusicianAd & { profile: Profile | null };
+type AdGroup = { id: string; name: string; avatar_url: string | null };
+type AdWithProfile = MusicianAd & { profile: Profile | null; group: AdGroup | null };
 
 const INSTRUMENTS = [
   { key: "chant", label: "Chant", emoji: "🎤" },
@@ -21,12 +24,13 @@ const INSTRUMENTS = [
   { key: "basse", label: "Basse", emoji: "🎵" },
   { key: "batterie", label: "Batterie", emoji: "🥁" },
   { key: "clavier", label: "Clavier", emoji: "🎹" },
+  { key: "vents", label: "Vents", emoji: "🎺" },
   { key: "autres", label: "Autres", emoji: "🎶" },
 ];
 
 const GENRES = ["Rock", "Jazz", "Blues", "Metal", "Pop", "Électro", "Folk", "Classique", "Hip-Hop", "Reggae", "Autre"];
 
-const STATUS_LABELS: Record<string, string> = { amateur: "Amateur", pro: "Pro", indifferent: "Indifférent" };
+const STATUS_LABELS: Record<string, string> = { amateur: "Amateur", pro: "Pro" };
 
 const MODE_CONFIG = {
   musicien: { label: "Musiciens", icon: User, className: "bg-zik-orange/10 text-zik-orange" },
@@ -48,9 +52,11 @@ export default function PeopleSearchTab() {
   const [editingAd, setEditingAd] = useState<MusicianAd | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [contactingId, setContactingId] = useState<string | null>(null);
+  const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
 
   const [modeFilter, setModeFilter] = useState<"tous" | "musicien" | "groupe">("tous");
-  const [instrumentFilter, setInstrumentFilter] = useState("");
+  const [instrumentFilterMusicien, setInstrumentFilterMusicien] = useState<string[]>([]);
+  const [instrumentFilterGroupe, setInstrumentFilterGroupe] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState("");
   const [genreFilters, setGenreFilters] = useState<string[]>([]);
 
@@ -66,9 +72,9 @@ export default function PeopleSearchTab() {
 
     const { data } = await supabase
       .from("musician_ads")
-      .select("*, profile:profiles(id, username, avatar_url)")
+      .select("*, profile:profiles(id, username, avatar_url), group:groups(id, name, avatar_url)")
       .order("created_at", { ascending: false });
-    setAds((data ?? []).map((a: any) => ({ ...a, profile: a.profile ?? null })));
+    setAds((data ?? []).map((a: any) => ({ ...a, profile: a.profile ?? null, group: a.group ?? null })));
     setIsLoading(false);
   }, []);
 
@@ -76,6 +82,11 @@ export default function PeopleSearchTab() {
 
   const toggleGenreFilter = (g: string) => {
     setGenreFilters((prev) => prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]);
+  };
+
+  const toggleInstrumentFilter = (key: string, forMode: "musicien" | "groupe") => {
+    const setter = forMode === "musicien" ? setInstrumentFilterMusicien : setInstrumentFilterGroupe;
+    setter((prev) => prev.includes(key) ? prev.filter((x) => x !== key) : [...prev, key]);
   };
 
   const handleToggleNearMe = useCallback((checked: boolean) => {
@@ -117,7 +128,8 @@ export default function PeopleSearchTab() {
   const filtered = useMemo(() => {
     const base = ads.filter((ad) => {
       if (modeFilter !== "tous" && ad.mode !== modeFilter) return false;
-      if (instrumentFilter && ad.instrument !== instrumentFilter) return false;
+      if (ad.mode === "musicien" && instrumentFilterMusicien.length > 0 && !instrumentFilterMusicien.includes(ad.instrument ?? "")) return false;
+      if (ad.mode === "groupe" && instrumentFilterGroupe.length > 0 && !instrumentFilterGroupe.includes(ad.instrument ?? "")) return false;
       if (statusFilter && ad.status !== statusFilter) return false;
       if (genreFilters.length > 0 && !genreFilters.some((g) => ad.genres.includes(g))) return false;
       return true;
@@ -131,7 +143,7 @@ export default function PeopleSearchTab() {
         if (db === undefined) return -1;
         return da - db;
       });
-  }, [ads, modeFilter, instrumentFilter, statusFilter, genreFilters, nearMe, userPosition, radiusKm, distanceById]);
+  }, [ads, modeFilter, instrumentFilterMusicien, instrumentFilterGroupe, statusFilter, genreFilters, nearMe, userPosition, radiusKm, distanceById]);
 
   const handleAddClick = () => {
     if (!currentUserId) { router.push(`/login?next=${encodeURIComponent("/groups")}`); return; }
@@ -185,24 +197,62 @@ export default function PeopleSearchTab() {
           ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <select
-            value={instrumentFilter}
-            onChange={(e) => setInstrumentFilter(e.target.value)}
-            className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple"
-          >
-            <option value="">Tous instruments</option>
-            {INSTRUMENTS.map((i) => <option key={i.key} value={i.key}>{i.emoji} {i.label}</option>)}
-          </select>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple"
-          >
-            <option value="">Tout statut</option>
-            {Object.entries(STATUS_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
-          </select>
-        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple"
+        >
+          <option value="">Tout statut</option>
+          {Object.entries(STATUS_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+        </select>
+
+        {(modeFilter === "tous" || modeFilter === "musicien") && (
+          <div>
+            <p className="text-xs text-zik-muted mb-1.5">Instrument joué</p>
+            <div className="flex flex-wrap gap-2">
+              {INSTRUMENTS.map((i) => {
+                const isSelected = instrumentFilterMusicien.includes(i.key);
+                return (
+                  <button
+                    key={i.key}
+                    onClick={() => toggleInstrumentFilter(i.key, "musicien")}
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                      isSelected
+                        ? "bg-zik-purple text-white border-zik-purple"
+                        : "bg-zik-card text-zik-muted border-zik-border hover:border-zik-purple hover:text-zik-purple"
+                    }`}
+                  >
+                    <span>{i.emoji}</span> {i.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {(modeFilter === "tous" || modeFilter === "groupe") && (
+          <div>
+            <p className="text-xs text-zik-muted mb-1.5">Instrument recherché</p>
+            <div className="flex flex-wrap gap-2">
+              {INSTRUMENTS.map((i) => {
+                const isSelected = instrumentFilterGroupe.includes(i.key);
+                return (
+                  <button
+                    key={i.key}
+                    onClick={() => toggleInstrumentFilter(i.key, "groupe")}
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                      isSelected
+                        ? "bg-zik-purple text-white border-zik-purple"
+                        : "bg-zik-card text-zik-muted border-zik-border hover:border-zik-purple hover:text-zik-purple"
+                    }`}
+                  >
+                    <span>{i.emoji}</span> {i.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <Popover>
           <PopoverTrigger asChild>
@@ -296,67 +346,111 @@ export default function PeopleSearchTab() {
             const instrument = INSTRUMENTS.find((i) => i.key === ad.instrument);
             const config = MODE_CONFIG[ad.mode as keyof typeof MODE_CONFIG] ?? MODE_CONFIG.musicien;
             const ModeIcon = config.icon;
+            const videoId = ad.video_url ? getYouTubeVideoId(ad.video_url) : null;
+            const isPlaying = playingVideoId === ad.id;
             return (
-              <div key={ad.id} className="rounded-lg border border-zik-border p-4 bg-zik-card">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full mb-1.5 ${config.className}`}>
-                      <ModeIcon className="h-3 w-3" />
-                      {config.label}
-                    </span>
-                    <h3 className="font-semibold text-zik-text truncate">{ad.title}</h3>
-                    {ad.profile?.username && (
-                      <p className="text-xs text-zik-muted truncate">par {ad.profile.username}</p>
+              <div key={ad.id} className="rounded-lg border border-zik-border overflow-hidden bg-zik-card">
+                <div className="flex">
+                  {ad.photo_url && (
+                    <img src={ad.photo_url} alt={ad.title} className="w-24 shrink-0 object-cover self-stretch" />
+                  )}
+                  <div className="flex-1 min-w-0 p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full mb-1.5 ${config.className}`}>
+                          <ModeIcon className="h-3 w-3" />
+                          {config.label}
+                        </span>
+                        <h3 className="font-semibold text-zik-text truncate">{ad.title}</h3>
+                        {ad.group ? (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); router.push(`/groups/${ad.group!.id}`); }}
+                            className="flex items-center gap-1.5 mt-1 hover:opacity-80 transition-opacity"
+                          >
+                            <GroupAvatar group={ad.group} size="sm" />
+                            <span className="text-xs text-zik-muted truncate">{ad.group.name}</span>
+                          </button>
+                        ) : ad.profile?.username && (
+                          <p className="text-xs text-zik-muted truncate">par {ad.profile.username}</p>
+                        )}
+                      </div>
+                      {!isOwner && <ReportButton targetType="musician_ad" targetId={ad.id} variant="icon" />}
+                    </div>
+
+                    {ad.description && <p className="text-sm text-zik-muted mt-2 line-clamp-2">{ad.description}</p>}
+
+                    <div className="flex flex-wrap gap-3 mt-2 text-xs text-zik-muted">
+                      {instrument && <span>{instrument.emoji} {instrument.label}</span>}
+                      {ad.city && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{ad.city}</span>}
+                      {distanceById[ad.id] !== undefined && (
+                        <span className="flex items-center gap-1 text-zik-purple font-medium">
+                          <LocateFixed className="h-3 w-3" />
+                          {formatDistanceKm(distanceById[ad.id])}
+                        </span>
+                      )}
+                      <span className="text-zik-purple">{STATUS_LABELS[ad.status] ?? ad.status}</span>
+                      <span>{formatDate(ad.created_at)}</span>
+                    </div>
+
+                    {ad.genres.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {ad.genres.map((g) => (
+                          <span key={g} className="text-[10px] bg-zik-purple/10 text-zik-purple px-2 py-0.5 rounded-full">{g}</span>
+                        ))}
+                      </div>
                     )}
+
+                    {videoId && (
+                      <div className="mt-3 rounded-lg overflow-hidden bg-black aspect-video max-w-sm">
+                        {isPlaying ? (
+                          <iframe
+                            src={getYouTubeEmbedUrl(videoId)}
+                            title={ad.title}
+                            className="w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setPlayingVideoId(ad.id)}
+                            className="relative w-full h-full group"
+                          >
+                            <img src={getYouTubeThumbnail(videoId)} alt="" className="w-full h-full object-cover" />
+                            <span className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
+                              <span className="h-12 w-12 rounded-full bg-white/90 flex items-center justify-center">
+                                <Play className="h-5 w-5 text-black ml-0.5" fill="black" />
+                              </span>
+                            </span>
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-end gap-2 mt-3">
+                      {isOwner ? (
+                        <>
+                          <Button size="sm" variant="outline"
+                            className="text-xs border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
+                            onClick={() => setEditingAd(ad)}>
+                            <Pencil className="h-3.5 w-3.5 mr-1" /> Modifier
+                          </Button>
+                          <Button size="sm" variant="outline"
+                            className="text-xs border-zik-red/30 text-zik-red hover:bg-zik-red/10"
+                            onClick={() => handleDelete(ad.id)} disabled={deletingId === ad.id}>
+                            <Trash2 className="h-3.5 w-3.5 mr-1" /> {deletingId === ad.id ? "..." : "Supprimer"}
+                          </Button>
+                        </>
+                      ) : (
+                        <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo"
+                          onClick={() => handleContact(ad.created_by)}
+                          disabled={contactingId === ad.created_by}>
+                          <MessageCircle className="h-3.5 w-3.5 mr-1" />
+                          {contactingId === ad.created_by ? "..." : "Contacter"}
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  {!isOwner && <ReportButton targetType="musician_ad" targetId={ad.id} variant="icon" />}
-                </div>
-
-                {ad.description && <p className="text-sm text-zik-muted mt-2 line-clamp-2">{ad.description}</p>}
-
-                <div className="flex flex-wrap gap-3 mt-2 text-xs text-zik-muted">
-                  {instrument && <span>{instrument.emoji} {instrument.label}</span>}
-                  {ad.city && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{ad.city}</span>}
-                  {distanceById[ad.id] !== undefined && (
-                    <span className="flex items-center gap-1 text-zik-purple font-medium">
-                      <LocateFixed className="h-3 w-3" />
-                      {formatDistanceKm(distanceById[ad.id])}
-                    </span>
-                  )}
-                  <span className="text-zik-purple">{STATUS_LABELS[ad.status] ?? ad.status}</span>
-                  <span>{formatDate(ad.created_at)}</span>
-                </div>
-
-                {ad.genres.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {ad.genres.map((g) => (
-                      <span key={g} className="text-[10px] bg-zik-purple/10 text-zik-purple px-2 py-0.5 rounded-full">{g}</span>
-                    ))}
-                  </div>
-                )}
-
-                <div className="flex items-center justify-end gap-2 mt-3">
-                  {isOwner ? (
-                    <>
-                      <Button size="sm" variant="outline"
-                        className="text-xs border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
-                        onClick={() => setEditingAd(ad)}>
-                        <Pencil className="h-3.5 w-3.5 mr-1" /> Modifier
-                      </Button>
-                      <Button size="sm" variant="outline"
-                        className="text-xs border-zik-red/30 text-zik-red hover:bg-zik-red/10"
-                        onClick={() => handleDelete(ad.id)} disabled={deletingId === ad.id}>
-                        <Trash2 className="h-3.5 w-3.5 mr-1" /> {deletingId === ad.id ? "..." : "Supprimer"}
-                      </Button>
-                    </>
-                  ) : (
-                    <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo"
-                      onClick={() => handleContact(ad.created_by)}
-                      disabled={contactingId === ad.created_by}>
-                      <MessageCircle className="h-3.5 w-3.5 mr-1" />
-                      {contactingId === ad.created_by ? "..." : "Contacter"}
-                    </Button>
-                  )}
                 </div>
               </div>
             );
