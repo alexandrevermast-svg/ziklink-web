@@ -31,4 +31,8 @@ export type Message = Tables["messages"]["Row"];
 
 export type Notification = Tables["notifications"]["Row"];
 
+export type Service = Tables["services"]["Row"];
+export type ServiceInsert = Tables["services"]["Insert"];
+export type ServiceUpdate = Tables["services"]["Update"];
+
 export type { Database } from "./database.types";

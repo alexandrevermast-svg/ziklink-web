@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Flag, X, ChevronDown, Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-type TargetType = 'user' | 'jam' | 'concert' | 'message' | 'group';
+type TargetType = 'user' | 'jam' | 'concert' | 'message' | 'group' | 'service';
 
 const REASONS: { value: string; label: string }[] = [
   { value: 'spam',               label: 'Spam ou publicité' },

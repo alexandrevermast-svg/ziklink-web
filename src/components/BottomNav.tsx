@@ -3,14 +3,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, CalendarDays, Users, MessageCircle, Music } from "lucide-react";
+import { Home, CalendarDays, Users, MessageCircle, Briefcase } from "lucide-react";
 
 const navItems = [
-  { name: "Accueil",   href: "/",        icon: Home          },
+  { name: "Accueil",   href: "/",         icon: Home          },
   { name: "Events",    href: "/events",   icon: CalendarDays  },
   { name: "Groupe",    href: "/groups",   icon: Users         },
   { name: "Messages",  href: "/messages", icon: MessageCircle },
-  { name: "Cours",     href: "/courses",  icon: Music         },
+  { name: "Services",  href: "/services", icon: Briefcase     },
 ];
 
 export default function BottomNav() {

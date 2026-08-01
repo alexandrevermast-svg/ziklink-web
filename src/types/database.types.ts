@@ -806,6 +806,45 @@ export type Database = {
         }
         Relationships: []
       }
+      services: {
+        Row: {
+          city: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          instrument: string | null
+          photo_url: string | null
+          price_info: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          instrument?: string | null
+          photo_url?: string | null
+          price_info?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          instrument?: string | null
+          photo_url?: string | null
+          price_info?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

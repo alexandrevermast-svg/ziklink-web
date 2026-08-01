@@ -6,14 +6,11 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/login"],
-        // Tout le reste exige une session connectée (redirige vers /login) :
+        allow: ["/", "/login", "/events", "/events/", "/services", "/legal"],
+        // Le reste exige une session connectée (redirige vers /login) :
         // inutile et contre-productif de le laisser explorer par les robots.
         disallow: [
           "/admin",
-          "/courses",
-          "/events",
-          "/events/",
           "/groups",
           "/groups/",
           "/messages",
