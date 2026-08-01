@@ -183,6 +183,23 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
     await fetchAll();
   };
 
+  const applyWeekdayOfficePattern = async () => {
+    if (!currentUserId) return;
+    if (myMode !== "indisponibilite") {
+      await supabase.from("group_schedule_prefs")
+        .upsert({ group_id: groupId, user_id: currentUserId, mode: "indisponibilite", updated_at: new Date().toISOString() }, { onConflict: "group_id,user_id" });
+      await supabase.from("group_schedule_marks").delete().eq("group_id", groupId).eq("user_id", currentUserId);
+    }
+    const officeCells = days
+      .filter((d) => { const wd = d.getDay(); return wd >= 1 && wd <= 5; })
+      .flatMap((d) => (["matin", "apres_midi"] as PeriodKey[]).map((period) => ({ date: toDateStr(d), period })));
+    await supabase.from("group_schedule_marks").upsert(
+      officeCells.map((c) => ({ group_id: groupId, user_id: currentUserId, date: c.date, period: c.period })),
+      { onConflict: "group_id,user_id,date,period" }
+    );
+    await fetchAll();
+  };
+
   const toggleCell = async (date: string, period: string) => {
     if (!currentUserId) return;
     const marked = isMarked(currentUserId, date, period);
@@ -314,11 +331,15 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
             🚫 Je remplis mes indispos
           </button>
         </div>
-        <p className="text-[11px] text-zik-muted mb-3">
+        <p className="text-[11px] text-zik-muted mb-2">
           {myMode === "disponibilite"
             ? "Coche les cases où tu es disponible."
             : "Coche les cases où tu n'es PAS disponible."}
         </p>
+        <button type="button" onClick={applyWeekdayOfficePattern}
+          className="text-[11px] text-zik-purple font-medium mb-3 hover:underline">
+          🏢 Indispo en semaine, matin + après-midi (Lun-Ven)
+        </button>
 
         <div className="overflow-x-auto -mx-4 px-4">
           <table className="border-collapse text-xs mx-auto" style={{ minWidth: 380 }}>
