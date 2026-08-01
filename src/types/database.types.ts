@@ -442,6 +442,7 @@ export type Database = {
         Row: {
           created_at: string | null
           duration_minutes: number | null
+          guest_name: string | null
           id: string
           instrument: string | null
           jam_id: string | null
@@ -454,6 +455,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           duration_minutes?: number | null
+          guest_name?: string | null
           id?: string
           instrument?: string | null
           jam_id?: string | null
@@ -466,6 +468,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           duration_minutes?: number | null
+          guest_name?: string | null
           id?: string
           instrument?: string | null
           jam_id?: string | null

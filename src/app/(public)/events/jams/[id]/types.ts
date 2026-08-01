@@ -4,6 +4,7 @@ export interface Message { id: string; user_id: string; content: string; created
 export interface JamSlot {
   id: string; jam_id: string; user_id: string | null;
   instrument: string; slot_index: number; song?: string | null; profile?: Profile | null;
+  guest_name?: string | null;
 }
 
 export const INSTRUMENTS = [

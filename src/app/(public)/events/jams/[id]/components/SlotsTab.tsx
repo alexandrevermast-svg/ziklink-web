@@ -145,10 +145,12 @@ export function SlotsTab({
                               }
                               ${isOrganizer && !isMe ? "cursor-grab active:cursor-grabbing" : ""}
                             `}>
-                            <Avatar profile={slot.profile ?? null} size="sm"
+                            <Avatar
+                              profile={slot.profile ?? (slot.guest_name ? { id: "", username: slot.guest_name, avatar_url: null } : null)}
+                              size="sm"
                               onClick={slot.profile && slot.user_id !== currentUserId
                                 ? (e) => onAvatarClick(slot.profile!, e) : undefined} />
-                            <span className="truncate flex-1 max-w-15">{slot.profile?.username ?? "?"}</span>
+                            <span className="truncate flex-1 max-w-15">{slot.profile?.username ?? slot.guest_name ?? "?"}</span>
                             {(isMe || isOrganizer) && (
                               <button onClick={(e) => { e.stopPropagation(); onRelease(slot.id); }}
                                 className="text-zik-muted hover:text-zik-red transition-colors shrink-0 ml-0.5">

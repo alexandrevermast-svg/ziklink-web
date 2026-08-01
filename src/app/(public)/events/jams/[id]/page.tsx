@@ -292,6 +292,14 @@ export default function JamDetailPage() {
     setClaimingCell(null);
   };
 
+  const handleAssignGuest = async (name: string, instrument: string, slot_index: number) => {
+    if (!isOrganizer || !name.trim()) return;
+    setClaimingCell({ instrument, slot_index });
+    await supabase.from("jam_slots").insert({ jam_id: id, guest_name: name.trim(), instrument, slot_index });
+    await fetchAll();
+    setClaimingCell(null);
+  };
+
   const handleEmptyCellClick = (instrument: string, slot_index: number, e: React.MouseEvent<HTMLTableCellElement>) => {
     if (!canInteract) return;
     if (isOrganizer) {
@@ -415,7 +423,7 @@ export default function JamDetailPage() {
       {pickerCell && (
         <ParticipantPicker instrument={pickerCell.instrument} slot_index={pickerCell.slot_index}
           participants={participants} slots={slots} anchorEl={pickerCell.anchorEl}
-          onPick={handleAssign} onClose={() => setPickerCell(null)} />
+          onPick={handleAssign} onPickGuest={handleAssignGuest} onClose={() => setPickerCell(null)} />
       )}
 
       {/* ── POSTER ──────────────────────────────────────────────────────── */}

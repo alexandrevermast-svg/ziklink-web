@@ -21,7 +21,6 @@ import { MembersTab } from "./components/MembersTab";
 import { GroupEventsTab } from "./components/GroupEventsTab";
 import { ChatTab } from "./components/ChatTab";
 import { EditGroupModal } from "./components/EditGroupModal";
-import { InviteModal } from "./components/InviteModal";
 import { DeleteGroupModal } from "./components/DeleteGroupModal";
 
 export default function GroupDetailPage() {
@@ -45,7 +44,6 @@ export default function GroupDetailPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isContactingGroup, setIsContactingGroup] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -59,8 +57,6 @@ export default function GroupDetailPage() {
   const [editGenre, setEditGenre] = useState('');
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
-  const [inviteUsername, setInviteUsername] = useState('');
-  const [inviteResult, setInviteResult] = useState<'idle' | 'loading' | 'success' | 'notfound' | 'already'>('idle');
 
   const myMembership = members.find((m) => m.user_id === currentUserId);
   const isMember = myMembership?.status === 'confirmed';
@@ -255,24 +251,6 @@ export default function GroupDetailPage() {
     setIsUploadingAvatar(false);
   };
 
-  const handleInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inviteUsername.trim()) return;
-    setInviteResult('loading');
-    const { data: profileData } = await supabase.from('profiles').select('id').eq('username', inviteUsername.trim()).single();
-    if (!profileData) { setInviteResult('notfound'); return; }
-    if (members.some((m) => m.user_id === profileData.id)) { setInviteResult('already'); return; }
-    await supabase.from('group_members').insert({ group_id: id, user_id: profileData.id, role: 'member', status: 'confirmed' });
-    if (conversationId) {
-      await supabase.from('conversation_participants')
-        .upsert({ conversation_id: conversationId, user_id: profileData.id }, { onConflict: 'conversation_id,user_id' });
-    }
-    setInviteResult('success');
-    setInviteUsername('');
-    await fetchAll();
-    setTimeout(() => setInviteResult('idle'), 2000);
-  };
-
   const handleOpenDM = async (targetUserId: string) => {
     if (!currentUserId || targetUserId === currentUserId) return;
     const { data: convId } = await supabase.rpc('get_or_create_direct_conversation', { p_other_user_id: targetUserId });
@@ -439,16 +417,6 @@ export default function GroupDetailPage() {
               Quitter le groupe
             </Button>
           )}
-          {isAdmin && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-zik-purple/30 text-zik-purple hover:bg-zik-purple/10"
-              onClick={() => setIsInviteOpen(true)}
-            >
-              <UserPlus className="h-3.5 w-3.5 mr-1.5" /> Inviter
-            </Button>
-          )}
         </div>
       </div>
 
@@ -546,15 +514,6 @@ export default function GroupDetailPage() {
         onGenreChange={setEditGenre}
         isSaving={isSavingEdit}
         onSave={handleSaveEdit}
-      />
-
-      <InviteModal
-        open={isInviteOpen}
-        onClose={() => { setIsInviteOpen(false); setInviteResult('idle'); setInviteUsername(''); }}
-        inviteUsername={inviteUsername}
-        onUsernameChange={(v) => { setInviteUsername(v); setInviteResult('idle'); }}
-        inviteResult={inviteResult}
-        onInvite={handleInvite}
       />
 
       <DeleteGroupModal
