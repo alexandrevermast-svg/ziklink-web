@@ -37,6 +37,7 @@ export default function GroupDetailPage() {
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [events, setEvents] = useState<{ type: 'jam' | 'concert'; id: string; title: string; artist?: string | null; start_time: string }[]>([]);
+  const [groupAds, setGroupAds] = useState<{ id: string; mode: string; title: string; instrument: string | null }[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messageInput, setMessageInput] = useState('');
@@ -104,6 +105,13 @@ export default function GroupDetailPage() {
       ...(concertsData ?? []).map((c) => ({ type: 'concert' as const, id: c.id, title: c.title, artist: c.artist, start_time: c.start_time })),
     ].sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
     setEvents(allEvents);
+
+    const { data: adsData } = await supabase
+      .from('musician_ads')
+      .select('id, mode, title, instrument')
+      .eq('group_id', id)
+      .order('created_at', { ascending: false });
+    setGroupAds(adsData ?? []);
 
     const { data: convData } = await supabase
       .from('conversations').select('id')
@@ -443,6 +451,25 @@ export default function GroupDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Annonces du groupe */}
+      {groupAds.length > 0 && (
+        <div className="px-4 pb-3">
+          <h2 className="text-sm font-semibold text-zik-text mb-2">Annonces du groupe ({groupAds.length})</h2>
+          <div className="space-y-2">
+            {groupAds.map((ad) => (
+              <button
+                key={ad.id}
+                onClick={() => router.push(`/ads/${ad.id}`)}
+                className="w-full flex items-center justify-between gap-2 p-3 rounded-xl border border-zik-border bg-zik-card/50 hover:border-zik-purple/30 transition-colors text-left"
+              >
+                <span className="text-sm font-medium text-zik-text truncate">{ad.title}</span>
+                <span className="text-xs text-zik-purple shrink-0 bg-zik-purple/10 px-2 py-0.5 rounded-full">Recrute</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Onglets */}
       <Tabs defaultValue="members" className="flex-1 flex flex-col">

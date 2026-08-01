@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
   Camera, MapPin, Music2, Save, Loader2,
-  CalendarDays, ChevronRight, Users
+  CalendarDays, ChevronRight, Users, Megaphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +42,12 @@ interface EventItem {
   start_time: string;
 }
 
+interface MyAd {
+  id: string;
+  mode: string;
+  title: string;
+}
+
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('fr-FR', {
     day: 'numeric', month: 'short', year: 'numeric'
@@ -57,6 +63,7 @@ export default function MyProfilePage() {
   const [groups, setGroups] = useState<MyGroup[]>([]);
   const [pastEvents, setPastEvents] = useState<EventItem[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<EventItem[]>([]);
+  const [myAds, setMyAds] = useState<MyAd[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -94,6 +101,13 @@ export default function MyProfilePage() {
         .eq('user_id', user.id)
         .eq('status', 'confirmed');
       setGroups((groupMemberships ?? []).map((g: any) => g.groups).filter(Boolean));
+
+      const { data: adsData } = await supabase
+        .from('musician_ads')
+        .select('id, mode, title')
+        .eq('created_by', user.id)
+        .order('created_at', { ascending: false });
+      setMyAds(adsData ?? []);
 
       const { data: jamParts } = await supabase
         .from('jam_participants')
@@ -344,6 +358,49 @@ export default function MyProfilePage() {
                 <p className="text-sm font-medium truncate flex-1 min-w-0" style={{ color: '#F1F0F6' }}>
                   {group.name}
                 </p>
+                <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.25)' }} className="shrink-0" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Mes annonces */}
+      {myAds.length > 0 && (
+        <div>
+          <h2
+            className="text-sm font-semibold mb-2 flex items-center gap-1.5"
+            style={{ color: '#F1F0F6' }}
+          >
+            <Megaphone size={15} style={{ color: '#C084FC' }} />
+            Mes annonces ({myAds.length})
+          </h2>
+          <div className="space-y-2">
+            {myAds.map((ad) => (
+              <button
+                key={ad.id}
+                onClick={() => router.push(`/ads/${ad.id}`)}
+                className="w-full flex items-center justify-between gap-3 p-3 rounded-xl text-left transition-all duration-150"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(192,132,252,0.20)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(192,132,252,0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
+                }}
+              >
+                <p className="text-sm font-medium truncate flex-1 min-w-0" style={{ color: '#F1F0F6' }}>
+                  {ad.title}
+                </p>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"
+                  style={{
+                    background: ad.mode === 'groupe' ? 'rgba(52,211,153,0.10)' : 'rgba(251,146,60,0.10)',
+                    color: ad.mode === 'groupe' ? '#34D399' : '#FB923C',
+                  }}>
+                  {ad.mode === 'groupe' ? 'Groupes' : 'Musiciens'}
+                </span>
                 <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.25)' }} className="shrink-0" />
               </button>
             ))}
