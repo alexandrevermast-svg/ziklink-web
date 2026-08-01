@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
   ArrowLeft, MapPin, Music2, MessageCircle,
-  Users, Search, ChevronDown, Check, Loader2
+  Users, ChevronDown, Check, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReportButton from '@/components/ReportButton';
@@ -26,7 +26,6 @@ interface Profile {
   city: string | null;
   instruments: string[] | null;
   avatar_url: string | null;
-  looking_for_group: boolean;
 }
 
 interface MyGroup {
@@ -60,7 +59,7 @@ export default function PublicProfilePage() {
 
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('id, username, bio, city, instruments, avatar_url, looking_for_group')
+        .select('id, username, bio, city, instruments, avatar_url')
         .eq('id', userId)
         .single();
       setProfile(profileData);
@@ -208,22 +207,6 @@ export default function PublicProfilePage() {
             </p>
           )}
         </div>
-
-        {/* Badge "Cherche un groupe" */}
-        {profile.looking_for_group && (
-          <div
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full"
-            style={{
-              background: 'rgba(192,132,252,0.10)',
-              border: '1px solid rgba(192,132,252,0.25)',
-            }}
-          >
-            <Search size={12} style={{ color: '#C084FC' }} />
-            <span className="text-xs font-medium" style={{ color: '#C084FC' }}>
-              Cherche un groupe 🎸
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Boutons d'action */}

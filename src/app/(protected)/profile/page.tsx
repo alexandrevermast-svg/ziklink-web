@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
   Camera, MapPin, Music2, Save, Loader2,
-  CalendarDays, ChevronRight, Users, Search
+  CalendarDays, ChevronRight, Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,7 +27,6 @@ interface Profile {
   city: string | null;
   instruments: string[] | null;
   avatar_url: string | null;
-  looking_for_group: boolean;
 }
 
 interface MyGroup {
@@ -68,7 +67,6 @@ export default function MyProfilePage() {
   const [city, setCity] = useState('');
   const [instruments, setInstruments] = useState<string[]>([]);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [lookingForGroup, setLookingForGroup] = useState(false);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -77,7 +75,7 @@ export default function MyProfilePage() {
 
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('id, username, bio, city, instruments, avatar_url, looking_for_group')
+        .select('id, username, bio, city, instruments, avatar_url')
         .eq('id', user.id)
         .single();
 
@@ -88,7 +86,6 @@ export default function MyProfilePage() {
         setCity(profileData.city ?? '');
         setInstruments(profileData.instruments ?? []);
         setAvatarUrl(profileData.avatar_url ?? null);
-        setLookingForGroup(profileData.looking_for_group ?? false);
       }
 
       const { data: groupMemberships } = await supabase
@@ -166,7 +163,6 @@ export default function MyProfilePage() {
       bio: bio.trim() || null,
       city: city.trim() || null,
       instruments,
-      looking_for_group: lookingForGroup,
     }).eq('id', profile.id);
     setIsSaving(false);
     setSaved(true);
@@ -223,74 +219,6 @@ export default function MyProfilePage() {
           Appuie sur l'icône pour changer ta photo
         </p>
       </div>
-
-      {/* Toggle "Je cherche un groupe" */}
-      <button
-        type="button"
-        onClick={() => setLookingForGroup((prev) => !prev)}
-        className="flex items-center justify-between p-4 rounded-xl transition-all duration-200"
-        style={{
-          background: lookingForGroup
-            ? 'rgba(192,132,252,0.10)'
-            : 'rgba(255,255,255,0.04)',
-          border: '1px solid',
-          borderColor: lookingForGroup
-            ? 'rgba(192,132,252,0.30)'
-            : 'rgba(255,255,255,0.07)',
-        }}
-      >
-        <div className="flex items-center gap-3">
-          <div
-            className="h-9 w-9 rounded-full flex items-center justify-center shrink-0"
-            style={{
-              background: lookingForGroup
-                ? 'rgba(192,132,252,0.15)'
-                : 'rgba(255,255,255,0.06)',
-            }}
-          >
-            <Search
-              size={16}
-              style={{ color: lookingForGroup ? '#C084FC' : 'rgba(255,255,255,0.35)' }}
-            />
-          </div>
-          <div className="text-left">
-            <p
-              className="text-sm font-medium"
-              style={{ color: lookingForGroup ? '#F1F0F6' : 'rgba(255,255,255,0.55)' }}
-            >
-              Je cherche un groupe
-            </p>
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.30)' }}>
-              {lookingForGroup
-                ? 'Visible par les groupes qui cherchent des membres'
-                : 'Activez pour être trouvé par des groupes'}
-            </p>
-          </div>
-        </div>
-
-        {/* Toggle pill */}
-        <div
-          className="relative shrink-0 transition-all duration-200"
-          style={{
-            width: 44,
-            height: 24,
-            borderRadius: 12,
-            background: lookingForGroup
-              ? 'linear-gradient(135deg, #C084FC, #818CF8)'
-              : 'rgba(255,255,255,0.10)',
-          }}
-        >
-          <div
-            className="absolute top-1 transition-all duration-200 rounded-full bg-white"
-            style={{
-              width: 16,
-              height: 16,
-              left: lookingForGroup ? 24 : 4,
-              boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-            }}
-          />
-        </div>
-      </button>
 
       {/* Champs */}
       <div className="space-y-4">

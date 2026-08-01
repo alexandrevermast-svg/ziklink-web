@@ -100,8 +100,8 @@ export default function ReportButton({
       <button
         ref={triggerRef}
         onClick={(e) => { e.stopPropagation(); setIsOpen((v) => !v); }}
-        className={`flex items-center gap-1.5 text-gray-400 hover:text-red-500 transition-colors ${
-          variant === 'text' ? 'text-xs font-medium px-2 py-1 rounded-lg hover:bg-red-50' : 'p-1.5 rounded-full hover:bg-red-50'
+        className={`flex items-center gap-1.5 text-zik-muted hover:text-zik-red transition-colors ${
+          variant === 'text' ? 'text-xs font-medium px-2 py-1 rounded-lg hover:bg-zik-red/10' : 'p-1.5 rounded-full hover:bg-zik-red/10'
         } ${className}`}
         title="Signaler"
       >
@@ -119,46 +119,46 @@ export default function ReportButton({
             zIndex: 99999,
             width: 'min(90vw, 280px)',
           }}
-          className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
+          className="bg-zik-card rounded-2xl shadow-2xl border border-zik-border overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-            <span className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
-              <Flag className="h-3.5 w-3.5 text-red-500" /> Signaler
+          <div className="flex items-center justify-between px-4 py-3 border-b border-zik-border">
+            <span className="text-sm font-semibold text-zik-text flex items-center gap-1.5">
+              <Flag className="h-3.5 w-3.5 text-zik-red" /> Signaler
             </span>
-            <button onClick={handleClose} className="p-0.5 rounded hover:bg-gray-100 text-gray-400">
+            <button onClick={handleClose} className="p-0.5 rounded hover:bg-zik-card-hover text-zik-muted">
               <X className="h-4 w-4" />
             </button>
           </div>
 
           {status === 'success' ? (
             <div className="px-4 py-6 text-center">
-              <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-2">
-                <Check className="h-5 w-5 text-green-600" />
+              <div className="h-10 w-10 rounded-full bg-zik-emerald/10 flex items-center justify-center mx-auto mb-2">
+                <Check className="h-5 w-5 text-zik-emerald" />
               </div>
-              <p className="text-sm font-medium text-gray-800">Signalement envoyé</p>
-              <p className="text-xs text-gray-400 mt-1">Notre équipe va examiner ça. Merci !</p>
+              <p className="text-sm font-medium text-zik-text">Signalement envoyé</p>
+              <p className="text-xs text-zik-muted mt-1">Notre équipe va examiner ça. Merci !</p>
             </div>
           ) : status === 'already' ? (
             <div className="px-4 py-6 text-center">
-              <p className="text-sm text-orange-600 font-medium">Tu as déjà signalé ce contenu.</p>
-              <button onClick={handleClose} className="text-xs text-gray-400 hover:text-gray-600 mt-3 block mx-auto">Fermer</button>
+              <p className="text-sm text-zik-orange font-medium">Tu as déjà signalé ce contenu.</p>
+              <button onClick={handleClose} className="text-xs text-zik-muted hover:text-zik-text mt-3 block mx-auto">Fermer</button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="p-4 space-y-3">
               <div>
-                <label className="text-xs font-medium text-gray-600 mb-1 block">Motif *</label>
+                <label className="text-xs font-medium text-zik-muted mb-1 block">Motif *</label>
                 <div className="space-y-1.5">
                   {REASONS.map((r) => (
                     <label key={r.value}
                       className={`flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer border transition-colors text-sm ${
                         reason === r.value
-                          ? 'border-red-300 bg-red-50 text-red-700'
-                          : 'border-gray-100 hover:bg-gray-50 text-gray-700'
+                          ? 'border-zik-red/30 bg-zik-red/10 text-zik-red'
+                          : 'border-zik-border hover:bg-zik-card-hover text-zik-text'
                       }`}>
                       <input type="radio" name="reason" value={r.value}
                         checked={reason === r.value} onChange={() => setReason(r.value)}
-                        className="accent-red-500 shrink-0" />
+                        className="accent-zik-red shrink-0" />
                       <span>{r.label}</span>
                     </label>
                   ))}
@@ -166,8 +166,8 @@ export default function ReportButton({
               </div>
 
               <div>
-                <label className="text-xs font-medium text-gray-600 mb-1 block">
-                  Détails <span className="text-gray-400 font-normal">(optionnel)</span>
+                <label className="text-xs font-medium text-zik-muted mb-1 block">
+                  Détails <span className="text-zik-muted font-normal">(optionnel)</span>
                 </label>
                 <textarea
                   value={details}
@@ -175,14 +175,14 @@ export default function ReportButton({
                   placeholder="Décris le problème..."
                   rows={2}
                   maxLength={280}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs resize-none outline-none focus:ring-2 focus:ring-red-200 transition-all"
+                  className="w-full bg-zik-card border border-zik-border text-zik-text placeholder:text-zik-muted rounded-lg px-3 py-2 text-xs resize-none outline-none focus:ring-2 focus:ring-zik-red/30 transition-all"
                 />
               </div>
 
               <Button
                 type="submit"
                 disabled={!reason || status === 'loading'}
-                className="w-full bg-red-500 hover:bg-red-600 text-white text-xs h-8"
+                className="w-full bg-zik-red hover:bg-zik-red/80 text-white text-xs h-8"
               >
                 {status === 'loading'
                   ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Envoi...</>

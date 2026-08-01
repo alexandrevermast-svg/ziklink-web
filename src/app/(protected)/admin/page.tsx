@@ -46,10 +46,10 @@ const REASON_LABELS: Record<string, string> = {
 };
 
 const STATUS_CONFIG: Record<ReportStatus, { label: string; className: string }> = {
-  pending:   { label: 'En attente',  className: 'bg-orange-100 text-orange-700' },
-  reviewed:  { label: 'En cours',    className: 'bg-blue-100 text-blue-700' },
-  resolved:  { label: 'Résolu',      className: 'bg-green-100 text-green-700' },
-  dismissed: { label: 'Rejeté',      className: 'bg-gray-100 text-gray-500' },
+  pending:   { label: 'En attente',  className: 'bg-zik-orange/10 text-zik-orange' },
+  reviewed:  { label: 'En cours',    className: 'bg-zik-indigo/10 text-zik-indigo' },
+  resolved:  { label: 'Résolu',      className: 'bg-zik-emerald/10 text-zik-emerald' },
+  dismissed: { label: 'Rejeté',      className: 'bg-zik-card-hover text-zik-muted' },
 };
 
 function timeAgo(dateStr: string) {
@@ -174,7 +174,7 @@ export default function AdminModerationPage() {
 
   if (isAuthorized === null) return (
     <div className="flex items-center justify-center min-h-screen">
-      <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      <Loader2 className="h-8 w-8 animate-spin text-zik-muted" />
     </div>
   );
 
@@ -182,21 +182,21 @@ export default function AdminModerationPage() {
     <div className="flex flex-col gap-4 p-4 max-w-2xl mx-auto pb-24">
       {/* Header */}
       <div className="flex items-center gap-3 pt-2">
-        <div className="h-10 w-10 rounded-xl bg-red-100 flex items-center justify-center">
-          <Flag className="h-5 w-5 text-red-600" />
+        <div className="h-10 w-10 rounded-xl bg-zik-red/10 flex items-center justify-center">
+          <Flag className="h-5 w-5 text-zik-red" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Modération</h1>
-          <p className="text-xs text-gray-400">Dashboard admin — signalements</p>
+          <h1 className="text-xl font-bold text-zik-text">Modération</h1>
+          <p className="text-xs text-zik-muted">Dashboard admin — signalements</p>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-2">
-        <StatCard label="En attente" value={stats.pending} color="bg-orange-50 border-orange-100 text-orange-700" />
-        <StatCard label="En cours" value={stats.reviewed} color="bg-blue-50 border-blue-100 text-blue-700" />
-        <StatCard label="Résolus" value={stats.resolved} color="bg-green-50 border-green-100 text-green-700" />
-        <StatCard label="Rejetés" value={stats.dismissed} color="bg-gray-50 border-gray-100 text-gray-500" />
+        <StatCard label="En attente" value={stats.pending} color="bg-zik-orange/10 border-zik-orange/20 text-zik-orange" />
+        <StatCard label="En cours" value={stats.reviewed} color="bg-zik-indigo/10 border-zik-indigo/20 text-zik-indigo" />
+        <StatCard label="Résolus" value={stats.resolved} color="bg-zik-emerald/10 border-zik-emerald/20 text-zik-emerald" />
+        <StatCard label="Rejetés" value={stats.dismissed} color="bg-zik-card border-zik-border text-zik-muted" />
       </div>
 
       {/* Filtres */}
@@ -207,13 +207,13 @@ export default function AdminModerationPage() {
             onClick={() => setFilter(f)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
               filter === f
-                ? 'bg-gray-900 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-zik-purple text-white'
+                : 'bg-zik-card text-zik-muted hover:bg-zik-card-hover'
             }`}
           >
             {f === 'all' ? 'Tous' : STATUS_CONFIG[f].label}
             {f === 'pending' && stats.pending > 0 && (
-              <span className="ml-1 bg-orange-500 text-white text-[9px] font-bold px-1 py-0.5 rounded-full">
+              <span className="ml-1 bg-zik-orange text-white text-[9px] font-bold px-1 py-0.5 rounded-full">
                 {stats.pending}
               </span>
             )}
@@ -224,12 +224,12 @@ export default function AdminModerationPage() {
       {/* Liste */}
       {isLoading ? (
         <div className="space-y-3">
-          {[...Array(3)].map((_, i) => <div key={i} className="h-20 bg-gray-100 animate-pulse rounded-xl" />)}
+          {[...Array(3)].map((_, i) => <div key={i} className="h-20 bg-zik-card animate-pulse rounded-xl" />)}
         </div>
       ) : reports.length === 0 ? (
         <div className="text-center py-12">
-          <Check className="h-10 w-10 text-green-400 mx-auto mb-3" />
-          <p className="text-gray-500 text-sm font-medium">Aucun signalement dans cette catégorie</p>
+          <Check className="h-10 w-10 text-zik-emerald mx-auto mb-3" />
+          <p className="text-zik-muted text-sm font-medium">Aucun signalement dans cette catégorie</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -241,67 +241,67 @@ export default function AdminModerationPage() {
                 key={report.id}
                 className={`rounded-xl border overflow-hidden transition-all ${
                   report.status === 'pending'
-                    ? 'border-orange-200 bg-orange-50/30'
-                    : 'border-gray-200 bg-white'
+                    ? 'border-zik-orange/30 bg-zik-orange/5'
+                    : 'border-zik-border bg-zik-card'
                 }`}
               >
                 {/* Ligne principale */}
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : report.id)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50/60 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-zik-card-hover transition-colors"
                 >
                   {/* Icône type */}
                   <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
-                    report.target_type === 'user' ? 'bg-blue-100 text-blue-600' :
-                    report.target_type === 'jam' ? 'bg-green-100 text-green-600' :
-                    report.target_type === 'concert' ? 'bg-red-100 text-red-600' :
-                    report.target_type === 'message' ? 'bg-purple-100 text-purple-600' :
-                    'bg-gray-100 text-gray-500'
+                    report.target_type === 'user' ? 'bg-zik-indigo/10 text-zik-indigo' :
+                    report.target_type === 'jam' ? 'bg-zik-emerald/10 text-zik-emerald' :
+                    report.target_type === 'concert' ? 'bg-zik-red/10 text-zik-red' :
+                    report.target_type === 'message' ? 'bg-zik-purple/10 text-zik-purple' :
+                    'bg-zik-card-hover text-zik-muted'
                   }`}>
                     {TARGET_ICONS[report.target_type]}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-semibold text-gray-900 capitalize">{report.target_type}</span>
-                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                      <span className="text-sm font-semibold text-zik-text capitalize">{report.target_type}</span>
+                      <span className="text-xs bg-zik-card-hover text-zik-muted px-2 py-0.5 rounded-full">
                         {REASON_LABELS[report.reason] ?? report.reason}
                       </span>
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_CONFIG[report.status].className}`}>
                         {STATUS_CONFIG[report.status].label}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      Signalé par <span className="font-medium text-gray-600">{report.reporter_profile?.username ?? 'Inconnu'}</span>
+                    <p className="text-xs text-zik-muted mt-0.5">
+                      Signalé par <span className="font-medium text-zik-text">{report.reporter_profile?.username ?? 'Inconnu'}</span>
                       {' · '}{timeAgo(report.created_at)}
                     </p>
                   </div>
 
                   {isExpanded
-                    ? <ChevronUp className="h-4 w-4 text-gray-400 shrink-0" />
-                    : <ChevronDown className="h-4 w-4 text-gray-400 shrink-0" />
+                    ? <ChevronUp className="h-4 w-4 text-zik-muted shrink-0" />
+                    : <ChevronDown className="h-4 w-4 text-zik-muted shrink-0" />
                   }
                 </button>
 
                 {/* Panel étendu */}
                 {isExpanded && (
-                  <div className="border-t border-gray-100 px-4 py-4 bg-white space-y-4">
+                  <div className="border-t border-zik-border px-4 py-4 bg-zik-card space-y-4">
                     {/* Infos */}
                     <div className="space-y-2 text-sm">
                       <div className="flex gap-2">
-                        <span className="text-gray-400 shrink-0 w-20">Cible :</span>
-                        <code className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-700 break-all">{report.target_id}</code>
+                        <span className="text-zik-muted shrink-0 w-20">Cible :</span>
+                        <code className="text-xs bg-zik-card-hover px-2 py-0.5 rounded text-zik-text break-all">{report.target_id}</code>
                       </div>
                       {report.details && (
                         <div className="flex gap-2">
-                          <span className="text-gray-400 shrink-0 w-20">Détails :</span>
-                          <span className="text-gray-700 text-xs">{report.details}</span>
+                          <span className="text-zik-muted shrink-0 w-20">Détails :</span>
+                          <span className="text-zik-text text-xs">{report.details}</span>
                         </div>
                       )}
                       {report.admin_note && (
                         <div className="flex gap-2">
-                          <span className="text-gray-400 shrink-0 w-20">Note :</span>
-                          <span className="text-gray-700 text-xs italic">{report.admin_note}</span>
+                          <span className="text-zik-muted shrink-0 w-20">Note :</span>
+                          <span className="text-zik-text text-xs italic">{report.admin_note}</span>
                         </div>
                       )}
                     </div>
@@ -319,7 +319,7 @@ export default function AdminModerationPage() {
                           const path = paths[report.target_type];
                           if (path) router.push(path);
                         }}
-                        className="flex items-center gap-1 text-xs text-blue-600 hover:underline font-medium"
+                        className="flex items-center gap-1 text-xs text-zik-indigo hover:underline font-medium"
                       >
                         <Eye className="h-3.5 w-3.5" /> Voir le contenu
                       </button>
@@ -328,13 +328,13 @@ export default function AdminModerationPage() {
                     {/* Note admin */}
                     {report.status === 'pending' || report.status === 'reviewed' ? (
                       <div>
-                        <label className="text-xs font-medium text-gray-600 mb-1 block">Note admin (optionnel)</label>
+                        <label className="text-xs font-medium text-zik-muted mb-1 block">Note admin (optionnel)</label>
                         <textarea
                           value={adminNote[report.id] ?? ''}
                           onChange={(e) => setAdminNote((prev) => ({ ...prev, [report.id]: e.target.value }))}
                           placeholder="Ex: contenu supprimé, avertissement envoyé..."
                           rows={2}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs resize-none outline-none focus:ring-2 focus:ring-blue-300"
+                          className="w-full bg-zik-card border border-zik-border text-zik-text placeholder:text-zik-muted rounded-lg px-3 py-2 text-xs resize-none outline-none focus:ring-2 focus:ring-zik-purple/30"
                         />
                       </div>
                     ) : null}
@@ -345,7 +345,7 @@ export default function AdminModerationPage() {
                         {/* Marquer en cours */}
                         {report.status === 'pending' && (
                           <Button size="sm" variant="outline"
-                            className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50"
+                            className="text-xs border-zik-indigo/30 text-zik-indigo hover:bg-zik-indigo/10"
                             disabled={isProcessing}
                             onClick={() => handleUpdateStatus(report.id, 'reviewed')}>
                             <Eye className="h-3.5 w-3.5 mr-1" /> En cours
@@ -354,7 +354,7 @@ export default function AdminModerationPage() {
 
                         {/* Rejeter */}
                         <Button size="sm" variant="outline"
-                          className="text-xs border-gray-200 text-gray-500 hover:bg-gray-50"
+                          className="text-xs border-zik-border text-zik-muted hover:bg-zik-card-hover"
                           disabled={isProcessing}
                           onClick={() => handleUpdateStatus(report.id, 'dismissed')}>
                           {isProcessing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5 mr-1" />}
@@ -363,7 +363,7 @@ export default function AdminModerationPage() {
 
                         {/* Résoudre */}
                         <Button size="sm"
-                          className="text-xs bg-green-600 hover:bg-green-700"
+                          className="text-xs bg-zik-emerald hover:bg-zik-emerald/80"
                           disabled={isProcessing}
                           onClick={() => handleUpdateStatus(report.id, 'resolved', report.target_type, report.target_id)}>
                           {isProcessing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5 mr-1" />}
@@ -373,7 +373,7 @@ export default function AdminModerationPage() {
                         {/* Supprimer le contenu */}
                         {report.target_type !== 'user' && (
                           <Button size="sm"
-                            className="text-xs bg-red-500 hover:bg-red-600"
+                            className="text-xs bg-zik-red hover:bg-zik-red/80"
                             disabled={isProcessing}
                             onClick={() => handleDeleteContent(report.target_type, report.target_id, report.id)}>
                             <X className="h-3.5 w-3.5 mr-1" /> Supprimer le contenu
@@ -383,7 +383,7 @@ export default function AdminModerationPage() {
                         {/* Bannir l'utilisateur */}
                         {report.target_type === 'user' && (
                           <Button size="sm"
-                            className="text-xs bg-red-600 hover:bg-red-700"
+                            className="text-xs bg-zik-red hover:bg-zik-red/80"
                             disabled={isProcessing}
                             onClick={() => handleBanUser(report.target_id, report.id)}>
                             <ShieldBan className="h-3.5 w-3.5 mr-1" /> Bannir l'utilisateur
@@ -393,7 +393,7 @@ export default function AdminModerationPage() {
                     )}
 
                     {(report.status === 'resolved' || report.status === 'dismissed') && (
-                      <p className="text-xs text-gray-400 italic">
+                      <p className="text-xs text-zik-muted italic">
                         {report.status === 'resolved' ? '✓ Résolu' : '✗ Rejeté'}
                         {report.reviewed_at && ` · ${timeAgo(report.reviewed_at)}`}
                       </p>

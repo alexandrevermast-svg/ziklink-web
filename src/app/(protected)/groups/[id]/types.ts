@@ -4,7 +4,6 @@ export interface Profile {
   avatar_url: string | null;
   city: string | null;
   instruments: string[] | null;
-  looking_for_group: boolean;
 }
 export interface GroupMember {
   user_id: string;
