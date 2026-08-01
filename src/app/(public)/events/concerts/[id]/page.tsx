@@ -233,39 +233,39 @@ export default function ConcertDetailPage() {
               <h1 className="text-xl font-bold text-zik-text">{concert.title}</h1>
               {concert.artist && <p className="text-base text-zik-purple font-medium mt-0.5">{concert.artist}</p>}
             </div>
-            {concert.genre && (     
+            {concert.genre && (
               <span className="shrink-0 text-xs font-medium bg-zik-purple/10 text-zik-purple px-2.5 py-1 rounded-full">
                 {concert.genre}
               </span>
-            )}{concert.description && (
-  <div className="mt-2">
-    <p
-      className={`text-sm text-zik-muted whitespace-pre-wrap transition-all duration-200 ${
-        expandedDescriptions[concert.id] ? '' : 'line-clamp-3'
-      }`}
-    >
-      {concert.description}
-    </p>
-    {concert.description.length > 100 && (
-      <button
-        onClick={() => toggleDescription(concert.id)}
-        className="text-xs text-zik-purple mt-1 hover:bg-zik-purple/10 rounded-lg px-2 py-1 flex items-center gap-1 transition-colors"
-      >
-        {expandedDescriptions[concert.id] ? (
-          <>
-            Voir moins <ChevronUp className="h-3 w-3" />
-          </>
-        ) : (
-          <>
-            Voir plus <ChevronDown className="h-3 w-3" />
-          </>
-        )}
-      </button>
-    )}
-  </div>
-)}
+            )}
           </div>
-          {concert.description && <p className="text-sm text-zik-muted mt-2 line-clamp-3">{concert.description}</p>}
+          {concert.description && (
+            <div className="mt-2">
+              <p
+                className={`text-sm text-zik-muted whitespace-pre-wrap transition-all duration-200 ${
+                  expandedDescriptions[concert.id] ? '' : 'line-clamp-3'
+                }`}
+              >
+                {concert.description}
+              </p>
+              {concert.description.length > 100 && (
+                <button
+                  onClick={() => toggleDescription(concert.id)}
+                  className="text-xs text-zik-purple mt-1 hover:bg-zik-purple/10 rounded-lg px-2 py-1 flex items-center gap-1 transition-colors"
+                >
+                  {expandedDescriptions[concert.id] ? (
+                    <>
+                      Voir moins <ChevronUp className="h-3 w-3" />
+                    </>
+                  ) : (
+                    <>
+                      Voir plus <ChevronDown className="h-3 w-3" />
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          )}
           <div className="flex flex-wrap gap-3 mt-2 text-xs text-zik-muted">
             <span className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5 text-zik-purple" />
