@@ -5,14 +5,14 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import moment from "moment-timezone";
-import { Lock, Unlock, MapPin, Clock, UserPlus, Check, Heart } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import JamCard from "@/components/JamCard";
+import ConcertCard from "@/components/ConcertCard";
 import type { EventMarker } from "@/components/EventMap";
 import type { JamSession, Concert, ParticipantWithProfile } from "./page";
 import { useJamParticipation } from "@/hooks/useJamParticipation";
 import { useJamInterest } from "@/hooks/useJamInterest";
 import { isOwner } from "@/lib/permissions";
-import { canJoinJam, joinOpensAt } from "@/lib/jamJoinWindow";
+import { canJoinJam } from "@/lib/jamJoinWindow";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
@@ -24,14 +24,6 @@ function getLatLng(location: string | null): { lat: number; lng: number } | null
   try { const p = JSON.parse(location); return p?.lat && p?.lng ? { lat: p.lat, lng: p.lng } : null; }
   catch { return null; }
 }
-function formatTime(d: string) {
-  return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-}
-function getAddress(s: string | null) {
-  if (!s) return null;
-  try { return JSON.parse(s)?.address ?? null; } catch { return null; }
-}
-
 function ParticipantAvatars({ participants }: { participants: ParticipantWithProfile[] }) {
   const MAX_VISIBLE = 4;
   const visible = participants.slice(0, MAX_VISIBLE);
@@ -84,6 +76,7 @@ interface HomeFeedProps {
   initialParticipantsMap: Record<string, ParticipantWithProfile[]>;
   initialMyInterests: string[];
   initialMyJamInterests: string[];
+  initialConcertInterestCounts: Record<string, number>;
 }
 
 export default function HomeFeed({
@@ -93,6 +86,7 @@ export default function HomeFeed({
   initialParticipantsMap,
   initialMyInterests,
   initialMyJamInterests,
+  initialConcertInterestCounts,
 }: HomeFeedProps) {
   const supabase = createClient();
   const router = useRouter();
@@ -102,10 +96,12 @@ export default function HomeFeed({
   const [concerts, setConcerts] = useState<Concert[]>(initialConcerts);
   const [participantsMap, setParticipantsMap] = useState(initialParticipantsMap);
   const [myInterests, setMyInterests] = useState<Set<string>>(new Set(initialMyInterests));
+  const [concertInterestCounts, setConcertInterestCounts] = useState<Record<string, number>>(initialConcertInterestCounts);
   const [myJamInterests, setMyJamInterests] = useState<Set<string>>(new Set(initialMyJamInterests));
   const [dayFilter, setDayFilter] = useState<DayFilter>("today");
   const { joinJam, leaveJam, pendingJamId: joiningId } = useJamParticipation();
   const { markInterested, unmarkInterested, pendingJamId: interestPendingId } = useJamInterest();
+  const [togglingConcertId, setTogglingConcertId] = useState<string | null>(null);
 
   const { today, tomorrow, dayAfterTomorrow } = useMemo(() => dayBounds(), []);
 
@@ -122,7 +118,7 @@ export default function HomeFeed({
 
     const { data: jamsData } = await supabase
       .from("jam_sessions")
-      .select("id, title, description, start_time, end_at, location, is_open, created_by")
+      .select("id, title, description, start_time, end_at, location, is_open, created_by, has_drums, has_keyboard")
       .or(`end_at.gte.${now.toISOString()},and(end_at.is.null,start_time.gte.${twoHoursAgo})`)
       .lt("start_time", dayAfterTomorrow.toISOString())
       .order("start_time", { ascending: true });
@@ -151,18 +147,25 @@ export default function HomeFeed({
 
     const { data: concertsData } = await supabase
       .from("concerts")
-      .select("id, title, artist, start_time, end_at, location, genre, is_free, price")
+      .select("id, title, artist, start_time, end_at, location, genre, is_free, price, poster_url")
       .gte("start_time", twoHoursAgo)
       .lt("start_time", dayAfterTomorrow.toISOString())
       .order("start_time", { ascending: true });
     setConcerts(concertsData ?? []);
 
-    if (user && concertsData && concertsData.length > 0) {
+    if (concertsData && concertsData.length > 0) {
       const ids = concertsData.map((c) => c.id);
       const { data: intData } = await supabase
-        .from("concert_interested").select("concert_id")
-        .eq("user_id", user.id).in("concert_id", ids);
-      setMyInterests(new Set((intData ?? []).map((r) => r.concert_id)));
+        .from("concert_interested").select("concert_id, user_id")
+        .in("concert_id", ids);
+      const countMap: Record<string, number> = {};
+      const mySet = new Set<string>();
+      for (const row of intData ?? []) {
+        countMap[row.concert_id] = (countMap[row.concert_id] ?? 0) + 1;
+        if (user && row.user_id === user.id) mySet.add(row.concert_id);
+      }
+      setConcertInterestCounts(countMap);
+      setMyInterests(mySet);
     }
   }, [dayAfterTomorrow]);
 
@@ -191,6 +194,23 @@ export default function HomeFeed({
       setMyJamInterests((prev) => new Set([...prev, jamId]));
     }
   }, [currentUserId, myJamInterests, markInterested, unmarkInterested, router]);
+
+  const handleToggleConcertInterest = useCallback(async (concertId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/concerts/${concertId}`)}`); return; }
+    if (togglingConcertId) return;
+    setTogglingConcertId(concertId);
+    if (myInterests.has(concertId)) {
+      await supabase.from("concert_interested").delete().eq("concert_id", concertId).eq("user_id", currentUserId);
+      setMyInterests((prev) => { const s = new Set(prev); s.delete(concertId); return s; });
+      setConcertInterestCounts((prev) => ({ ...prev, [concertId]: Math.max(0, (prev[concertId] ?? 1) - 1) }));
+    } else {
+      await supabase.from("concert_interested").insert({ concert_id: concertId, user_id: currentUserId });
+      setMyInterests((prev) => new Set([...prev, concertId]));
+      setConcertInterestCounts((prev) => ({ ...prev, [concertId]: (prev[concertId] ?? 0) + 1 }));
+    }
+    setTogglingConcertId(null);
+  }, [currentUserId, togglingConcertId, myInterests, supabase, router]);
 
   const filteredJams = useMemo(() =>
     jams.filter((j) => {
@@ -336,184 +356,38 @@ export default function HomeFeed({
         <div className="space-y-3">
           {/* Jams */}
           {filteredJams.map((jam) => {
-            const address = getAddress(jam.location);
             const participants = participantsMap[jam.id] ?? [];
             const isParticipant = participants.some((p) => p.user_id === currentUserId);
             const isCreator = isOwner(jam, currentUserId);
-            const isJoining = joiningId === jam.id;
-            const isInterested = myJamInterests.has(jam.id);
-            const isInterestPending = interestPendingId === jam.id;
-            const joinOpen = canJoinJam(jam.start_time);
 
             return (
-              <div key={jam.id}
-                onClick={() => router.push(`/events/jams/${jam.id}`)}
-                className="rounded-xl border cursor-pointer transition-all active:scale-[0.99]"
-                style={{
-                  background: '#1A1628',
-                  borderColor: 'rgba(255,255,255,0.06)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(52,211,153,0.25)'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)'; }}
-              >
-                {/* Bande latérale verte */}
-                <div className="absolute left-0 top-0 bottom-0 w-0.75"
-                  style={{ background: 'linear-gradient(180deg, #34D399, #10B981)' }} />
-
-                <div className="p-4 pl-5">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-zik-text truncate">{jam.title}</h3>
-                      {jam.description && (
-                        <p className="text-xs text-zik-muted mt-0.5 line-clamp-1">{jam.description}</p>
-                      )}
-                    </div>
-                    <span className={`shrink-0 flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                      jam.is_open ? "bg-zik-emerald/10 text-zik-emerald" : "bg-zik-orange/10 text-zik-orange"
-                    }`}>
-                      {jam.is_open
-                        ? <><Unlock className="h-3 w-3" /> Ouverte</>
-                        : <><Lock className="h-3 w-3" /> Sur approbation</>
-                      }
-                    </span>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 text-xs text-zik-muted mb-3">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {formatTime(jam.start_time)}
-                      {jam.end_at && ` → ${formatTime(jam.end_at)}`}
-                    </span>
-                    {address && (
-                      <span className="flex items-center gap-1 truncate max-w-50">
-                        <MapPin className="h-3 w-3 shrink-0" />{address}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-end">
-                    <div className="flex items-center gap-1.5">
-                      {!isCreator && (
-                        <button
-                          onClick={(e) => handleToggleJamInterest(jam.id, e)}
-                          disabled={isInterestPending}
-                          title={isInterested ? "Ne plus être intéressé" : "Je suis intéressé"}
-                          className="h-7 w-7 flex items-center justify-center rounded-full text-zik-muted hover:text-zik-red hover:bg-zik-red/10 transition-colors disabled:opacity-50"
-                        >
-                          <Heart className={`h-4 w-4 ${isInterested ? "text-zik-red fill-zik-red" : ""}`} />
-                        </button>
-                      )}
-                      {isCreator ? (
-                        <span className="text-xs text-zik-muted italic">Organisateur</span>
-                      ) : isParticipant ? (
-                        <Button size="sm" variant="outline"
-                          className="text-xs border-zik-emerald/30 text-zik-emerald hover:bg-zik-red/10 hover:border-zik-red/30 hover:text-zik-red"
-                          onClick={(e) => handleLeaveJam(jam.id, e)} disabled={isJoining}>
-                          <Check className="h-3.5 w-3.5 mr-1" />
-                          {isJoining ? "..." : "Inscrit"}
-                        </Button>
-                      ) : !joinOpen ? (
-                        <span className="text-[10px] text-zik-muted italic">
-                          Inscriptions dès {formatTime(joinOpensAt(jam.start_time).toISOString())}
-                        </span>
-                      ) : currentUserId ? (
-                        <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo text-white"
-                          onClick={(e) => handleJoinJam(jam.id, e)} disabled={isJoining}>
-                          <UserPlus className="h-3.5 w-3.5 mr-1" />
-                          {isJoining ? "..." : jam.is_open ? "Rejoindre" : "Demander"}
-                        </Button>
-                      ) : (
-                        <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo text-white"
-                          onClick={(e) => { e.stopPropagation(); router.push(`/login?next=${encodeURIComponent(`/events/jams/${jam.id}`)}`); }}>
-                          <UserPlus className="h-3.5 w-3.5 mr-1" /> Rejoindre
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <JamCard
+                key={jam.id}
+                jam={jam}
+                isCreator={isCreator}
+                isParticipant={isParticipant}
+                isJoining={joiningId === jam.id}
+                isInterested={myJamInterests.has(jam.id)}
+                isInterestPending={interestPendingId === jam.id}
+                joinOpen={canJoinJam(jam.start_time)}
+                onToggleInterest={handleToggleJamInterest}
+                onJoin={handleJoinJam}
+                onLeave={handleLeaveJam}
+              />
             );
           })}
 
           {/* Concerts */}
-          {filteredConcerts.map((concert) => {
-            const address = getAddress(concert.location);
-            const isInterested = myInterests.has(concert.id);
-
-            return (
-              <div key={concert.id}
-                onClick={() => router.push(`/events/concerts/${concert.id}`)}
-                className="rounded-xl border cursor-pointer transition-all active:scale-[0.99]"
-                style={{
-                  background: '#1A1628',
-                  borderColor: 'rgba(255,255,255,0.06)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(251,146,60,0.25)'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)'; }}
-              >
-                {/* Bande latérale orange */}
-                <div className="absolute left-0 top-0 bottom-0 w-0.75"
-                  style={{ background: 'linear-gradient(180deg, #FB923C, #F97316)' }} />
-
-                <div className="p-4 pl-5">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-zik-text truncate">{concert.title}</h3>
-                      {concert.artist && (
-                        <p className="text-xs font-medium mt-0.5" style={{ color: '#C084FC' }}>
-                          {concert.artist}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex flex-col items-end gap-1 shrink-0">
-                      {concert.genre && (
-                        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full"
-                          style={{ background: 'rgba(192,132,252,0.12)', color: '#C084FC' }}>
-                          {concert.genre}
-                        </span>
-                      )}
-                      <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                        concert.is_free
-                          ? "bg-zik-emerald/10 text-zik-emerald"
-                          : "bg-zik-orange/10 text-zik-orange"
-                      }`}>
-                        {concert.is_free ? "Gratuit" : concert.price ? `${concert.price} €` : "Payant"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 text-xs text-zik-muted mb-3">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {formatTime(concert.start_time)}
-                      {concert.end_at && ` → ${formatTime(concert.end_at)}`}
-                    </span>
-                    {address && (
-                      <span className="flex items-center gap-1 truncate max-w-50">
-                        <MapPin className="h-3 w-3 shrink-0" />{address}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-xs text-zik-muted">
-                      <Heart className={`h-3.5 w-3.5 ${isInterested ? 'text-zik-red fill-zik-red' : ''}`} />
-                      {isInterested && <span style={{ color: '#F87171' }}>Tu es intéressé</span>}
-                    </div>
-                    <Button size="sm" variant="outline"
-                      className="text-xs border-zik-orange/30 text-zik-orange hover:bg-zik-orange/10"
-                      onClick={(e) => { e.stopPropagation(); router.push(`/events/concerts/${concert.id}`); }}>
-                      Voir le concert
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {filteredConcerts.map((concert) => (
+            <ConcertCard
+              key={concert.id}
+              concert={concert}
+              isInterested={myInterests.has(concert.id)}
+              interestedCount={concertInterestCounts[concert.id] ?? 0}
+              isToggling={togglingConcertId === concert.id}
+              onToggleInterest={handleToggleConcertInterest}
+            />
+          ))}
         </div>
       )}
     </div>

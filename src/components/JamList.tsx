@@ -4,18 +4,17 @@ import React, { useEffect, useState, useCallback, useMemo, useRef } from "react"
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Lock, Unlock, MapPin, Clock, UserPlus, Check, ChevronDown, Drum, Piano, LocateFixed, Heart } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronDown, Drum, Piano, LocateFixed } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import ShareButton from "@/components/ShareButton";
+import JamCard from "@/components/JamCard";
 import type { EventMarker } from "@/components/EventMap";
 import type { JamSession, Profile as ProfileRow } from "@/types";
-import { haversineDistanceKm, formatDistanceKm, type LatLng } from "@/lib/geo";
+import { haversineDistanceKm, type LatLng } from "@/lib/geo";
 import { useJamParticipation } from "@/hooks/useJamParticipation";
 import { useJamInterest } from "@/hooks/useJamInterest";
 import { isOwner } from "@/lib/permissions";
-import { canJoinJam, joinOpensAt } from "@/lib/jamJoinWindow";
+import { canJoinJam } from "@/lib/jamJoinWindow";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
@@ -357,11 +356,6 @@ const { data: jamsData, error: jamsError } = await supabase
       } catch { return []; }
     }), [filteredJams, participantsMap, currentUserId]);
 
-  const formatDate = (d: string) => new Date(d).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  const formatTime  = (d: string) => new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-
-  const getAddress = (s: string | null) => { if (!s) return null; try { return JSON.parse(s)?.address ?? null; } catch { return null; } };
-
   const emptyMessage = useMemo(() => {
     if (nearMe && radiusKm !== null) return `Aucune jam à moins de ${radiusKm} km 🎸 — essaie un rayon plus large`;
     if (drumsOnly) return "Aucune jam avec batterie ne correspond 🥁 — essaie de désactiver ce filtre";
@@ -484,116 +478,25 @@ const { data: jamsData, error: jamsError } = await supabase
       ) : (
         <div className="space-y-3">
           {filteredJams.map((jam) => {
-            const address = getAddress(jam.location);
             const participants = participantsMap[jam.id] ?? [];
             const isParticipant = participants.some((p) => p.user_id === currentUserId);
             const isCreator = isOwner(jam, currentUserId);
-            const isJoining = joiningJamId === jam.id;
-            const isInterested = myJamInterests.has(jam.id);
-            const isInterestPending = interestPendingId === jam.id;
-            const joinOpen = canJoinJam(jam.start_time);
 
             return (
-              <div key={jam.id}
-                onClick={() => router.push(`/events/jams/${jam.id}`)}
-                // ✅ Bordure et survol adaptés
-                className="rounded-lg border border-zik-border p-4 hover:border-zik-purple/30 hover:shadow-sm transition-all cursor-pointer active:scale-[0.99] bg-zik-card"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    {/* ✅ Titre adapté */}
-                    <h3 className="font-semibold text-zik-text truncate">{jam.title}</h3>
-                    {/* ✅ Description adaptée */}
-                    <p className="text-sm text-zik-muted mt-1 line-clamp-2">{jam.description}</p>
-                  </div>
-                  {/* ✅ Badge de statut adapté */}
-                  <span className={`shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
-                    jam.is_open
-                      ? "bg-zik-emerald/10 text-zik-emerald"
-                      : "bg-zik-orange/10 text-zik-orange"
-                  }`}>
-                    {jam.is_open ? <><Unlock className="h-3 w-3" /> Ouverte</> : <><Lock className="h-3 w-3" /> Inscription requise</>}
-                  </span>
-                </div>
-
-                {/* ✅ Infos date/lieu adaptées */}
-                <div className="mt-3 space-y-1.5 text-xs text-zik-muted">
-                  <div className="flex flex-wrap gap-3">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5" />
-                      {formatDate(jam.start_time)} · {formatTime(jam.start_time)}
-                      {jam.end_at && ` → ${formatTime(jam.end_at)}`}
-                    </span>
-                    {address && (
-                      <span className="flex items-center gap-1 truncate max-w-xs">
-                        <MapPin className="h-3.5 w-3.5 shrink-0" />{address}
-                      </span>
-                    )}
-                    {distanceById[jam.id] !== undefined && (
-                      <span className="flex items-center gap-1 text-zik-purple font-medium">
-                        <LocateFixed className="h-3.5 w-3.5" />
-                        {formatDistanceKm(distanceById[jam.id])}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    <span className="flex items-center gap-1">
-                      <Drum className="h-3.5 w-3.5" />
-                      {jam.has_drums ? "Avec batterie" : "Sans batterie"}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Piano className="h-3.5 w-3.5" />
-                      {jam.has_keyboard ? "Avec clavier" : "Sans clavier"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* ✅ Boutons adaptés */}
-                <div className="flex items-center justify-end mt-3">
-                  <div className="flex items-center gap-1.5">
-                    <ShareButton url={`/events/jams/${jam.id}`} title={jam.title} text={jam.description ?? undefined} />
-                    {!isCreator && (
-                      <button
-                        onClick={(e) => handleToggleInterest(jam.id, e)}
-                        disabled={isInterestPending}
-                        title={isInterested ? "Ne plus être intéressé" : "Je suis intéressé"}
-                        className="h-7 w-7 flex items-center justify-center rounded-full text-zik-muted hover:text-zik-red hover:bg-zik-red/10 transition-colors disabled:opacity-50"
-                      >
-                        <Heart className={`h-4 w-4 ${isInterested ? "text-zik-red fill-zik-red" : ""}`} />
-                      </button>
-                    )}
-                    {!isCreator && (
-                      isParticipant ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-xs border-zik-emerald/30 text-zik-emerald hover:bg-zik-red/10 hover:border-zik-red/30 hover:text-zik-red transition-colors"
-                          onClick={(e) => handleLeave(jam.id, e)}
-                          disabled={isJoining}
-                        >
-                          <Check className="h-3.5 w-3.5 mr-1" />
-                          {isJoining ? "..." : "Inscrit"}
-                        </Button>
-                      ) : joinOpen ? (
-                        <Button
-                          size="sm"
-                          className="text-xs bg-zik-purple hover:bg-zik-indigo"
-                          onClick={(e) => handleJoin(jam.id, e)}
-                          disabled={isJoining}
-                        >
-                          <UserPlus className="h-3.5 w-3.5 mr-1" />
-                          {isJoining ? "..." : "Rejoindre"}
-                        </Button>
-                      ) : (
-                        <span className="text-[10px] text-zik-muted italic">
-                          Inscriptions dès {formatTime(joinOpensAt(jam.start_time).toISOString())}
-                        </span>
-                      )
-                    )}
-                    {isCreator && <span className="text-xs text-zik-muted italic">Organisateur</span>}
-                  </div>
-                </div>
-              </div>
+              <JamCard
+                key={jam.id}
+                jam={jam}
+                isCreator={isCreator}
+                isParticipant={isParticipant}
+                isJoining={joiningJamId === jam.id}
+                isInterested={myJamInterests.has(jam.id)}
+                isInterestPending={interestPendingId === jam.id}
+                joinOpen={canJoinJam(jam.start_time)}
+                distanceKm={distanceById[jam.id]}
+                onToggleInterest={handleToggleInterest}
+                onJoin={handleJoin}
+                onLeave={handleLeave}
+              />
             );
           })}
         </div>
