@@ -8,7 +8,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
   ArrowLeft, MapPin, Users, Crown, UserPlus, Pencil,
-  Camera, Loader2, Mail, Trash2
+  Camera, Loader2, Mail, Trash2, CalendarDays, ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -16,12 +16,21 @@ import type { Group } from "@/types";
 import { isOwner } from "@/lib/permissions";
 import { GroupAvatar } from "../GroupAvatar";
 import type { Profile, GroupMember, Message } from "./types";
+import { formatDate } from "./utils";
 import { ProfilePopup } from "./components/ProfilePopup";
 import { MembersTab } from "./components/MembersTab";
-import { GroupEventsTab } from "./components/GroupEventsTab";
+import { RehearsalTab } from "./components/RehearsalTab";
 import { ChatTab } from "./components/ChatTab";
 import { EditGroupModal } from "./components/EditGroupModal";
 import { DeleteGroupModal } from "./components/DeleteGroupModal";
+
+interface EventItem {
+  type: 'jam' | 'concert';
+  id: string;
+  title: string;
+  artist?: string | null;
+  start_time: string;
+}
 
 export default function GroupDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -35,7 +44,8 @@ export default function GroupDetailPage() {
 
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
-  const [events, setEvents] = useState<{ type: 'jam' | 'concert'; id: string; title: string; artist?: string | null; start_time: string }[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<EventItem[]>([]);
+  const [pastEvents, setPastEvents] = useState<EventItem[]>([]);
   const [groupAds, setGroupAds] = useState<{ id: string; mode: string; title: string; instrument: string | null }[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -93,14 +103,26 @@ export default function GroupDetailPage() {
     setMembers((membersData ?? []).map((m: any) => ({ ...m, status: m.status ?? 'confirmed', profile: m.profile ?? null })));
 
     const [{ data: jamsData }, { data: concertsData }] = await Promise.all([
-      supabase.from('jam_sessions').select('id, title, start_time').eq('group_id', id).order('start_time', { ascending: false }).limit(10),
-      supabase.from('concerts').select('id, title, artist, start_time').eq('group_id', id).order('start_time', { ascending: false }).limit(10),
+      supabase.from('jam_sessions').select('id, title, start_time').eq('group_id', id).order('start_time', { ascending: false }),
+      supabase.from('concerts').select('id, title, artist, start_time').eq('group_id', id).order('start_time', { ascending: false }),
     ]);
-    const allEvents = [
+    const allEvents: EventItem[] = [
       ...(jamsData ?? []).map((j) => ({ type: 'jam' as const, id: j.id, title: j.title, start_time: j.start_time })),
       ...(concertsData ?? []).map((c) => ({ type: 'concert' as const, id: c.id, title: c.title, artist: c.artist, start_time: c.start_time })),
-    ].sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
-    setEvents(allEvents);
+    ];
+    const now = Date.now();
+    setUpcomingEvents(
+      allEvents
+        .filter((e) => new Date(e.start_time).getTime() >= now)
+        .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+        .slice(0, 2)
+    );
+    setPastEvents(
+      allEvents
+        .filter((e) => new Date(e.start_time).getTime() < now)
+        .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())
+        .slice(0, 2)
+    );
 
     const { data: adsData } = await supabase
       .from('musician_ads')
@@ -420,6 +442,54 @@ export default function GroupDetailPage() {
         </div>
       </div>
 
+      {/* Prochains événements */}
+      {upcomingEvents.length > 0 && (
+        <div className="px-4 pb-3">
+          <h2 className="text-sm font-semibold text-zik-text mb-2">Prochains événements</h2>
+          <div className="space-y-2">
+            {upcomingEvents.map((event) => (
+              <button
+                key={`${event.type}-${event.id}`}
+                onClick={() => router.push(event.type === 'jam' ? `/events/jams/${event.id}` : `/events/concerts/${event.id}`)}
+                className="w-full flex items-center gap-2.5 p-3 rounded-xl border border-zik-border bg-zik-card/50 hover:border-zik-purple/30 transition-colors text-left"
+              >
+                <span className="text-base shrink-0">{event.type === 'jam' ? '🎸' : '🎤'}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-zik-text truncate">{event.title}</p>
+                  <p className="text-xs text-zik-muted">{formatDate(event.start_time)}</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-zik-muted shrink-0" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Événements passés */}
+      {pastEvents.length > 0 && (
+        <div className="px-4 pb-3">
+          <h2 className="text-sm font-semibold text-zik-text mb-2 flex items-center gap-1.5">
+            <CalendarDays className="h-3.5 w-3.5 text-zik-muted" /> Événements passés
+          </h2>
+          <div className="space-y-2">
+            {pastEvents.map((event) => (
+              <button
+                key={`${event.type}-${event.id}`}
+                onClick={() => router.push(event.type === 'jam' ? `/events/jams/${event.id}` : `/events/concerts/${event.id}`)}
+                className="w-full flex items-center gap-2.5 p-3 rounded-xl border border-zik-border bg-zik-card/50 hover:border-zik-purple/30 transition-colors text-left"
+              >
+                <span className="text-base shrink-0">{event.type === 'jam' ? '🎸' : '🎤'}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-zik-text truncate">{event.title}</p>
+                  <p className="text-xs text-zik-muted">{formatDate(event.start_time)}</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-zik-muted shrink-0" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Annonces du groupe */}
       {groupAds.length > 0 && (
         <div className="px-4 pb-3">
@@ -450,13 +520,8 @@ export default function GroupDetailPage() {
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="events" className="text-zik-text">
-            Événements
-            {events.length > 0 && (
-              <span className="ml-1.5 bg-zik-purple/10 text-zik-purple text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
-                {events.length}
-              </span>
-            )}
+          <TabsTrigger value="repetition" className="text-zik-text">
+            Répétition
           </TabsTrigger>
           <TabsTrigger value="chat" className="text-zik-text">
             Chat
@@ -481,7 +546,13 @@ export default function GroupDetailPage() {
           onOpenDM={handleOpenDM}
         />
 
-        <GroupEventsTab events={events} isMember={isMember} />
+        <RehearsalTab
+          groupId={id}
+          currentUserId={currentUserId}
+          isMember={isMember}
+          isAdmin={isAdmin}
+          memberCount={confirmedMembers.length}
+        />
 
         <ChatTab
           conversationId={conversationId}

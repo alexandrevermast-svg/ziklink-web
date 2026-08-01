@@ -181,6 +181,126 @@ export type Database = {
         }
         Relationships: []
       }
+      group_availability_polls: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          group_id: string
+          id: string
+          mode: string
+          resolved_at: string | null
+          resolved_slot_id: string | null
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          group_id: string
+          id?: string
+          mode?: string
+          resolved_at?: string | null
+          resolved_slot_id?: string | null
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          group_id?: string
+          id?: string
+          mode?: string
+          resolved_at?: string | null
+          resolved_slot_id?: string | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_availability_polls_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_availability_polls_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_availability_polls_resolved_slot_fkey"
+            columns: ["resolved_slot_id"]
+            isOneToOne: false
+            referencedRelation: "group_availability_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_availability_responses: {
+        Row: {
+          created_at: string
+          id: string
+          slot_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          slot_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          slot_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_availability_responses_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "group_availability_slots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_availability_responses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_availability_slots: {
+        Row: {
+          created_at: string
+          id: string
+          poll_id: string
+          start_time: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          poll_id: string
+          start_time: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          poll_id?: string
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_availability_slots_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "group_availability_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_members: {
         Row: {
           group_id: string | null
@@ -222,6 +342,51 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_rehearsals: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          group_id: string
+          id: string
+          location: string | null
+          start_time: string
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          group_id: string
+          id?: string
+          location?: string | null
+          start_time: string
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          group_id?: string
+          id?: string
+          location?: string | null
+          start_time?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_rehearsals_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_rehearsals_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
             referencedColumns: ["id"]
           },
         ]
