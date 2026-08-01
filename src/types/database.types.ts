@@ -317,18 +317,24 @@ export type Database = {
         Row: {
           group_id: string
           mode: string
+          submitted_at: string | null
+          submitted_week_start: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           group_id: string
           mode?: string
+          submitted_at?: string | null
+          submitted_week_start?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           group_id?: string
           mode?: string
+          submitted_at?: string | null
+          submitted_week_start?: string | null
           updated_at?: string
           user_id?: string
         }

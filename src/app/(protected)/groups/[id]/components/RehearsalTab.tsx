@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
-import { CalendarClock, MapPin, Loader2, Sparkles, CalendarRange } from "lucide-react";
+import { CalendarClock, MapPin, Loader2, Sparkles, CalendarRange, CheckCircle2, Pencil } from "lucide-react";
 
 type Mode = "disponibilite" | "indisponibilite";
 type PeriodKey = "matin" | "apres_midi" | "soir";
@@ -16,7 +16,7 @@ interface Rehearsal {
   location: string | null;
 }
 
-interface Pref { user_id: string; mode: string; }
+interface Pref { user_id: string; mode: string; submitted_week_start: string | null; }
 interface Mark { user_id: string; date: string; period: string; }
 
 interface RehearsalTabProps {
@@ -75,6 +75,10 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
   const [planLocation, setPlanLocation] = useState("");
   const [isPlanning, setIsPlanning] = useState(false);
 
+  const [forceEdit, setForceEdit] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  useEffect(() => { setForceEdit(false); }, [weekStart]);
+
   const fetchAll = useCallback(async () => {
     const nowIso = new Date().toISOString();
     const { data: rehData } = await supabase
@@ -95,7 +99,7 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
 
     const { data: prefsData } = await supabase
       .from("group_schedule_prefs")
-      .select("user_id, mode")
+      .select("user_id, mode, submitted_week_start")
       .eq("group_id", groupId);
     setPrefs(prefsData ?? []);
 
@@ -120,6 +124,9 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
 
   const myPref = prefs.find((p) => p.user_id === currentUserId);
   const myMode: Mode = (myPref?.mode as Mode) ?? "disponibilite";
+  const currentWeekKey = toDateStr(days[0]);
+  const isSubmitted = myPref?.submitted_week_start === currentWeekKey;
+  const showEditor = !isSubmitted || forceEdit;
 
   const isMarked = (userId: string, date: string, period: string) =>
     marks.some((m) => m.user_id === userId && m.date === date && m.period === period);
@@ -145,7 +152,7 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
   const bestScore = cellScores.length > 0 ? Math.max(...cellScores) : 0;
 
   const handleModeChange = async (mode: Mode) => {
-    if (!currentUserId || mode === myMode) return;
+    if (!currentUserId || !showEditor || mode === myMode) return;
     await supabase.from("group_schedule_prefs")
       .upsert({ group_id: groupId, user_id: currentUserId, mode, updated_at: new Date().toISOString() }, { onConflict: "group_id,user_id" });
     await supabase.from("group_schedule_marks").delete().eq("group_id", groupId).eq("user_id", currentUserId);
@@ -184,7 +191,7 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
   };
 
   const applyWeekdayOfficePattern = async () => {
-    if (!currentUserId) return;
+    if (!currentUserId || !showEditor) return;
     if (myMode !== "indisponibilite") {
       await supabase.from("group_schedule_prefs")
         .upsert({ group_id: groupId, user_id: currentUserId, mode: "indisponibilite", updated_at: new Date().toISOString() }, { onConflict: "group_id,user_id" });
@@ -200,8 +207,20 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
     await fetchAll();
   };
 
-  const toggleCell = async (date: string, period: string) => {
+  const handleValidate = async () => {
     if (!currentUserId) return;
+    setIsSubmitting(true);
+    await supabase.from("group_schedule_prefs").upsert({
+      group_id: groupId, user_id: currentUserId, mode: myMode,
+      submitted_week_start: currentWeekKey, submitted_at: new Date().toISOString(),
+    }, { onConflict: "group_id,user_id" });
+    setIsSubmitting(false);
+    setForceEdit(false);
+    await fetchAll();
+  };
+
+  const toggleCell = async (date: string, period: string) => {
+    if (!currentUserId || !showEditor) return;
     const marked = isMarked(currentUserId, date, period);
     if (marked) {
       await supabase.from("group_schedule_marks").delete()
@@ -318,14 +337,14 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
         )}
 
         <div className="flex gap-2 mb-3">
-          <button type="button" onClick={() => handleModeChange("disponibilite")}
-            className={`flex-1 text-xs font-medium py-2 rounded-lg border transition-colors ${
+          <button type="button" disabled={!showEditor} onClick={() => handleModeChange("disponibilite")}
+            className={`flex-1 text-xs font-medium py-2 rounded-lg border transition-colors disabled:opacity-50 ${
               myMode === "disponibilite" ? "bg-zik-purple/10 border-zik-purple/40 text-zik-purple" : "border-zik-border text-zik-muted"
             }`}>
             ✅ Je remplis mes dispos
           </button>
-          <button type="button" onClick={() => handleModeChange("indisponibilite")}
-            className={`flex-1 text-xs font-medium py-2 rounded-lg border transition-colors ${
+          <button type="button" disabled={!showEditor} onClick={() => handleModeChange("indisponibilite")}
+            className={`flex-1 text-xs font-medium py-2 rounded-lg border transition-colors disabled:opacity-50 ${
               myMode === "indisponibilite" ? "bg-zik-purple/10 border-zik-purple/40 text-zik-purple" : "border-zik-border text-zik-muted"
             }`}>
             🚫 Je remplis mes indispos
@@ -336,10 +355,12 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
             ? "Coche les cases où tu es disponible."
             : "Coche les cases où tu n'es PAS disponible."}
         </p>
-        <button type="button" onClick={applyWeekdayOfficePattern}
-          className="text-[11px] text-zik-purple font-medium mb-3 hover:underline">
-          🏢 Indispo en semaine, matin + après-midi (Lun-Ven)
-        </button>
+        {showEditor && (
+          <button type="button" onClick={applyWeekdayOfficePattern}
+            className="text-[11px] text-zik-purple font-medium mb-3 hover:underline">
+            🏢 Indispo en semaine, matin + après-midi (Lun-Ven)
+          </button>
+        )}
 
         <div className="overflow-x-auto -mx-4 px-4">
           <table className="border-collapse text-xs mx-auto" style={{ minWidth: 380 }}>
@@ -369,12 +390,13 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
                       <td key={dateStr} className="p-0.5">
                         <button
                           onClick={() => toggleCell(dateStr, period.key)}
-                          className={`h-8 w-8 rounded-md flex items-center justify-center text-[11px] font-semibold border transition-colors ${
+                          disabled={!showEditor}
+                          className={`h-8 w-8 rounded-md flex items-center justify-center text-[11px] font-semibold border transition-colors disabled:cursor-default ${
                             mine
                               ? "bg-zik-purple/20 border-zik-purple text-zik-purple"
                               : isBest
                                 ? "border-zik-emerald/40 bg-zik-emerald/10 text-zik-emerald"
-                                : "border-zik-border text-zik-muted hover:border-zik-purple/30"
+                                : `border-zik-border text-zik-muted ${showEditor ? "hover:border-zik-purple/30" : ""}`
                           }`}
                         >
                           {count > 0 ? count : ""}
@@ -387,6 +409,26 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
             </tbody>
           </table>
         </div>
+
+        {showEditor ? (
+          <Button
+            size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo w-full mt-3"
+            disabled={isSubmitting}
+            onClick={handleValidate}
+          >
+            {isSubmitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Valider mes disponibilités"}
+          </Button>
+        ) : (
+          <div className="flex items-center justify-between gap-2 mt-3 p-2.5 rounded-lg bg-zik-emerald/10 border border-zik-emerald/20">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-zik-emerald">
+              <CheckCircle2 className="h-3.5 w-3.5" /> Dispo envoyée
+            </span>
+            <button type="button" onClick={() => setForceEdit(true)}
+              className="flex items-center gap-1 text-xs font-medium text-zik-purple hover:underline shrink-0">
+              <Pencil className="h-3 w-3" /> Modifier
+            </button>
+          </div>
+        )}
 
         {isAdmin && (
           <div className="border-t border-zik-border pt-3 mt-4 space-y-2">
