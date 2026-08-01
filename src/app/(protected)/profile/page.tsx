@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { GroupAvatar } from '@/app/(protected)/groups/GroupAvatar';
 
 const INSTRUMENTS = [
   { key: 'chant',    label: 'Chant',    emoji: '🎤' },
@@ -29,11 +30,17 @@ interface Profile {
   looking_for_group: boolean;
 }
 
-interface JamSession {
+interface MyGroup {
   id: string;
+  name: string;
+  avatar_url: string | null;
+}
+
+interface EventItem {
+  id: string;
+  type: 'jam' | 'concert';
   title: string;
   start_time: string;
-  created_by: string;
 }
 
 function formatDate(d: string) {
@@ -48,7 +55,9 @@ export default function MyProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [jams, setJams] = useState<JamSession[]>([]);
+  const [groups, setGroups] = useState<MyGroup[]>([]);
+  const [pastEvents, setPastEvents] = useState<EventItem[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<EventItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -82,19 +91,46 @@ export default function MyProfilePage() {
         setLookingForGroup(profileData.looking_for_group ?? false);
       }
 
-      const { data: participations } = await supabase
-        .from('jam_participants')
-        .select('jam_id, jam_sessions(id, title, start_time, created_by)')
+      const { data: groupMemberships } = await supabase
+        .from('group_members')
+        .select('groups(id, name, avatar_url)')
         .eq('user_id', user.id)
         .eq('status', 'confirmed');
+      setGroups((groupMemberships ?? []).map((g: any) => g.groups).filter(Boolean));
 
-      const jamList: JamSession[] = (participations ?? [])
+      const { data: jamParts } = await supabase
+        .from('jam_participants')
+        .select('jam_sessions(id, title, start_time)')
+        .eq('user_id', user.id)
+        .eq('status', 'confirmed');
+      const jamEvents: EventItem[] = (jamParts ?? [])
         .map((p: any) => p.jam_sessions)
         .filter(Boolean)
-        .sort((a: JamSession, b: JamSession) =>
-          new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
-        );
-      setJams(jamList);
+        .map((j: any) => ({ id: j.id, type: 'jam' as const, title: j.title, start_time: j.start_time }));
+
+      const { data: concertInts } = await supabase
+        .from('concert_interested')
+        .select('concerts(id, title, start_time)')
+        .eq('user_id', user.id);
+      const concertEvents: EventItem[] = (concertInts ?? [])
+        .map((c: any) => c.concerts)
+        .filter(Boolean)
+        .map((c: any) => ({ id: c.id, type: 'concert' as const, title: c.title, start_time: c.start_time }));
+
+      const allEvents = [...jamEvents, ...concertEvents];
+      const now = Date.now();
+      setPastEvents(
+        allEvents
+          .filter((e) => new Date(e.start_time).getTime() < now)
+          .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())
+          .slice(0, 2)
+      );
+      setUpcomingEvents(
+        allEvents
+          .filter((e) => new Date(e.start_time).getTime() >= now)
+          .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+          .slice(0, 2)
+      );
       setIsLoading(false);
     };
     fetchAll();
@@ -350,26 +386,60 @@ export default function MyProfilePage() {
         }
       </button>
 
-      {/* Historique jams */}
-      {jams.length > 0 && (
+      {/* Mes groupes */}
+      {groups.length > 0 && (
+        <div>
+          <h2
+            className="text-sm font-semibold mb-2 flex items-center gap-1.5"
+            style={{ color: '#F1F0F6' }}
+          >
+            <Users size={15} style={{ color: '#C084FC' }} />
+            Mes groupes ({groups.length})
+          </h2>
+          <div className="space-y-2">
+            {groups.map((group) => (
+              <button
+                key={group.id}
+                onClick={() => router.push(`/groups/${group.id}`)}
+                className="w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-150"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(192,132,252,0.20)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(192,132,252,0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
+                }}
+              >
+                <GroupAvatar group={group} size="sm" />
+                <p className="text-sm font-medium truncate flex-1 min-w-0" style={{ color: '#F1F0F6' }}>
+                  {group.name}
+                </p>
+                <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.25)' }} className="shrink-0" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Prochains événements */}
+      {upcomingEvents.length > 0 && (
         <div>
           <h2
             className="text-sm font-semibold mb-2 flex items-center gap-1.5"
             style={{ color: '#F1F0F6' }}
           >
             <CalendarDays size={15} style={{ color: '#C084FC' }} />
-            Mes jams ({jams.length})
+            Prochains événements
           </h2>
           <div className="space-y-2">
-            {jams.slice(0, 5).map((jam) => (
+            {upcomingEvents.map((event) => (
               <button
-                key={jam.id}
-                onClick={() => router.push(`/events/jams/${jam.id}`)}
+                key={`${event.type}-${event.id}`}
+                onClick={() => router.push(event.type === 'jam' ? `/events/jams/${event.id}` : `/events/concerts/${event.id}`)}
                 className="w-full flex items-center justify-between gap-3 p-3 rounded-xl text-left transition-all duration-150"
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                }}
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLElement).style.borderColor = 'rgba(192,132,252,0.20)';
                   (e.currentTarget as HTMLElement).style.background = 'rgba(192,132,252,0.05)';
@@ -380,24 +450,63 @@ export default function MyProfilePage() {
                 }}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="text-base shrink-0">🎸</span>
+                  <span className="text-base shrink-0">{event.type === 'jam' ? '🎸' : '🎤'}</span>
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: '#F1F0F6' }}>
-                      {jam.title}
+                      {event.title}
                     </p>
                     <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                      {formatDate(jam.start_time)}
+                      {formatDate(event.start_time)}
                     </p>
                   </div>
                 </div>
                 <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.25)' }} className="shrink-0" />
               </button>
             ))}
-            {jams.length > 5 && (
-              <p className="text-xs text-center pt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                + {jams.length - 5} autres
-              </p>
-            )}
+          </div>
+        </div>
+      )}
+
+      {/* Événements passés */}
+      {pastEvents.length > 0 && (
+        <div>
+          <h2
+            className="text-sm font-semibold mb-2 flex items-center gap-1.5"
+            style={{ color: '#F1F0F6' }}
+          >
+            <CalendarDays size={15} style={{ color: 'rgba(255,255,255,0.35)' }} />
+            Événements passés
+          </h2>
+          <div className="space-y-2">
+            {pastEvents.map((event) => (
+              <button
+                key={`${event.type}-${event.id}`}
+                onClick={() => router.push(event.type === 'jam' ? `/events/jams/${event.id}` : `/events/concerts/${event.id}`)}
+                className="w-full flex items-center justify-between gap-3 p-3 rounded-xl text-left transition-all duration-150"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(192,132,252,0.20)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(192,132,252,0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
+                }}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="text-base shrink-0">{event.type === 'jam' ? '🎸' : '🎤'}</span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate" style={{ color: '#F1F0F6' }}>
+                      {event.title}
+                    </p>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                      {formatDate(event.start_time)}
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.25)' }} className="shrink-0" />
+              </button>
+            ))}
           </div>
         </div>
       )}
