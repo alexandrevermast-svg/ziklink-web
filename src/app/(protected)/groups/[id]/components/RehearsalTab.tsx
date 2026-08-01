@@ -38,13 +38,13 @@ function DateButton({ value, onChange, placeholder }: { value: string; onChange:
           )}
         >
           <CalendarDays className="h-4 w-4 text-zik-purple shrink-0" />
-          {value ? format(new Date(value), "PPP", { locale: fr }) : <span>{placeholder}</span>}
+          {value ? format(parseDateStr(value), "PPP", { locale: fr }) : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[320px] p-0 bg-zik-card border-zik-border shadow-lg" align="start" sideOffset={8}>
         <Calendar
           mode="single"
-          selected={value ? new Date(value) : undefined}
+          selected={value ? parseDateStr(value) : undefined}
           onSelect={(selectedDate) => {
             if (selectedDate) {
               const y = selectedDate.getFullYear();
@@ -217,7 +217,10 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
     return mode === "disponibilite" ? marked : !marked;
   };
 
-  const participantIds = Array.from(new Set(prefs.map((p) => p.user_id)));
+  const currentWeekMarkedUserIds = new Set(marks.map((m) => m.user_id));
+  const participantIds = prefs
+    .filter((p) => p.submitted_week_start === currentWeekKey || currentWeekMarkedUserIds.has(p.user_id))
+    .map((p) => p.user_id);
 
   const tally = (date: string, period: string) =>
     participantIds.filter((uid) => isAvailable(uid, date, period) === true).length;
@@ -473,7 +476,7 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
           Semaine du {days[0].toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} au {days[6].toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
         </p>
         <p className="text-xs text-zik-muted mb-2">
-          {prefs.length}/{memberCount} membre{memberCount > 1 ? "s" : ""} ont indiqué leur planning
+          {participantIds.length}/{memberCount} membre{memberCount > 1 ? "s" : ""} ont indiqué leur planning
         </p>
 
         {isAdmin && (

@@ -95,6 +95,17 @@ export default function AddressSearchInput({
     onChange({ address, lat, lng });
   };
 
+  const handleBlur = () => {
+    // Délai pour laisser un clic sur une suggestion s'exécuter avant qu'on
+    // retombe sur le premier résultat — sinon le texte tapé sans clic explicite
+    // est silencieusement perdu (city/lat/lng jamais propagés au parent).
+    setTimeout(() => {
+      if (!selected && query.trim() && results.length > 0) {
+        handleSelect(results[0]);
+      }
+    }, 200);
+  };
+
   const handleClear = () => {
     setQuery('');
     setSelected(false);
@@ -134,6 +145,7 @@ export default function AddressSearchInput({
           value={query}
           onChange={handleInputChange}
           onFocus={() => { if (results.length > 0) setIsOpen(true); }}
+          onBlur={handleBlur}
           placeholder={placeholder}
           className="flex-1 bg-transparent outline-none text-sm"
           style={{ color: '#F1F0F6' }}

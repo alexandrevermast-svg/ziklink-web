@@ -327,11 +327,13 @@ export default function JamDetailPage() {
     setDragOverCell(null);
     if (!draggedSlot) return;
     const movedSlot = slots.find((s) => s.id === draggedSlot.id);
-    if (!movedSlot || !movedSlot.user_id) { setDraggedSlot(null); return; }
+    if (!movedSlot) { setDraggedSlot(null); return; }
     if (instrument !== draggedSlot.instrument) {
-      const otherSlotsElsewhere = slots.some(
-        (s) => s.user_id === movedSlot.user_id && s.id !== movedSlot.id && s.instrument !== instrument
-      );
+      const movedIdentity = movedSlot.user_id ?? (movedSlot.guest_name ? `guest:${movedSlot.guest_name}` : null);
+      const otherSlotsElsewhere = movedIdentity !== null && slots.some((s) => {
+        const identity = s.user_id ?? (s.guest_name ? `guest:${s.guest_name}` : null);
+        return identity === movedIdentity && s.id !== movedSlot.id && s.instrument !== instrument;
+      });
       if (otherSlotsElsewhere) { setDraggedSlot(null); return; }
     }
     const target = getSlot(instrument, slot_index);

@@ -102,10 +102,13 @@ export default function AdForm({ ad, onSuccess, onClose }: AdFormProps) {
         const ext = photoFile.name.split(".").pop();
         const path = `musician-ads/${user.id}/${Date.now()}.${ext}`;
         const { error: uploadError } = await supabase.storage.from("avatars").upload(path, photoFile, { upsert: true });
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
-          photoUrl = urlData.publicUrl;
+        if (uploadError) {
+          setError(`Échec de l'envoi de la photo : ${uploadError.message}`);
+          setIsLoading(false);
+          return;
         }
+        const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+        photoUrl = urlData.publicUrl;
       }
 
       const payload = {
