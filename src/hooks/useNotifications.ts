@@ -9,7 +9,8 @@ export type NotificationType =
   | 'jam_turn'
   | 'group_request'
    | 'jam_request'
-  | 'group_accepted';
+  | 'group_accepted'
+  | 'rehearsal_schedule';
 
 export interface Notification {
   id: string;

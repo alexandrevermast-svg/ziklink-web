@@ -511,22 +511,31 @@ export default function GroupDetailPage() {
 
       {/* Onglets */}
       <Tabs defaultValue="members" className="flex-1 flex flex-col">
-        <TabsList className="grid grid-cols-3 mx-4 mt-3 shrink-0">
-          <TabsTrigger value="members" className="text-zik-text">
+        <TabsList className="grid grid-cols-3 bg-zik-card/50 p-1 rounded-xl border border-zik-border mx-4 mt-3 shrink-0">
+          <TabsTrigger
+            value="members"
+            className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+          >
             Membres
             {confirmedMembers.length > 0 && (
-              <span className="ml-1.5 bg-zik-purple/10 text-zik-purple text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 bg-white/20 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                 {confirmedMembers.length}
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="repetition" className="text-zik-text">
+          <TabsTrigger
+            value="repetition"
+            className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+          >
             Répétition
           </TabsTrigger>
-          <TabsTrigger value="chat" className="text-zik-text">
+          <TabsTrigger
+            value="chat"
+            className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+          >
             Chat
             {messages.length > 0 && (
-              <span className="ml-1.5 bg-zik-purple/10 text-zik-purple text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 bg-white/20 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                 {messages.length}
               </span>
             )}

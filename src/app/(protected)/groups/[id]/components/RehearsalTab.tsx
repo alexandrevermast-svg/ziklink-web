@@ -1,10 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
-import { CalendarClock, MapPin, Plus, X, Check, Loader2, Sparkles } from "lucide-react";
+import { CalendarClock, MapPin, Loader2, Sparkles, CalendarRange } from "lucide-react";
+
+type Mode = "disponibilite" | "indisponibilite";
+type PeriodKey = "matin" | "apres_midi" | "soir";
 
 interface Rehearsal {
   id: string;
@@ -13,22 +16,8 @@ interface Rehearsal {
   location: string | null;
 }
 
-interface PollSlot {
-  id: string;
-  start_time: string;
-}
-
-interface Poll {
-  id: string;
-  title: string | null;
-  mode: "disponibilite" | "indisponibilite";
-  created_by: string | null;
-}
-
-interface ResponseRow {
-  slot_id: string;
-  user_id: string;
-}
+interface Pref { user_id: string; mode: string; }
+interface Mark { user_id: string; date: string; period: string; }
 
 interface RehearsalTabProps {
   groupId: string;
@@ -36,6 +25,24 @@ interface RehearsalTabProps {
   isMember: boolean;
   isAdmin: boolean;
   memberCount: number;
+}
+
+const PERIODS: { key: PeriodKey; label: string; defaultTime: string }[] = [
+  { key: "matin", label: "Matin", defaultTime: "10:00" },
+  { key: "apres_midi", label: "Après-midi", defaultTime: "14:00" },
+  { key: "soir", label: "Soir", defaultTime: "19:00" },
+];
+
+function toDateStr(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function parseDateStr(s: string) {
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y, m - 1, d);
 }
 
 function formatSlot(d: string) {
@@ -47,20 +54,26 @@ function formatSlot(d: string) {
 export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, memberCount }: RehearsalTabProps) {
   const supabase = createClient();
 
+  const [weekStart, setWeekStart] = useState<string | null>(null);
+  const [weekPickerValue, setWeekPickerValue] = useState("");
+  const [isSavingWeek, setIsSavingWeek] = useState(false);
+
+  const days = useMemo(() => Array.from({ length: 7 }, (_, i) => {
+    const d = weekStart ? parseDateStr(weekStart) : new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + i);
+    return d;
+  }), [weekStart]);
+
   const [upcoming, setUpcoming] = useState<Rehearsal[]>([]);
-  const [poll, setPoll] = useState<Poll | null>(null);
-  const [slots, setSlots] = useState<PollSlot[]>([]);
-  const [responses, setResponses] = useState<ResponseRow[]>([]);
+  const [prefs, setPrefs] = useState<Pref[]>([]);
+  const [marks, setMarks] = useState<Mark[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [isCreating, setIsCreating] = useState(false);
-  const [newMode, setNewMode] = useState<"disponibilite" | "indisponibilite">("disponibilite");
-  const [newTitle, setNewTitle] = useState("");
-  const [candidateInputs, setCandidateInputs] = useState<string[]>([""]);
-  const [isSavingPoll, setIsSavingPoll] = useState(false);
-
-  const [confirmingSlotId, setConfirmingSlotId] = useState<string | null>(null);
-  const [confirmLocation, setConfirmLocation] = useState("");
+  const [selectedCellKey, setSelectedCellKey] = useState("");
+  const [planTime, setPlanTime] = useState("");
+  const [planLocation, setPlanLocation] = useState("");
+  const [isPlanning, setIsPlanning] = useState(false);
 
   const fetchAll = useCallback(async () => {
     const nowIso = new Date().toISOString();
@@ -73,119 +86,147 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
       .limit(2);
     setUpcoming(rehData ?? []);
 
-    const { data: pollData } = await supabase
-      .from("group_availability_polls")
-      .select("id, title, mode, created_by")
+    const { data: groupData } = await supabase
+      .from("groups")
+      .select("schedule_week_start")
+      .eq("id", groupId)
+      .single();
+    setWeekStart(groupData?.schedule_week_start ?? null);
+
+    const { data: prefsData } = await supabase
+      .from("group_schedule_prefs")
+      .select("user_id, mode")
+      .eq("group_id", groupId);
+    setPrefs(prefsData ?? []);
+
+    const rangeDays = Array.from({ length: 7 }, (_, i) => {
+      const d = groupData?.schedule_week_start ? parseDateStr(groupData.schedule_week_start) : new Date();
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() + i);
+      return d;
+    });
+    const { data: marksData } = await supabase
+      .from("group_schedule_marks")
+      .select("user_id, date, period")
       .eq("group_id", groupId)
-      .is("resolved_at", null)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    setPoll(pollData as Poll | null);
+      .gte("date", toDateStr(rangeDays[0]))
+      .lte("date", toDateStr(rangeDays[6]));
+    setMarks(marksData ?? []);
 
-    if (pollData) {
-      const { data: slotData } = await supabase
-        .from("group_availability_slots")
-        .select("id, start_time")
-        .eq("poll_id", pollData.id)
-        .order("start_time", { ascending: true });
-      setSlots(slotData ?? []);
-
-      const slotIds = (slotData ?? []).map((s) => s.id);
-      if (slotIds.length > 0) {
-        const { data: respData } = await supabase
-          .from("group_availability_responses")
-          .select("slot_id, user_id")
-          .in("slot_id", slotIds);
-        setResponses(respData ?? []);
-      } else {
-        setResponses([]);
-      }
-    } else {
-      setSlots([]);
-      setResponses([]);
-    }
     setIsLoading(false);
   }, [groupId]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  const addCandidateInput = () => setCandidateInputs((prev) => [...prev, ""]);
-  const updateCandidateInput = (i: number, v: string) =>
-    setCandidateInputs((prev) => prev.map((c, idx) => (idx === i ? v : c)));
-  const removeCandidateInput = (i: number) =>
-    setCandidateInputs((prev) => prev.filter((_, idx) => idx !== i));
+  const myPref = prefs.find((p) => p.user_id === currentUserId);
+  const myMode: Mode = (myPref?.mode as Mode) ?? "disponibilite";
 
-  const resetCreateForm = () => {
-    setIsCreating(false);
-    setNewTitle("");
-    setNewMode("disponibilite");
-    setCandidateInputs([""]);
+  const isMarked = (userId: string, date: string, period: string) =>
+    marks.some((m) => m.user_id === userId && m.date === date && m.period === period);
+
+  const modeOf = (userId: string): Mode | null => {
+    const p = prefs.find((pr) => pr.user_id === userId);
+    return p ? (p.mode as Mode) : null;
   };
 
-  const handleCreatePoll = async () => {
-    if (!currentUserId) return;
-    const validSlots = candidateInputs.filter((c) => c.trim());
-    if (validSlots.length === 0) return;
-    setIsSavingPoll(true);
-    const { data: pollRow, error } = await supabase
-      .from("group_availability_polls")
-      .insert({ group_id: groupId, title: newTitle.trim() || null, mode: newMode, created_by: currentUserId })
-      .select("id")
-      .single();
-    if (!error && pollRow) {
-      await supabase.from("group_availability_slots").insert(
-        validSlots.map((s) => ({ poll_id: pollRow.id, start_time: new Date(s).toISOString() }))
-      );
+  const isAvailable = (userId: string, date: string, period: string): boolean | null => {
+    const mode = modeOf(userId);
+    if (!mode) return null;
+    const marked = isMarked(userId, date, period);
+    return mode === "disponibilite" ? marked : !marked;
+  };
+
+  const participantIds = Array.from(new Set(prefs.map((p) => p.user_id)));
+
+  const tally = (date: string, period: string) =>
+    participantIds.filter((uid) => isAvailable(uid, date, period) === true).length;
+
+  const cellScores = days.flatMap((d) => PERIODS.map((p) => tally(toDateStr(d), p.key)));
+  const bestScore = cellScores.length > 0 ? Math.max(...cellScores) : 0;
+
+  const handleModeChange = async (mode: Mode) => {
+    if (!currentUserId || mode === myMode) return;
+    await supabase.from("group_schedule_prefs")
+      .upsert({ group_id: groupId, user_id: currentUserId, mode, updated_at: new Date().toISOString() }, { onConflict: "group_id,user_id" });
+    await supabase.from("group_schedule_marks").delete().eq("group_id", groupId).eq("user_id", currentUserId);
+    await fetchAll();
+  };
+
+  const handleSetWeek = async () => {
+    if (!weekPickerValue) return;
+    setIsSavingWeek(true);
+    await supabase.from("groups").update({ schedule_week_start: weekPickerValue }).eq("id", groupId);
+
+    const { data: membersData } = await supabase
+      .from("group_members")
+      .select("user_id")
+      .eq("group_id", groupId)
+      .eq("status", "confirmed");
+    const weekLabel = `${parseDateStr(weekPickerValue).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} au ${
+      (() => { const end = parseDateStr(weekPickerValue); end.setDate(end.getDate() + 6); return end.toLocaleDateString("fr-FR", { day: "numeric", month: "short" }); })()
+    }`;
+    const recipients = (membersData ?? [])
+      .map((m) => m.user_id)
+      .filter((uid): uid is string => !!uid && uid !== currentUserId);
+    for (const uid of recipients) {
+      await supabase.from("notifications").insert({
+        user_id: uid,
+        type: "rehearsal_schedule",
+        title: "Nouveau planning à remplir 🗓️",
+        body: `Indique tes disponibilités pour la semaine du ${weekLabel}`,
+        link: `/groups/${groupId}`,
+      });
     }
-    setIsSavingPoll(false);
-    resetCreateForm();
+
+    setIsSavingWeek(false);
+    setWeekPickerValue("");
     await fetchAll();
   };
 
-  const handleDeletePoll = async () => {
-    if (!poll) return;
-    await supabase.from("group_availability_polls").delete().eq("id", poll.id);
-    await fetchAll();
-  };
-
-  const myResponseSlotIds = new Set(
-    responses.filter((r) => r.user_id === currentUserId).map((r) => r.slot_id)
-  );
-
-  const toggleMyResponse = async (slotId: string) => {
+  const toggleCell = async (date: string, period: string) => {
     if (!currentUserId) return;
-    if (myResponseSlotIds.has(slotId)) {
-      await supabase.from("group_availability_responses").delete().eq("slot_id", slotId).eq("user_id", currentUserId);
+    const marked = isMarked(currentUserId, date, period);
+    if (marked) {
+      await supabase.from("group_schedule_marks").delete()
+        .eq("group_id", groupId).eq("user_id", currentUserId).eq("date", date).eq("period", period);
     } else {
-      await supabase.from("group_availability_responses").insert({ slot_id: slotId, user_id: currentUserId });
+      await supabase.from("group_schedule_prefs")
+        .upsert({ group_id: groupId, user_id: currentUserId, mode: myMode }, { onConflict: "group_id,user_id" });
+      await supabase.from("group_schedule_marks").insert({ group_id: groupId, user_id: currentUserId, date, period });
     }
     await fetchAll();
   };
 
-  const countForSlot = (slotId: string) => responses.filter((r) => r.slot_id === slotId).length;
+  const cellOptions = days.flatMap((d) => {
+    const dateStr = toDateStr(d);
+    return PERIODS.map((p) => ({
+      key: `${dateStr}_${p.key}`,
+      dateStr,
+      period: p,
+      label: `${d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })} · ${p.label}`,
+      count: tally(dateStr, p.key),
+    }));
+  }).sort((a, b) => b.count - a.count);
 
-  const handleConfirmSlot = async (slot: PollSlot) => {
-    if (!poll) return;
-    setIsSavingPoll(true);
-    await supabase.from("group_rehearsals").insert({
-      group_id: groupId, title: poll.title, start_time: slot.start_time,
-      location: confirmLocation.trim() || null, created_by: currentUserId,
-    });
-    await supabase.from("group_availability_polls")
-      .update({ resolved_slot_id: slot.id, resolved_at: new Date().toISOString() })
-      .eq("id", poll.id);
-    setIsSavingPoll(false);
-    setConfirmingSlotId(null);
-    setConfirmLocation("");
-    await fetchAll();
+  const handleSelectCell = (key: string) => {
+    setSelectedCellKey(key);
+    const opt = cellOptions.find((o) => o.key === key);
+    if (opt) setPlanTime(`${opt.dateStr}T${opt.period.defaultTime}`);
   };
 
-  const canManagePoll = !!poll && (isAdmin || poll.created_by === currentUserId);
-  const scores = slots.map((s) => countForSlot(s.id));
-  const bestScore = scores.length > 0
-    ? (poll?.mode === "disponibilite" ? Math.max(...scores) : Math.min(...scores))
-    : null;
+  const handlePlanRehearsal = async () => {
+    if (!planTime) return;
+    setIsPlanning(true);
+    await supabase.from("group_rehearsals").insert({
+      group_id: groupId, start_time: new Date(planTime).toISOString(),
+      location: planLocation.trim() || null, created_by: currentUserId,
+    });
+    setIsPlanning(false);
+    setSelectedCellKey("");
+    setPlanTime("");
+    setPlanLocation("");
+    await fetchAll();
+  };
 
   if (isLoading) {
     return (
@@ -232,150 +273,138 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
 
       {/* Trouver un créneau commun */}
       <div className="border-t border-zik-border pt-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xs font-semibold text-zik-muted uppercase tracking-wide">Trouver un créneau commun</h3>
-          {!poll && !isCreating && (
-            <button onClick={() => setIsCreating(true)} className="flex items-center gap-1 text-xs text-zik-purple font-medium hover:underline">
-              <Plus className="h-3.5 w-3.5" /> Nouveau sondage
-            </button>
-          )}
-        </div>
+        <h3 className="text-xs font-semibold text-zik-muted uppercase tracking-wide mb-2">Trouver un créneau commun</h3>
+        <p className="text-sm text-zik-text font-medium mb-1 flex items-center gap-1.5">
+          <CalendarRange className="h-3.5 w-3.5 text-zik-purple" />
+          Semaine du {days[0].toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} au {days[6].toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+        </p>
+        <p className="text-xs text-zik-muted mb-2">
+          {prefs.length}/{memberCount} membre{memberCount > 1 ? "s" : ""} ont indiqué leur planning
+        </p>
 
-        {!poll && !isCreating && (
-          <p className="text-sm text-zik-muted py-2">
-            Aucun sondage en cours. Propose des créneaux pour trouver quand tout le monde est dispo.
-          </p>
-        )}
-
-        {isCreating && (
-          <div className="p-3 rounded-xl border border-zik-border bg-zik-card/50 space-y-3">
-            <div>
-              <label className="text-xs font-medium text-zik-muted mb-1 block">Titre (optionnel)</label>
-              <input
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                placeholder="Ex: Répète avant le concert"
-                className="zik-input text-sm"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-zik-muted mb-1.5 block">Les membres indiqueront...</label>
-              <div className="flex gap-2">
-                <button type="button" onClick={() => setNewMode("disponibilite")}
-                  className={`flex-1 text-xs font-medium py-2 rounded-lg border transition-colors ${
-                    newMode === "disponibilite" ? "bg-zik-purple/10 border-zik-purple/40 text-zik-purple" : "border-zik-border text-zik-muted"
-                  }`}>
-                  ✅ Leurs disponibilités
-                </button>
-                <button type="button" onClick={() => setNewMode("indisponibilite")}
-                  className={`flex-1 text-xs font-medium py-2 rounded-lg border transition-colors ${
-                    newMode === "indisponibilite" ? "bg-zik-purple/10 border-zik-purple/40 text-zik-purple" : "border-zik-border text-zik-muted"
-                  }`}>
-                  🚫 Leurs indisponibilités
-                </button>
-              </div>
-            </div>
-            <div>
-              <label className="text-xs font-medium text-zik-muted mb-1.5 block">Créneaux proposés</label>
-              <div className="space-y-2">
-                {candidateInputs.map((c, i) => (
-                  <div key={i} className="flex gap-1.5">
-                    <input
-                      type="datetime-local"
-                      value={c}
-                      onChange={(e) => updateCandidateInput(i, e.target.value)}
-                      className="zik-input text-sm flex-1"
-                    />
-                    {candidateInputs.length > 1 && (
-                      <button type="button" onClick={() => removeCandidateInput(i)} className="text-zik-muted hover:text-zik-red px-1">
-                        <X className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <button type="button" onClick={addCandidateInput} className="flex items-center gap-1 text-xs text-zik-purple font-medium mt-2 hover:underline">
-                <Plus className="h-3.5 w-3.5" /> Ajouter un créneau
-              </button>
-            </div>
-            <div className="flex gap-2 justify-end pt-1">
-              <Button type="button" variant="outline" size="sm" className="text-xs border-zik-border text-zik-text hover:bg-zik-card-hover" onClick={resetCreateForm}>
-                Annuler
-              </Button>
-              <Button
-                type="button" size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo"
-                disabled={isSavingPoll || candidateInputs.every((c) => !c.trim())}
-                onClick={handleCreatePoll}
-              >
-                {isSavingPoll ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Créer le sondage"}
-              </Button>
-            </div>
+        {isAdmin && (
+          <div className="flex gap-1.5 mb-3">
+            <input
+              type="date"
+              value={weekPickerValue}
+              onChange={(e) => setWeekPickerValue(e.target.value)}
+              className="zik-input text-sm flex-1"
+            />
+            <Button
+              size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo shrink-0"
+              disabled={!weekPickerValue || isSavingWeek}
+              onClick={handleSetWeek}
+            >
+              {isSavingWeek ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Demander"}
+            </Button>
           </div>
         )}
 
-        {poll && (
-          <div className="p-3 rounded-xl border border-zik-border bg-zik-card/50 space-y-3">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className="text-sm font-semibold text-zik-text">{poll.title || "Sondage de disponibilité"}</p>
-                <p className="text-xs text-zik-muted mt-0.5">
-                  {poll.mode === "disponibilite" ? "Coche les créneaux où tu es dispo" : "Coche les créneaux où tu n'es PAS dispo"}
-                </p>
-              </div>
-              {canManagePoll && (
-                <button onClick={handleDeletePoll} className="text-zik-muted hover:text-zik-red shrink-0">
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
+        <div className="flex gap-2 mb-3">
+          <button type="button" onClick={() => handleModeChange("disponibilite")}
+            className={`flex-1 text-xs font-medium py-2 rounded-lg border transition-colors ${
+              myMode === "disponibilite" ? "bg-zik-purple/10 border-zik-purple/40 text-zik-purple" : "border-zik-border text-zik-muted"
+            }`}>
+            ✅ Je remplis mes dispos
+          </button>
+          <button type="button" onClick={() => handleModeChange("indisponibilite")}
+            className={`flex-1 text-xs font-medium py-2 rounded-lg border transition-colors ${
+              myMode === "indisponibilite" ? "bg-zik-purple/10 border-zik-purple/40 text-zik-purple" : "border-zik-border text-zik-muted"
+            }`}>
+            🚫 Je remplis mes indispos
+          </button>
+        </div>
+        <p className="text-[11px] text-zik-muted mb-3">
+          {myMode === "disponibilite"
+            ? "Coche les cases où tu es disponible."
+            : "Coche les cases où tu n'es PAS disponible."}
+        </p>
 
-            <div className="space-y-2">
-              {slots.map((slot) => {
-                const count = countForSlot(slot.id);
-                const isChecked = myResponseSlotIds.has(slot.id);
-                const isBest = slots.length > 1 && bestScore !== null && count === bestScore
-                  && (poll.mode === "indisponibilite" || count > 0);
-                return (
-                  <div key={slot.id} className={`flex items-center gap-2.5 p-2.5 rounded-lg border ${
-                    isBest ? "border-zik-emerald/40 bg-zik-emerald/5" : "border-zik-border"
-                  }`}>
-                    <button onClick={() => toggleMyResponse(slot.id)}
-                      className={`h-6 w-6 rounded-md flex items-center justify-center shrink-0 border transition-colors ${
-                        isChecked ? "bg-zik-purple border-zik-purple text-white" : "border-zik-border text-transparent hover:border-zik-purple/50"
-                      }`}>
-                      <Check className="h-3.5 w-3.5" />
-                    </button>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm text-zik-text">{formatSlot(slot.start_time)}</p>
+        <div className="overflow-x-auto -mx-4 px-4">
+          <table className="border-collapse text-xs mx-auto" style={{ minWidth: 380 }}>
+            <thead>
+              <tr>
+                <th className="w-14" />
+                {days.map((d) => (
+                  <th key={toDateStr(d)} className="text-center font-medium text-zik-text pb-1.5 px-0.5">
+                    <div className="text-[9px] text-zik-muted uppercase">
+                      {d.toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", "")}
                     </div>
-                    <span className="text-xs text-zik-muted shrink-0">{count}/{memberCount}</span>
-                    {isBest && <Sparkles className="h-3.5 w-3.5 text-zik-emerald shrink-0" />}
-                    {canManagePoll && (
-                      confirmingSlotId === slot.id ? (
-                        <div className="flex items-center gap-1 shrink-0">
-                          <input
-                            value={confirmLocation}
-                            onChange={(e) => setConfirmLocation(e.target.value)}
-                            placeholder="Lieu (optionnel)"
-                            className="zik-input text-xs w-28 py-1"
-                          />
-                          <button onClick={() => handleConfirmSlot(slot)} disabled={isSavingPoll} className="text-zik-emerald hover:bg-zik-emerald/10 rounded p-1">
-                            <Check className="h-3.5 w-3.5" />
-                          </button>
-                          <button onClick={() => setConfirmingSlotId(null)} className="text-zik-muted hover:text-zik-red rounded p-1">
-                            <X className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      ) : (
-                        <button onClick={() => setConfirmingSlotId(slot.id)} className="text-xs text-zik-purple font-medium shrink-0 hover:underline">
-                          Choisir
+                    <div>{d.getDate()}</div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {PERIODS.map((period) => (
+                <tr key={period.key}>
+                  <td className="text-[11px] text-zik-muted pr-1.5 whitespace-nowrap">{period.label}</td>
+                  {days.map((d) => {
+                    const dateStr = toDateStr(d);
+                    const count = tally(dateStr, period.key);
+                    const mine = currentUserId ? isMarked(currentUserId, dateStr, period.key) : false;
+                    const isBest = bestScore > 0 && count === bestScore;
+                    return (
+                      <td key={dateStr} className="p-0.5">
+                        <button
+                          onClick={() => toggleCell(dateStr, period.key)}
+                          className={`h-8 w-8 rounded-md flex items-center justify-center text-[11px] font-semibold border transition-colors ${
+                            mine
+                              ? "bg-zik-purple/20 border-zik-purple text-zik-purple"
+                              : isBest
+                                ? "border-zik-emerald/40 bg-zik-emerald/10 text-zik-emerald"
+                                : "border-zik-border text-zik-muted hover:border-zik-purple/30"
+                          }`}
+                        >
+                          {count > 0 ? count : ""}
                         </button>
-                      )
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {isAdmin && (
+          <div className="border-t border-zik-border pt-3 mt-4 space-y-2">
+            <p className="text-xs font-medium text-zik-text flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-zik-purple" /> Planifier une répétition
+            </p>
+            <select
+              value={selectedCellKey}
+              onChange={(e) => handleSelectCell(e.target.value)}
+              className="zik-input text-sm"
+            >
+              <option value="">Choisir un créneau...</option>
+              {cellOptions.map((opt) => (
+                <option key={opt.key} value={opt.key}>{opt.label} ({opt.count})</option>
+              ))}
+            </select>
+            {selectedCellKey && (
+              <>
+                <input
+                  type="datetime-local"
+                  value={planTime}
+                  onChange={(e) => setPlanTime(e.target.value)}
+                  className="zik-input text-sm"
+                />
+                <input
+                  value={planLocation}
+                  onChange={(e) => setPlanLocation(e.target.value)}
+                  placeholder="Lieu (optionnel)"
+                  className="zik-input text-sm"
+                />
+                <Button
+                  size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo w-full"
+                  disabled={isPlanning || !planTime}
+                  onClick={handlePlanRehearsal}
+                >
+                  {isPlanning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Planifier"}
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>

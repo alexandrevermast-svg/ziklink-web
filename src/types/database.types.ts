@@ -181,126 +181,6 @@ export type Database = {
         }
         Relationships: []
       }
-      group_availability_polls: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          group_id: string
-          id: string
-          mode: string
-          resolved_at: string | null
-          resolved_slot_id: string | null
-          title: string | null
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          group_id: string
-          id?: string
-          mode?: string
-          resolved_at?: string | null
-          resolved_slot_id?: string | null
-          title?: string | null
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          group_id?: string
-          id?: string
-          mode?: string
-          resolved_at?: string | null
-          resolved_slot_id?: string | null
-          title?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_availability_polls_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_availability_polls_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "groups"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_availability_polls_resolved_slot_fkey"
-            columns: ["resolved_slot_id"]
-            isOneToOne: false
-            referencedRelation: "group_availability_slots"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      group_availability_responses: {
-        Row: {
-          created_at: string
-          id: string
-          slot_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          slot_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          slot_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_availability_responses_slot_id_fkey"
-            columns: ["slot_id"]
-            isOneToOne: false
-            referencedRelation: "group_availability_slots"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_availability_responses_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      group_availability_slots: {
-        Row: {
-          created_at: string
-          id: string
-          poll_id: string
-          start_time: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          poll_id: string
-          start_time: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          poll_id?: string
-          start_time?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_availability_slots_poll_id_fkey"
-            columns: ["poll_id"]
-            isOneToOne: false
-            referencedRelation: "group_availability_polls"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       group_members: {
         Row: {
           group_id: string | null
@@ -391,6 +271,84 @@ export type Database = {
           },
         ]
       }
+      group_schedule_marks: {
+        Row: {
+          created_at: string
+          date: string
+          group_id: string
+          id: string
+          period: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          group_id: string
+          id?: string
+          period: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          group_id?: string
+          id?: string
+          period?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_schedule_marks_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_schedule_marks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_schedule_prefs: {
+        Row: {
+          group_id: string
+          mode: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          mode?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          mode?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_schedule_prefs_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_schedule_prefs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       groups: {
         Row: {
           avatar_url: string | null
@@ -402,6 +360,7 @@ export type Database = {
           id: string
           is_open: boolean
           name: string
+          schedule_week_start: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -413,6 +372,7 @@ export type Database = {
           id?: string
           is_open?: boolean
           name: string
+          schedule_week_start?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -424,6 +384,7 @@ export type Database = {
           id?: string
           is_open?: boolean
           name?: string
+          schedule_week_start?: string | null
         }
         Relationships: []
       }

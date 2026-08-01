@@ -22,6 +22,7 @@ const TYPE_CONFIG: Record<NotificationType, { icon: string; color: string }> = {
   jam_request:    { icon: '🥁', color: '#FB923C' },
   group_request: { icon: '👥', color: '#C084FC' },
   group_accepted:{ icon: '✅', color: '#C084FC' },
+  rehearsal_schedule: { icon: '🗓️', color: '#34D399' },
 };
 
 function NotifItem({
