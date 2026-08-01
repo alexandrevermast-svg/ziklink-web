@@ -3,12 +3,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import Modal from "@/components/Modal";
 import AdForm from "@/components/AdForm";
 import ReportButton from "@/components/ReportButton";
-import { Plus, Search, UserCheck, MapPin, MessageCircle, Pencil, Trash2 } from "lucide-react";
+import { Plus, User, Users, MapPin, MessageCircle, Pencil, Trash2, LocateFixed, ChevronDown } from "lucide-react";
+import { haversineDistanceKm, formatDistanceKm, type LatLng } from "@/lib/geo";
 import type { MusicianAd, Profile as ProfileRow } from "@/types";
 
 type Profile = Pick<ProfileRow, "id" | "username" | "avatar_url">;
@@ -27,6 +28,11 @@ const GENRES = ["Rock", "Jazz", "Blues", "Metal", "Pop", "Électro", "Folk", "Cl
 
 const STATUS_LABELS: Record<string, string> = { amateur: "Amateur", pro: "Pro", indifferent: "Indifférent" };
 
+const MODE_CONFIG = {
+  musicien: { label: "Musiciens", icon: User, className: "bg-zik-orange/10 text-zik-orange" },
+  groupe: { label: "Groupes", icon: Users, className: "bg-zik-emerald/10 text-zik-emerald" },
+} as const;
+
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
 }
@@ -43,11 +49,16 @@ export default function PeopleSearchTab() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [contactingId, setContactingId] = useState<string | null>(null);
 
-  const [modeFilter, setModeFilter] = useState<"tous" | "recherche" | "disponible">("tous");
+  const [modeFilter, setModeFilter] = useState<"tous" | "musicien" | "groupe">("tous");
   const [instrumentFilter, setInstrumentFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [cityFilter, setCityFilter] = useState("");
   const [genreFilters, setGenreFilters] = useState<string[]>([]);
+
+  const [nearMe, setNearMe] = useState(false);
+  const [userPosition, setUserPosition] = useState<LatLng | null>(null);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
+  const [radiusKm, setRadiusKm] = useState<number | null>(null);
 
   const fetchAll = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -67,16 +78,60 @@ export default function PeopleSearchTab() {
     setGenreFilters((prev) => prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]);
   };
 
+  const handleToggleNearMe = useCallback((checked: boolean) => {
+    setNearMe(checked);
+    setGeoError(null);
+    setRadiusKm(null);
+    if (!checked) return;
+    if (!navigator.geolocation) {
+      setGeoError("La géolocalisation n'est pas disponible sur cet appareil.");
+      setNearMe(false);
+      return;
+    }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setGeoLoading(false);
+      },
+      () => {
+        setGeoError("Localisation refusée ou indisponible.");
+        setGeoLoading(false);
+        setNearMe(false);
+      },
+      { enableHighAccuracy: false, timeout: 10000 }
+    );
+  }, []);
+
+  const distanceById = useMemo(() => {
+    if (!nearMe || !userPosition) return {} as Record<string, number>;
+    const map: Record<string, number> = {};
+    for (const ad of ads) {
+      if (ad.lat != null && ad.lng != null) {
+        map[ad.id] = haversineDistanceKm(userPosition, { lat: ad.lat, lng: ad.lng });
+      }
+    }
+    return map;
+  }, [ads, nearMe, userPosition]);
+
   const filtered = useMemo(() => {
-    return ads.filter((ad) => {
+    const base = ads.filter((ad) => {
       if (modeFilter !== "tous" && ad.mode !== modeFilter) return false;
       if (instrumentFilter && ad.instrument !== instrumentFilter) return false;
       if (statusFilter && ad.status !== statusFilter) return false;
-      if (cityFilter.trim() && !ad.city?.toLowerCase().includes(cityFilter.trim().toLowerCase())) return false;
       if (genreFilters.length > 0 && !genreFilters.some((g) => ad.genres.includes(g))) return false;
       return true;
     });
-  }, [ads, modeFilter, instrumentFilter, statusFilter, cityFilter, genreFilters]);
+    if (!nearMe || !userPosition) return base;
+    return base
+      .filter((ad) => radiusKm === null || (distanceById[ad.id] !== undefined && distanceById[ad.id] <= radiusKm))
+      .sort((a, b) => {
+        const da = distanceById[a.id], db = distanceById[b.id];
+        if (da === undefined) return 1;
+        if (db === undefined) return -1;
+        return da - db;
+      });
+  }, [ads, modeFilter, instrumentFilter, statusFilter, genreFilters, nearMe, userPosition, radiusKm, distanceById]);
 
   const handleAddClick = () => {
     if (!currentUserId) { router.push(`/login?next=${encodeURIComponent("/groups")}`); return; }
@@ -115,8 +170,8 @@ export default function PeopleSearchTab() {
         <div className="flex gap-2">
           {([
             { key: "tous", label: "Toutes" },
-            { key: "recherche", label: "Je cherche" },
-            { key: "disponible", label: "Dispo" },
+            { key: "musicien", label: "Musiciens" },
+            { key: "groupe", label: "Groupes" },
           ] as const).map(({ key, label }) => (
             <button
               key={key}
@@ -149,12 +204,64 @@ export default function PeopleSearchTab() {
           </select>
         </div>
 
-        <Input
-          value={cityFilter}
-          onChange={(e) => setCityFilter(e.target.value)}
-          placeholder="Ville (ex: Paris)"
-          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
-        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              onClick={() => { if (!nearMe) handleToggleNearMe(true); }}
+              className={`w-full flex items-center justify-between gap-2 rounded-lg border p-2.5 text-left transition-colors ${
+                nearMe ? "border-zik-purple/40 bg-zik-purple/10" : "border-zik-border bg-zik-card hover:border-zik-purple/30"
+              }`}
+            >
+              <span className="flex items-center gap-1.5 text-sm font-medium text-zik-text truncate">
+                <LocateFixed className={`h-4 w-4 shrink-0 ${nearMe ? "text-zik-purple" : "text-zik-muted"}`} />
+                <span className="truncate">
+                  {geoLoading
+                    ? "Localisation..."
+                    : nearMe && userPosition
+                    ? `Près de moi · ${radiusKm === null ? "Tout" : radiusKm + " km"}`
+                    : "Près de moi"}
+                </span>
+              </span>
+              {nearMe && <ChevronDown className="h-3.5 w-3.5 text-zik-muted shrink-0" />}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 bg-zik-card border-zik-border p-4 space-y-3" align="start">
+            {geoError && <p className="text-xs text-zik-red">{geoError}</p>}
+            {nearMe && userPosition && (
+              <div>
+                <p className="text-xs text-zik-muted mb-1.5">Rayon</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {([
+                    { key: null, label: "Tout" },
+                    { key: 1, label: "1 km" },
+                    { key: 5, label: "5 km" },
+                    { key: 10, label: "10 km" },
+                    { key: 25, label: "25 km" },
+                  ] as const).map(({ key, label }) => {
+                    const isActive = radiusKm === key;
+                    return (
+                      <button
+                        key={label}
+                        onClick={() => setRadiusKm(key)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                          isActive ? "bg-zik-purple text-white" : "bg-zik-card-hover text-zik-muted hover:bg-zik-border"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => handleToggleNearMe(false)}
+                  className="mt-3 text-xs text-zik-muted hover:text-zik-red transition-colors"
+                >
+                  Désactiver la localisation
+                </button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
 
         <div className="flex flex-wrap gap-2">
           {GENRES.map((g) => {
@@ -187,15 +294,15 @@ export default function PeopleSearchTab() {
           {filtered.map((ad) => {
             const isOwner = ad.created_by === currentUserId;
             const instrument = INSTRUMENTS.find((i) => i.key === ad.instrument);
+            const config = MODE_CONFIG[ad.mode as keyof typeof MODE_CONFIG] ?? MODE_CONFIG.musicien;
+            const ModeIcon = config.icon;
             return (
               <div key={ad.id} className="rounded-lg border border-zik-border p-4 bg-zik-card">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full mb-1.5 ${
-                      ad.mode === "recherche" ? "bg-zik-orange/10 text-zik-orange" : "bg-zik-emerald/10 text-zik-emerald"
-                    }`}>
-                      {ad.mode === "recherche" ? <Search className="h-3 w-3" /> : <UserCheck className="h-3 w-3" />}
-                      {ad.mode === "recherche" ? "Je cherche" : "Disponible"}
+                    <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full mb-1.5 ${config.className}`}>
+                      <ModeIcon className="h-3 w-3" />
+                      {config.label}
                     </span>
                     <h3 className="font-semibold text-zik-text truncate">{ad.title}</h3>
                     {ad.profile?.username && (
@@ -210,6 +317,12 @@ export default function PeopleSearchTab() {
                 <div className="flex flex-wrap gap-3 mt-2 text-xs text-zik-muted">
                   {instrument && <span>{instrument.emoji} {instrument.label}</span>}
                   {ad.city && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{ad.city}</span>}
+                  {distanceById[ad.id] !== undefined && (
+                    <span className="flex items-center gap-1 text-zik-purple font-medium">
+                      <LocateFixed className="h-3 w-3" />
+                      {formatDistanceKm(distanceById[ad.id])}
+                    </span>
+                  )}
                   <span className="text-zik-purple">{STATUS_LABELS[ad.status] ?? ad.status}</span>
                   <span>{formatDate(ad.created_at)}</span>
                 </div>

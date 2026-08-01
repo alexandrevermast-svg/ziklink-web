@@ -540,6 +540,8 @@ export type Database = {
           genres: string[]
           id: string
           instrument: string | null
+          lat: number | null
+          lng: number | null
           mode: string
           status: string
           title: string
@@ -552,6 +554,8 @@ export type Database = {
           genres?: string[]
           id?: string
           instrument?: string | null
+          lat?: number | null
+          lng?: number | null
           mode: string
           status?: string
           title: string
@@ -564,6 +568,8 @@ export type Database = {
           genres?: string[]
           id?: string
           instrument?: string | null
+          lat?: number | null
+          lng?: number | null
           mode?: string
           status?: string
           title?: string

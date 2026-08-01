@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, UserCheck } from "lucide-react";
+import { User, Users } from "lucide-react";
+import AddressSearchInput from "@/components/AddressSearchInput";
 import type { MusicianAd } from "@/types";
 
 const INSTRUMENTS = [
@@ -35,11 +36,14 @@ export default function AdForm({ ad, onSuccess, onClose }: AdFormProps) {
   const supabase = createClient();
   const isEdit = !!ad;
 
-  const [mode, setMode] = useState<"recherche" | "disponible">((ad?.mode as "recherche" | "disponible") ?? "recherche");
+  const [mode, setMode] = useState<"musicien" | "groupe">((ad?.mode as "musicien" | "groupe") ?? "musicien");
   const [title, setTitle] = useState(ad?.title ?? "");
   const [instrument, setInstrument] = useState(ad?.instrument ?? "");
   const [genres, setGenres] = useState<string[]>(ad?.genres ?? []);
   const [city, setCity] = useState(ad?.city ?? "");
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
+    ad?.lat != null && ad?.lng != null ? { lat: ad.lat, lng: ad.lng } : null
+  );
   const [status, setStatus] = useState<string>(ad?.status ?? "indifferent");
   const [description, setDescription] = useState(ad?.description ?? "");
   const [isLoading, setIsLoading] = useState(false);
@@ -64,6 +68,8 @@ export default function AdForm({ ad, onSuccess, onClose }: AdFormProps) {
         instrument: instrument || null,
         genres,
         city: city.trim() || null,
+        lat: location?.lat ?? null,
+        lng: location?.lng ?? null,
         status,
         description: description.trim() || null,
       };
@@ -91,25 +97,25 @@ export default function AdForm({ ad, onSuccess, onClose }: AdFormProps) {
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
-            onClick={() => setMode("recherche")}
+            onClick={() => setMode("musicien")}
             className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
-              mode === "recherche"
+              mode === "musicien"
                 ? "border-zik-purple/40 bg-zik-purple/10 text-zik-purple"
                 : "border-zik-border text-zik-muted hover:border-zik-purple/30"
             }`}
           >
-            <Search className="h-4 w-4" /> Je cherche
+            <User className="h-4 w-4" /> Musiciens
           </button>
           <button
             type="button"
-            onClick={() => setMode("disponible")}
+            onClick={() => setMode("groupe")}
             className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
-              mode === "disponible"
+              mode === "groupe"
                 ? "border-zik-purple/40 bg-zik-purple/10 text-zik-purple"
                 : "border-zik-border text-zik-muted hover:border-zik-purple/30"
             }`}
           >
-            <UserCheck className="h-4 w-4" /> Je suis dispo
+            <Users className="h-4 w-4" /> Groupes
           </button>
         </div>
       </div>
@@ -121,33 +127,32 @@ export default function AdForm({ ad, onSuccess, onClose }: AdFormProps) {
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder={mode === "recherche" ? "Ex: Cherche batteur pour groupe rock" : "Ex: Guitariste dispo pour reprises"}
+          placeholder={mode === "musicien" ? "Ex: Cherche un groupe, guitariste dispo pour reprises..." : "Ex: Cherche batteur pour groupe rock"}
           required
           className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-sm font-medium text-zik-text">Instrument</label>
-          <select
-            value={instrument}
-            onChange={(e) => setInstrument(e.target.value)}
-            className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple mt-0.5"
-          >
-            <option value="">Sélectionner...</option>
-            {INSTRUMENTS.map((i) => <option key={i.key} value={i.key}>{i.emoji} {i.label}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-zik-text">Ville</label>
-          <Input
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="Ex: Paris"
-            className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50 mt-0.5"
-          />
-        </div>
+      <div>
+        <label className="text-sm font-medium text-zik-text">Instrument</label>
+        <select
+          value={instrument}
+          onChange={(e) => setInstrument(e.target.value)}
+          className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple mt-0.5"
+        >
+          <option value="">Sélectionner...</option>
+          {INSTRUMENTS.map((i) => <option key={i.key} value={i.key}>{i.emoji} {i.label}</option>)}
+        </select>
+      </div>
+
+      <div>
+        <label className="text-sm font-medium text-zik-text mb-1 block">Ville</label>
+        <AddressSearchInput
+          value={city}
+          placeholder="Ex: Paris"
+          onChange={({ address, lat, lng }) => { setCity(address); setLocation({ lat, lng }); }}
+          onClear={() => { setCity(""); setLocation(null); }}
+        />
       </div>
 
       <div>
