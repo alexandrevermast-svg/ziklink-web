@@ -201,6 +201,7 @@ export default function JamList() {
   const { joinJam, leaveJam, pendingJamId: joiningJamId } = useJamParticipation();
   const { markInterested, unmarkInterested, pendingJamId: interestPendingId } = useJamInterest();
   const [myJamInterests, setMyJamInterests] = useState<Set<string>>(new Set());
+  const [jamInterestCounts, setJamInterestCounts] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(startOfDay(new Date()));
@@ -243,11 +244,16 @@ const { data: jamsData, error: jamsError } = await supabase
       const jamIds = (jamsData ?? []).map((j) => j.id);
       if (jamIds.length > 0) {
         await fetchParticipants(jamIds);
+        const { data: jamIntData } = await supabase
+          .from("jam_interested").select("jam_id, user_id")
+          .in("jam_id", jamIds);
+        const countMap: Record<string, number> = {};
+        for (const row of jamIntData ?? []) {
+          countMap[row.jam_id] = (countMap[row.jam_id] ?? 0) + 1;
+        }
+        setJamInterestCounts(countMap);
         if (user) {
-          const { data: jamIntData } = await supabase
-            .from("jam_interested").select("jam_id")
-            .eq("user_id", user.id).in("jam_id", jamIds);
-          setMyJamInterests(new Set((jamIntData ?? []).map((r) => r.jam_id)));
+          setMyJamInterests(new Set((jamIntData ?? []).filter((r) => r.user_id === user.id).map((r) => r.jam_id)));
         }
       }
       setIsLoading(false);
@@ -493,6 +499,8 @@ const { data: jamsData, error: jamsError } = await supabase
                 isInterestPending={interestPendingId === jam.id}
                 joinOpen={canJoinJam(jam.start_time)}
                 distanceKm={distanceById[jam.id]}
+                participantCount={participants.length}
+                interestedCount={jamInterestCounts[jam.id] ?? 0}
                 onToggleInterest={handleToggleInterest}
                 onJoin={handleJoin}
                 onLeave={handleLeave}

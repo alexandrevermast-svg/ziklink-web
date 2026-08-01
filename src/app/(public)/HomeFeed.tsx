@@ -77,6 +77,7 @@ interface HomeFeedProps {
   initialMyInterests: string[];
   initialMyJamInterests: string[];
   initialConcertInterestCounts: Record<string, number>;
+  initialJamInterestCounts: Record<string, number>;
 }
 
 export default function HomeFeed({
@@ -87,6 +88,7 @@ export default function HomeFeed({
   initialMyInterests,
   initialMyJamInterests,
   initialConcertInterestCounts,
+  initialJamInterestCounts,
 }: HomeFeedProps) {
   const supabase = createClient();
   const router = useRouter();
@@ -97,6 +99,7 @@ export default function HomeFeed({
   const [participantsMap, setParticipantsMap] = useState(initialParticipantsMap);
   const [myInterests, setMyInterests] = useState<Set<string>>(new Set(initialMyInterests));
   const [concertInterestCounts, setConcertInterestCounts] = useState<Record<string, number>>(initialConcertInterestCounts);
+  const [jamInterestCounts, setJamInterestCounts] = useState<Record<string, number>>(initialJamInterestCounts);
   const [myJamInterests, setMyJamInterests] = useState<Set<string>>(new Set(initialMyJamInterests));
   const [dayFilter, setDayFilter] = useState<DayFilter>("today");
   const { joinJam, leaveJam, pendingJamId: joiningId } = useJamParticipation();
@@ -137,11 +140,16 @@ export default function HomeFeed({
       }
       setParticipantsMap(map);
 
+      const { data: jamIntData } = await supabase
+        .from("jam_interested").select("jam_id, user_id")
+        .in("jam_id", ids);
+      const jamIntCountMap: Record<string, number> = {};
+      for (const row of jamIntData ?? []) {
+        jamIntCountMap[row.jam_id] = (jamIntCountMap[row.jam_id] ?? 0) + 1;
+      }
+      setJamInterestCounts(jamIntCountMap);
       if (user) {
-        const { data: jamIntData } = await supabase
-          .from("jam_interested").select("jam_id")
-          .eq("user_id", user.id).in("jam_id", ids);
-        setMyJamInterests(new Set((jamIntData ?? []).map((r) => r.jam_id)));
+        setMyJamInterests(new Set((jamIntData ?? []).filter((r) => r.user_id === user.id).map((r) => r.jam_id)));
       }
     }
 
@@ -370,6 +378,8 @@ export default function HomeFeed({
                 isInterested={myJamInterests.has(jam.id)}
                 isInterestPending={interestPendingId === jam.id}
                 joinOpen={canJoinJam(jam.start_time)}
+                participantCount={participants.length}
+                interestedCount={jamInterestCounts[jam.id] ?? 0}
                 onToggleInterest={handleToggleJamInterest}
                 onJoin={handleJoinJam}
                 onLeave={handleLeaveJam}

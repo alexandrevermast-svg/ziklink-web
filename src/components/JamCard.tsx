@@ -28,6 +28,8 @@ interface JamCardProps {
   isInterestPending: boolean;
   joinOpen: boolean;
   distanceKm?: number;
+  participantCount?: number;
+  interestedCount?: number;
   onToggleInterest: (jamId: string, e: React.MouseEvent) => void;
   onJoin: (jamId: string, e: React.MouseEvent) => void;
   onLeave: (jamId: string, e: React.MouseEvent) => void;
@@ -46,6 +48,7 @@ function getAddress(s: string | null) {
 
 export default function JamCard({
   jam, isCreator, isParticipant, isJoining, isInterested, isInterestPending, joinOpen, distanceKm,
+  participantCount, interestedCount,
   onToggleInterest, onJoin, onLeave,
 }: JamCardProps) {
   const router = useRouter();
@@ -140,7 +143,11 @@ export default function JamCard({
               </span>
             )
           )}
-          {isCreator && <span className="text-xs text-zik-muted italic">Organisateur</span>}
+          {isCreator && (
+            <span className="text-xs text-zik-muted italic">
+              {participantCount ?? 0} inscrit{(participantCount ?? 0) > 1 ? "s" : ""} · {interestedCount ?? 0} intéressé{(interestedCount ?? 0) > 1 ? "s" : ""}
+            </span>
+          )}
         </div>
       </div>
     </div>

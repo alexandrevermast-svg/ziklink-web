@@ -63,12 +63,16 @@ export default async function HomePage() {
   }
 
   let myJamInterests: string[] = [];
-  if (user && jams.length > 0) {
+  const jamInterestCounts: Record<string, number> = {};
+  if (jams.length > 0) {
     const ids = jams.map((j) => j.id);
     const { data: jamIntData } = await supabase
-      .from("jam_interested").select("jam_id")
-      .eq("user_id", user.id).in("jam_id", ids);
-    myJamInterests = (jamIntData ?? []).map((r) => r.jam_id);
+      .from("jam_interested").select("jam_id, user_id")
+      .in("jam_id", ids);
+    for (const row of jamIntData ?? []) {
+      jamInterestCounts[row.jam_id] = (jamInterestCounts[row.jam_id] ?? 0) + 1;
+      if (user && row.user_id === user.id) myJamInterests.push(row.jam_id);
+    }
   }
 
   return (
@@ -80,6 +84,7 @@ export default async function HomePage() {
       initialMyInterests={myInterests}
       initialMyJamInterests={myJamInterests}
       initialConcertInterestCounts={concertInterestCounts}
+      initialJamInterestCounts={jamInterestCounts}
     />
   );
 }
