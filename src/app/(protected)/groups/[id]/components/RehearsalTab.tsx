@@ -3,8 +3,64 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import TimePicker from "@/components/ui/TimePicker";
 import { createClient } from "@/lib/supabase/client";
-import { CalendarClock, MapPin, Loader2, Sparkles, CalendarRange, CheckCircle2, Pencil, Trash2, X, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { fr } from "date-fns/locale";
+import { format } from "date-fns";
+import { CalendarClock, MapPin, Loader2, Sparkles, CalendarRange, CheckCircle2, Pencil, Trash2, X, Check, CalendarDays } from "lucide-react";
+
+const CALENDAR_CLASSNAMES = {
+  root: "w-full",
+  months: "relative flex flex-col gap-4",
+  month: "flex w-full flex-col gap-4",
+  nav: "absolute inset-x-0 top-0 z-10 flex items-center justify-between px-2",
+  button_previous: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover",
+  button_next: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover",
+  month_caption: "flex h-8 w-full items-center justify-center px-4 text-zik-text font-medium",
+  weekday: "text-zik-muted text-[0.9rem] font-medium",
+  day: "h-8 w-8 text-[0.9rem] font-medium text-zik-text hover:bg-zik-card-hover rounded-md",
+  day_selected: "bg-zik-purple text-white hover:bg-zik-purple/90",
+  day_today: "bg-zik-purple/10 text-zik-text border border-zik-purple/30 rounded-md",
+};
+
+function DateButton({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          type="button" variant="outline"
+          className={cn(
+            "w-full h-9 justify-start text-left font-normal bg-zik-card border-zik-border text-zik-text hover:bg-zik-card-hover gap-2",
+            !value && "text-zik-muted"
+          )}
+        >
+          <CalendarDays className="h-4 w-4 text-zik-purple shrink-0" />
+          {value ? format(new Date(value), "PPP", { locale: fr }) : <span>{placeholder}</span>}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[320px] p-0 bg-zik-card border-zik-border shadow-lg" align="start" sideOffset={8}>
+        <Calendar
+          mode="single"
+          selected={value ? new Date(value) : undefined}
+          onSelect={(selectedDate) => {
+            if (selectedDate) {
+              const y = selectedDate.getFullYear();
+              const m = String(selectedDate.getMonth() + 1).padStart(2, "0");
+              const day = String(selectedDate.getDate()).padStart(2, "0");
+              onChange(`${y}-${m}-${day}`);
+            }
+          }}
+          locale={fr}
+          initialFocus
+          classNames={CALENDAR_CLASSNAMES}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 type Mode = "disponibilite" | "indisponibilite";
 type PeriodKey = "matin" | "apres_midi" | "soir";
@@ -51,14 +107,14 @@ function formatSlot(d: string) {
   });
 }
 
-function toDatetimeLocal(iso: string) {
+function toDateAndHour(iso: string) {
   const d = new Date(iso);
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   const h = String(d.getHours()).padStart(2, "0");
   const min = String(d.getMinutes()).padStart(2, "0");
-  return `${y}-${m}-${day}T${h}:${min}`;
+  return { date: `${y}-${m}-${day}`, hour: `${h}:${min}` };
 }
 
 export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, memberCount }: RehearsalTabProps) {
@@ -81,7 +137,8 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
   const [isLoading, setIsLoading] = useState(true);
 
   const [selectedCellKey, setSelectedCellKey] = useState("");
-  const [planTime, setPlanTime] = useState("");
+  const [planDate, setPlanDate] = useState("");
+  const [planHour, setPlanHour] = useState("");
   const [planLocation, setPlanLocation] = useState("");
   const [isPlanning, setIsPlanning] = useState(false);
 
@@ -91,7 +148,8 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
 
   const [editingRehearsalId, setEditingRehearsalId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
-  const [editTime, setEditTime] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editHour, setEditHour] = useState("");
   const [editLocation, setEditLocation] = useState("");
   const [isSavingRehearsal, setIsSavingRehearsal] = useState(false);
 
@@ -263,43 +321,47 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
   const handleSelectCell = (key: string) => {
     setSelectedCellKey(key);
     const opt = cellOptions.find((o) => o.key === key);
-    if (opt) setPlanTime(`${opt.dateStr}T${opt.period.defaultTime}`);
+    if (opt) { setPlanDate(opt.dateStr); setPlanHour(opt.period.defaultTime); }
   };
 
   const handlePlanRehearsal = async () => {
-    if (!planTime) return;
+    if (!planDate || !planHour) return;
     setIsPlanning(true);
     await supabase.from("group_rehearsals").insert({
-      group_id: groupId, start_time: new Date(planTime).toISOString(),
+      group_id: groupId, start_time: new Date(`${planDate}T${planHour}`).toISOString(),
       location: planLocation.trim() || null, created_by: currentUserId,
     });
     setIsPlanning(false);
     setSelectedCellKey("");
-    setPlanTime("");
+    setPlanDate("");
+    setPlanHour("");
     setPlanLocation("");
     await fetchAll();
   };
 
   const handleStartEditRehearsal = (r: Rehearsal) => {
+    const { date, hour } = toDateAndHour(r.start_time);
     setEditingRehearsalId(r.id);
     setEditTitle(r.title ?? "");
-    setEditTime(toDatetimeLocal(r.start_time));
+    setEditDate(date);
+    setEditHour(hour);
     setEditLocation(r.location ?? "");
   };
 
   const handleCancelEditRehearsal = () => {
     setEditingRehearsalId(null);
     setEditTitle("");
-    setEditTime("");
+    setEditDate("");
+    setEditHour("");
     setEditLocation("");
   };
 
   const handleSaveRehearsal = async () => {
-    if (!editingRehearsalId || !editTime) return;
+    if (!editingRehearsalId || !editDate || !editHour) return;
     setIsSavingRehearsal(true);
     await supabase.from("group_rehearsals").update({
       title: editTitle.trim() || null,
-      start_time: new Date(editTime).toISOString(),
+      start_time: new Date(`${editDate}T${editHour}`).toISOString(),
       location: editLocation.trim() || null,
     }).eq("id", editingRehearsalId);
     setIsSavingRehearsal(false);
@@ -347,12 +409,10 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
                     placeholder="Titre (optionnel)"
                     className="zik-input text-sm"
                   />
-                  <input
-                    type="datetime-local"
-                    value={editTime}
-                    onChange={(e) => setEditTime(e.target.value)}
-                    className="zik-input text-sm"
-                  />
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <DateButton value={editDate} onChange={setEditDate} placeholder="Date" />
+                    <TimePicker value={editHour} onChange={setEditHour} />
+                  </div>
                   <input
                     value={editLocation}
                     onChange={(e) => setEditLocation(e.target.value)}
@@ -369,7 +429,7 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
                     </Button>
                     <Button
                       type="button" size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo"
-                      disabled={isSavingRehearsal || !editTime}
+                      disabled={isSavingRehearsal || !editDate || !editHour}
                       onClick={handleSaveRehearsal}
                     >
                       {isSavingRehearsal ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
@@ -417,15 +477,12 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
         </p>
 
         {isAdmin && (
-          <div className="flex gap-1.5 mb-3">
-            <input
-              type="date"
-              value={weekPickerValue}
-              onChange={(e) => setWeekPickerValue(e.target.value)}
-              className="zik-input text-sm flex-1"
-            />
+          <div className="flex gap-1.5 mb-3 items-start">
+            <div className="flex-1">
+              <DateButton value={weekPickerValue} onChange={setWeekPickerValue} placeholder="Choisir une semaine..." />
+            </div>
             <Button
-              size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo shrink-0"
+              size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo shrink-0 h-9"
               disabled={!weekPickerValue || isSavingWeek}
               onClick={handleSetWeek}
             >
@@ -545,12 +602,10 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
             </select>
             {selectedCellKey && (
               <>
-                <input
-                  type="datetime-local"
-                  value={planTime}
-                  onChange={(e) => setPlanTime(e.target.value)}
-                  className="zik-input text-sm"
-                />
+                <div className="grid grid-cols-2 gap-1.5">
+                  <DateButton value={planDate} onChange={setPlanDate} placeholder="Date" />
+                  <TimePicker value={planHour} onChange={setPlanHour} />
+                </div>
                 <input
                   value={planLocation}
                   onChange={(e) => setPlanLocation(e.target.value)}
@@ -559,7 +614,7 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
                 />
                 <Button
                   size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo w-full"
-                  disabled={isPlanning || !planTime}
+                  disabled={isPlanning || !planDate || !planHour}
                   onClick={handlePlanRehearsal}
                 >
                   {isPlanning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Planifier"}
