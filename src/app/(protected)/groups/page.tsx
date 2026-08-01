@@ -48,11 +48,17 @@ export default function GroupsPage() {
 
   return (
     <Tabs defaultValue="groupes" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 mx-4 mt-4" style={{ width: 'calc(100% - 2rem)' }}>
-        <TabsTrigger value="groupes" className="text-zik-text">
+      <TabsList className="grid w-full grid-cols-2 bg-zik-card/50 p-1 rounded-xl border border-zik-border mx-4 mt-4" style={{ width: 'calc(100% - 2rem)' }}>
+        <TabsTrigger
+          value="groupes"
+          className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+        >
           <Users className="mr-2 h-4 w-4" /> Groupes
         </TabsTrigger>
-        <TabsTrigger value="recherche" className="text-zik-text">
+        <TabsTrigger
+          value="recherche"
+          className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+        >
           Recherche
         </TabsTrigger>
       </TabsList>

@@ -531,6 +531,45 @@ export type Database = {
           },
         ]
       }
+      musician_ads: {
+        Row: {
+          city: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          genres: string[]
+          id: string
+          instrument: string | null
+          mode: string
+          status: string
+          title: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          genres?: string[]
+          id?: string
+          instrument?: string | null
+          mode: string
+          status?: string
+          title: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          genres?: string[]
+          id?: string
+          instrument?: string | null
+          mode?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null

@@ -35,4 +35,8 @@ export type Service = Tables["services"]["Row"];
 export type ServiceInsert = Tables["services"]["Insert"];
 export type ServiceUpdate = Tables["services"]["Update"];
 
+export type MusicianAd = Tables["musician_ads"]["Row"];
+export type MusicianAdInsert = Tables["musician_ads"]["Insert"];
+export type MusicianAdUpdate = Tables["musician_ads"]["Update"];
+
 export type { Database } from "./database.types";
