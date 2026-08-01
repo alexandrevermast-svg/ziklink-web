@@ -548,9 +548,8 @@ const { data: jamsData, error: jamsError } = await supabase
                   </div>
                 </div>
 
-                {/* ✅ Participants et boutons adaptés */}
-                <div className="flex items-center justify-between mt-3">
-                  <ParticipantAvatars participants={participants} />
+                {/* ✅ Boutons adaptés */}
+                <div className="flex items-center justify-end mt-3">
                   <div className="flex items-center gap-1.5">
                     <ShareButton url={`/events/jams/${jam.id}`} title={jam.title} text={jam.description ?? undefined} />
                     {!isCreator && (

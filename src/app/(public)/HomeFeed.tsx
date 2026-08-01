@@ -393,8 +393,7 @@ export default function HomeFeed({
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <ParticipantAvatars participants={participants} />
+                  <div className="flex items-center justify-end">
                     <div className="flex items-center gap-1.5">
                       {!isCreator && (
                         <button
