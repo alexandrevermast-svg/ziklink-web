@@ -21,7 +21,7 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 md:hidden"
+      className="fixed inset-x-0 bottom-0 z-50"
       style={{
         background: "rgba(14, 11, 22, 0.92)",
         backdropFilter: "blur(16px)",

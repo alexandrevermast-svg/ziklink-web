@@ -5,7 +5,7 @@ export default function MainWrapper({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const noBottomPad = pathname?.startsWith('/messages/');
   return (
-    <main className={`${noBottomPad ? '' : 'pb-16'} md:pb-0`}>
+    <main className={noBottomPad ? '' : 'pb-16'}>
       {children}
     </main>
   );
