@@ -128,14 +128,18 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
   );
 }
 
-export default function ConcertList() {
+interface ConcertListProps {
+  initialConcerts?: Concert[];
+}
+
+export default function ConcertList({ initialConcerts }: ConcertListProps = {}) {
   const supabase = createClient();
   const router = useRouter();
-  const [concerts, setConcerts] = useState<Concert[]>([]);
+  const [concerts, setConcerts] = useState<Concert[]>(initialConcerts ?? []);
   const [interestedMap, setInterestedMap] = useState<Record<string, number>>({});
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [myInterests, setMyInterests] = useState<Set<string>>(new Set());
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialConcerts);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 

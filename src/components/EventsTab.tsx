@@ -11,8 +11,16 @@ import JamList from "@/components/JamList";
 import ConcertCreationForm from "@/components/ConcertCreationForm";
 import ConcertList from "@/components/ConcertList";
 import Modal from "@/components/Modal";
+import type { JamSession, Concert } from "@/types";
+import type { ParticipantWithProfile } from "@/app/(public)/events/page";
 
-export default function EventsTab() {
+interface EventsTabProps {
+  initialJams?: JamSession[];
+  initialParticipantsMap?: Record<string, ParticipantWithProfile[]>;
+  initialConcerts?: Concert[];
+}
+
+export default function EventsTab({ initialJams, initialParticipantsMap, initialConcerts }: EventsTabProps = {}) {
   const router = useRouter();
   const supabase = createClient();
   const [currentUserId, setCurrentUserId] = React.useState<string | null>(null);
@@ -66,7 +74,7 @@ export default function EventsTab() {
               <Plus className="mr-1.5 h-4 w-4" /> Ajouter une jam
             </Button>
           </div>
-          <JamList />
+          <JamList initialJams={initialJams} initialParticipantsMap={initialParticipantsMap} />
         </div>
       </TabsContent>
 
@@ -83,7 +91,7 @@ export default function EventsTab() {
               <Plus className="mr-1.5 h-4 w-4" /> Ajouter un concert
             </Button>
           </div>
-          <ConcertList />
+          <ConcertList initialConcerts={initialConcerts} />
         </div>
       </TabsContent>
 

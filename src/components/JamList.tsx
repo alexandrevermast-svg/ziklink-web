@@ -193,17 +193,22 @@ function ParticipantAvatars({ participants }: { participants: ParticipantWithPro
   );
 }
 
-export default function JamList() {
+interface JamListProps {
+  initialJams?: JamSession[];
+  initialParticipantsMap?: Record<string, ParticipantWithProfile[]>;
+}
+
+export default function JamList({ initialJams, initialParticipantsMap }: JamListProps = {}) {
   const supabase = createClient();
   const router = useRouter();
-  const [jams, setJams] = useState<JamSession[]>([]);
-  const [participantsMap, setParticipantsMap] = useState<Record<string, ParticipantWithProfile[]>>({});
+  const [jams, setJams] = useState<JamSession[]>(initialJams ?? []);
+  const [participantsMap, setParticipantsMap] = useState<Record<string, ParticipantWithProfile[]>>(initialParticipantsMap ?? {});
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { joinJam, leaveJam, pendingJamId: joiningJamId } = useJamParticipation();
   const { markInterested, unmarkInterested, pendingJamId: interestPendingId } = useJamInterest();
   const [myJamInterests, setMyJamInterests] = useState<Set<string>>(new Set());
   const [jamInterestCounts, setJamInterestCounts] = useState<Record<string, number>>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialJams);
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(startOfDay(new Date()));
   const [drumsOnly, setDrumsOnly] = useState(false);
