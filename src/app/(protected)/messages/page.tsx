@@ -120,7 +120,7 @@ export default async function MessagesPage() {
           <h1 className="text-lg font-semibold" style={{ color: '#F1F0F6' }}>
             Aucune conversation
           </h1>
-          <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.40)' }}>
+          <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.64)' }}>
             Rejoins une jam ou envoie un message à un musicien !
           </p>
         </div>
@@ -138,7 +138,7 @@ export default async function MessagesPage() {
         <h1 className="text-xl font-semibold" style={{ color: '#F1F0F6', letterSpacing: '-0.02em' }}>
           Messages
         </h1>
-        <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+        <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.60)' }}>
           {conversations.length} conversation{conversations.length > 1 ? 's' : ''}
         </p>
       </div>
@@ -198,7 +198,7 @@ export default async function MessagesPage() {
                     {conv.last_message_created_at && (
                       <span
                         className="text-[11px]"
-                        style={{ color: 'rgba(255,255,255,0.30)' }}
+                        style={{ color: 'rgba(255,255,255,0.56)' }}
                       >
                         {timeAgo(conv.last_message_created_at)}
                       </span>
@@ -223,7 +223,7 @@ export default async function MessagesPage() {
                     style={{
                       color: hasUnread
                         ? 'rgba(255,255,255,0.60)'
-                        : 'rgba(255,255,255,0.30)',
+                        : 'rgba(255,255,255,0.56)',
                       fontWeight: hasUnread ? 500 : 400,
                     }}
                   >
@@ -232,7 +232,7 @@ export default async function MessagesPage() {
                       : conv.last_message_content}
                   </p>
                 ) : (
-                  <p className="text-xs italic" style={{ color: 'rgba(255,255,255,0.20)' }}>
+                  <p className="text-xs italic" style={{ color: 'rgba(255,255,255,0.48)' }}>
                     Aucun message
                   </p>
                 )}

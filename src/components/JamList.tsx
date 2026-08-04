@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback, useMemo, useRef } from "react"
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import moment from "moment-timezone";
 import { ChevronDown, Drum, Piano, LocateFixed } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -231,14 +232,14 @@ export default function JamList() {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUserId(user?.id ?? null);
 
-     const now = new Date();
-const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString();
+      const now = moment.tz("Europe/Paris");
+      const startOfToday = now.clone().startOf("day").toISOString();
 
-const { data: jamsData, error: jamsError } = await supabase
-  .from("jam_sessions")
-  .select("*")
-  .or(`end_at.gte.${now.toISOString()},and(end_at.is.null,start_time.gte.${twoHoursAgo})`)
-  .order("start_time", { ascending: true });
+      const { data: jamsData, error: jamsError } = await supabase
+        .from("jam_sessions")
+        .select("*")
+        .or(`end_at.gte.${now.toISOString()},start_time.gte.${startOfToday}`)
+        .order("start_time", { ascending: true });
       if (jamsError) { setError("Impossible de charger les jams"); setIsLoading(false); return; }
       setJams(jamsData ?? []);
       const jamIds = (jamsData ?? []).map((j) => j.id);

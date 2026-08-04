@@ -451,7 +451,7 @@ export default function JamDetailPage() {
         <div className="flex items-center justify-between mb-3">
           <button onClick={() => router.back()}
             className="flex items-center gap-1.5 text-sm transition-colors"
-            style={{ color: jam.poster_url ? 'rgba(255,255,255,0.80)' : 'rgba(255,255,255,0.45)' }}>
+            style={{ color: jam.poster_url ? 'rgba(255,255,255,0.80)' : 'rgba(255,255,255,0.67)' }}>
             <ArrowLeft className="h-4 w-4" /> Retour
           </button>
           <div className="flex items-center gap-2">

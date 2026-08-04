@@ -64,10 +64,10 @@ export function JamPoster({
         >
           {isUploading ? (
             <><Loader2 size={20} className="animate-spin" style={{ color: '#C084FC' }} />
-              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.40)' }}>Envoi en cours...</span></>
+              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.64)' }}>Envoi en cours...</span></>
           ) : (
             <><ImagePlus size={20} style={{ color: 'rgba(192,132,252,0.50)' }} />
-              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.60)' }}>
                 Ajouter une affiche
               </span></>
           )}

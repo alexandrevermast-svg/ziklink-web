@@ -11,7 +11,7 @@
   --color-zik-orange:     #FB923C;
   --color-zik-red:        #F87171;
   --color-zik-text:       #F1F0F6;
-  --color-zik-muted:      rgba(255,255,255,0.40);
+  --color-zik-muted:      rgba(255,255,255,0.55);
   --color-zik-subtle:     rgba(255,255,255,0.15);
   --color-zik-border:     rgba(255,255,255,0.06);
   --color-zik-border-md:  rgba(255,255,255,0.12);
@@ -34,7 +34,7 @@
   --zik-orange:      #FB923C;
   --zik-red:         #F87171;
   --zik-text:        #F1F0F6;
-  --zik-muted:       rgba(255, 255, 255, 0.40);
+  --zik-muted:       rgba(255, 255, 255, 0.55);
   --zik-subtle:      rgba(255, 255, 255, 0.15);
     --zik-radius: 12px;
   --zik-transition: 150ms ease;
@@ -260,7 +260,7 @@ textarea.zik-input {
   background: #1A1628 !important;
 }
 .leaflet-popup-close-button {
-  color: rgba(255,255,255,0.4) !important;
+  color: rgba(255,255,255,0.64) !important;
 }
 .leaflet-popup-close-button:hover {
   color: #C084FC !important;

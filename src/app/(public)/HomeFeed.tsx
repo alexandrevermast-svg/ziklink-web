@@ -122,7 +122,7 @@ export default function HomeFeed({
     const { data: jamsData } = await supabase
       .from("jam_sessions")
       .select("id, title, description, start_time, end_at, location, is_open, created_by, has_drums, has_keyboard")
-      .or(`end_at.gte.${now.toISOString()},and(end_at.is.null,start_time.gte.${twoHoursAgo})`)
+      .or(`end_at.gte.${now.toISOString()},start_time.gte.${today.toISOString()}`)
       .lt("start_time", dayAfterTomorrow.toISOString())
       .order("start_time", { ascending: true });
     setJams(jamsData ?? []);
@@ -319,7 +319,7 @@ export default function HomeFeed({
           background: isActive ? 'rgba(192,132,252,0.15)' : 'rgba(255,255,255,0.04)',
           border: '1px solid',
           borderColor: isActive ? 'rgba(192,132,252,0.35)' : 'rgba(255,255,255,0.07)',
-          color: isActive ? '#C084FC' : 'rgba(255,255,255,0.45)',
+          color: isActive ? '#C084FC' : 'rgba(255,255,255,0.67)',
         }}
       >
         {filter === "today" ? "Aujourd'hui" : "Demain"}
@@ -328,7 +328,7 @@ export default function HomeFeed({
             className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
             style={{
               background: isActive ? 'rgba(192,132,252,0.25)' : 'rgba(255,255,255,0.08)',
-              color: isActive ? '#C084FC' : 'rgba(255,255,255,0.40)',
+              color: isActive ? '#C084FC' : 'rgba(255,255,255,0.64)',
             }}
           >
             {count}
@@ -345,7 +345,7 @@ export default function HomeFeed({
     style={{
       background: 'rgba(255,255,255,0.04)',
       border: '1px solid rgba(255,255,255,0.07)',
-      color: 'rgba(255,255,255,0.45)',
+      color: 'rgba(255,255,255,0.67)',
       whiteSpace: 'nowrap',
     }}
   >

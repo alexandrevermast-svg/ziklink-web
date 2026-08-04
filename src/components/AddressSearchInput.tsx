@@ -136,7 +136,7 @@ export default function AddressSearchInput({
           <MapPin
             size={16}
             className="shrink-0"
-            style={{ color: selected ? '#34D399' : 'rgba(255,255,255,0.35)' }}
+            style={{ color: selected ? '#34D399' : 'rgba(255,255,255,0.60)' }}
           />
         )}
 
@@ -156,7 +156,7 @@ export default function AddressSearchInput({
             type="button"
             onClick={handleClear}
             className="shrink-0 transition-colors"
-            style={{ color: 'rgba(255,255,255,0.30)' }}
+            style={{ color: 'rgba(255,255,255,0.56)' }}
           >
             <X size={14} />
           </button>

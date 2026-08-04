@@ -42,7 +42,7 @@ export default function BottomNav() {
               key={item.name}
               href={item.href}
               className="flex flex-col items-center justify-center gap-1 flex-1 py-2 relative transition-all duration-200"
-              style={{ color: isActive ? "#C084FC" : "rgba(255,255,255,0.35)" }}
+              style={{ color: isActive ? "#C084FC" : "rgba(255,255,255,0.60)" }}
             >
               {/* Indicateur actif */}
               {isActive && (

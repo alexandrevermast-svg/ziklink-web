@@ -138,7 +138,7 @@ export default function PublicProfilePage() {
   );
 
   if (!profile) return (
-    <div className="p-4 text-center" style={{ color: 'rgba(255,255,255,0.40)' }}>
+    <div className="p-4 text-center" style={{ color: 'rgba(255,255,255,0.64)' }}>
       <p>Profil introuvable.</p>
       <button
         onClick={() => router.back()}
@@ -164,9 +164,9 @@ export default function PublicProfilePage() {
       <button
         onClick={() => router.back()}
         className="flex items-center gap-1.5 text-sm self-start transition-colors"
-        style={{ color: 'rgba(255,255,255,0.40)' }}
+        style={{ color: 'rgba(255,255,255,0.64)' }}
         onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#F1F0F6'; }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.40)'; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.64)'; }}
       >
         <ArrowLeft size={16} /> Retour
       </button>
@@ -202,7 +202,7 @@ export default function PublicProfilePage() {
           </h1>
           {profile.city && (
             <p className="text-sm flex items-center justify-center gap-1 mt-0.5"
-              style={{ color: 'rgba(255,255,255,0.40)' }}>
+              style={{ color: 'rgba(255,255,255,0.64)' }}>
               <MapPin size={13} style={{ color: '#C084FC' }} /> {profile.city}
             </p>
           )}
@@ -269,7 +269,7 @@ export default function PublicProfilePage() {
                   className="px-4 py-2.5"
                   style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <p className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.40)' }}>
+                  <p className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.64)' }}>
                     Inviter dans un groupe
                   </p>
                 </div>
@@ -312,7 +312,7 @@ export default function PublicProfilePage() {
                         <Check size={14} className="shrink-0" style={{ color: '#34D399' }} />
                       )}
                       {status === 'already_member' && (
-                        <span className="text-[10px] shrink-0" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                        <span className="text-[10px] shrink-0" style={{ color: 'rgba(255,255,255,0.56)' }}>
                           Déjà membre
                         </span>
                       )}

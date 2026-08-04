@@ -543,7 +543,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
   {/* Séparateur */}
   <div className="flex items-center gap-3 my-3">
     <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
-    <span className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
+    <span className="text-xs" style={{ color: 'rgba(255,255,255,0.52)' }}>
       ou cliquez sur la carte
     </span>
     <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
@@ -569,7 +569,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
 
   {formData.location.address && (
     <p className="text-xs mt-2 px-1 flex items-center gap-1.5"
-      style={{ color: 'rgba(255,255,255,0.40)' }}>
+      style={{ color: 'rgba(255,255,255,0.64)' }}>
       <MapPin size={12} style={{ color: '#C084FC' }} />
       {formData.location.address}
     </p>

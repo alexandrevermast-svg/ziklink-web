@@ -223,13 +223,13 @@ export default function MyProfilePage() {
             style={{ background: '#1A1628', border: '1px solid rgba(255,255,255,0.10)' }}
           >
             {isUploadingAvatar
-              ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: 'rgba(255,255,255,0.40)' }} />
+              ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: 'rgba(255,255,255,0.64)' }} />
               : <Camera className="h-4 w-4" style={{ color: 'rgba(255,255,255,0.50)' }} />
             }
           </button>
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
         </div>
-        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.30)' }}>
+        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.56)' }}>
           Appuie sur l'icône pour changer ta photo
         </p>
       </div>
@@ -261,7 +261,7 @@ export default function MyProfilePage() {
             className="zik-input resize-none"
             style={{ borderRadius: 10 }}
           />
-          <p className="text-xs text-right mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          <p className="text-xs text-right mt-1" style={{ color: 'rgba(255,255,255,0.52)' }}>
             {bio.length}/280
           </p>
         </div>
@@ -295,7 +295,7 @@ export default function MyProfilePage() {
                     background: active ? 'rgba(192,132,252,0.15)' : 'rgba(255,255,255,0.05)',
                     border: '1px solid',
                     borderColor: active ? 'rgba(192,132,252,0.40)' : 'rgba(255,255,255,0.08)',
-                    color: active ? '#C084FC' : 'rgba(255,255,255,0.40)',
+                    color: active ? '#C084FC' : 'rgba(255,255,255,0.64)',
                   }}
                 >
                   <span>{inst.emoji}</span> {inst.label}
@@ -358,7 +358,7 @@ export default function MyProfilePage() {
                 <p className="text-sm font-medium truncate flex-1 min-w-0" style={{ color: '#F1F0F6' }}>
                   {group.name}
                 </p>
-                <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.25)' }} className="shrink-0" />
+                <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.52)' }} className="shrink-0" />
               </button>
             ))}
           </div>
@@ -401,7 +401,7 @@ export default function MyProfilePage() {
                   }}>
                   {ad.mode === 'groupe' ? 'Groupes' : 'Musiciens'}
                 </span>
-                <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.25)' }} className="shrink-0" />
+                <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.52)' }} className="shrink-0" />
               </button>
             ))}
           </div>
@@ -440,12 +440,12 @@ export default function MyProfilePage() {
                     <p className="text-sm font-medium truncate" style={{ color: '#F1F0F6' }}>
                       {event.title}
                     </p>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.60)' }}>
                       {formatDate(event.start_time)}
                     </p>
                   </div>
                 </div>
-                <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.25)' }} className="shrink-0" />
+                <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.52)' }} className="shrink-0" />
               </button>
             ))}
           </div>
@@ -459,7 +459,7 @@ export default function MyProfilePage() {
             className="text-sm font-semibold mb-2 flex items-center gap-1.5"
             style={{ color: '#F1F0F6' }}
           >
-            <CalendarDays size={15} style={{ color: 'rgba(255,255,255,0.35)' }} />
+            <CalendarDays size={15} style={{ color: 'rgba(255,255,255,0.60)' }} />
             Événements passés
           </h2>
           <div className="space-y-2">
@@ -484,12 +484,12 @@ export default function MyProfilePage() {
                     <p className="text-sm font-medium truncate" style={{ color: '#F1F0F6' }}>
                       {event.title}
                     </p>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.60)' }}>
                       {formatDate(event.start_time)}
                     </p>
                   </div>
                 </div>
-                <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.25)' }} className="shrink-0" />
+                <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.52)' }} className="shrink-0" />
               </button>
             ))}
           </div>

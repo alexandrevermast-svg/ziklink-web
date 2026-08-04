@@ -23,7 +23,7 @@ export default async function HomePage() {
   const { data: jamsData } = await supabase
     .from("jam_sessions")
     .select("id, title, description, start_time, end_at, location, is_open, created_by, has_drums, has_keyboard")
-    .or(`end_at.gte.${now.toISOString()},and(end_at.is.null,start_time.gte.${twoHoursAgo})`)
+    .or(`end_at.gte.${now.toISOString()},start_time.gte.${today.toISOString()}`)
     .lt("start_time", dayAfterTomorrow.toISOString())
     .order("start_time", { ascending: true });
   const jams: JamSession[] = jamsData ?? [];

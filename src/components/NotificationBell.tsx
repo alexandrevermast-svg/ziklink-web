@@ -74,14 +74,14 @@ function NotifItem({
         {notif.body && (
           <p
             className="text-xs mt-0.5 line-clamp-2"
-            style={{ color: 'rgba(255,255,255,0.35)' }}
+            style={{ color: 'rgba(255,255,255,0.60)' }}
           >
             {notif.body}
           </p>
         )}
         <p
           className="text-[10px] mt-1"
-          style={{ color: 'rgba(255,255,255,0.25)' }}
+          style={{ color: 'rgba(255,255,255,0.52)' }}
         >
           {timeAgo(notif.created_at)}
         </p>
@@ -211,7 +211,7 @@ export default function NotificationBell({ userId }: { userId: string | null }) 
                 Notifications
               </h2>
               {unreadCount > 0 && (
-                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.60)' }}>
                   {unreadCount} non lue{unreadCount > 1 ? 's' : ''}
                 </p>
               )}
@@ -260,7 +260,7 @@ export default function NotificationBell({ userId }: { userId: string | null }) 
                 <span style={{ fontSize: 28 }}>🔔</span>
                 <p
                   className="text-sm"
-                  style={{ color: 'rgba(255,255,255,0.30)' }}
+                  style={{ color: 'rgba(255,255,255,0.56)' }}
                 >
                   Aucune notification
                 </p>

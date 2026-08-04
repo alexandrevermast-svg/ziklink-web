@@ -125,7 +125,7 @@ export default function Header() {
                 onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
-                <FileText size={14} strokeWidth={1.75} style={{ color: 'rgba(255,255,255,0.45)' }} />
+                <FileText size={14} strokeWidth={1.75} style={{ color: 'rgba(255,255,255,0.67)' }} />
                 Mentions légales
               </Link>
 

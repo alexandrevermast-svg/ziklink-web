@@ -153,7 +153,7 @@ const MessageClient: React.FC<MessageClientProps> = ({
       >
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 gap-2">
-            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.25)' }}>
+            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.52)' }}>
               Aucun message — commence la conversation ! 💬
             </p>
           </div>
@@ -229,7 +229,7 @@ const MessageClient: React.FC<MessageClientProps> = ({
                       {isLast && (
                         <span
                           className={`text-[10px] mx-1 ${isMe ? 'text-right' : 'text-left'}`}
-                          style={{ color: 'rgba(255,255,255,0.25)' }}
+                          style={{ color: 'rgba(255,255,255,0.52)' }}
                         >
                           {formatTime(msg.created_at)}
                         </span>
@@ -291,7 +291,7 @@ const MessageClient: React.FC<MessageClientProps> = ({
               : 'rgba(255,255,255,0.08)',
             color: newMessage.trim() && !isSending
               ? '#fff'
-              : 'rgba(255,255,255,0.25)',
+              : 'rgba(255,255,255,0.52)',
             border: 'none',
           }}
         >
