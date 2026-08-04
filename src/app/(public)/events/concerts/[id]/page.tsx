@@ -242,7 +242,7 @@ export default function ConcertDetailPage() {
           {concert.description && (
             <div className="mt-2">
               <p
-                className={`text-sm text-zik-muted whitespace-pre-wrap transition-all duration-200 ${
+                className={`text-base text-zik-text/80 whitespace-pre-wrap transition-all duration-200 ${
                   expandedDescriptions[concert.id] ? '' : 'line-clamp-3'
                 }`}
               >
@@ -266,7 +266,7 @@ export default function ConcertDetailPage() {
               )}
             </div>
           )}
-          <div className="flex flex-wrap gap-3 mt-2 text-xs text-zik-muted">
+          <div className="flex flex-wrap gap-3 mt-2 text-sm text-zik-text">
             <span className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5 text-zik-purple" />
               {formatDate(concert.start_time)} · {formatTime(concert.start_time)}

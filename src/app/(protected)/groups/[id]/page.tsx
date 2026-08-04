@@ -456,7 +456,7 @@ export default function GroupDetailPage() {
                 <span className="text-base shrink-0">{event.type === 'jam' ? '🎸' : '🎤'}</span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-zik-text truncate">{event.title}</p>
-                  <p className="text-xs text-zik-muted">{formatDate(event.start_time)}</p>
+                  <p className="text-sm text-zik-text">{formatDate(event.start_time)}</p>
                 </div>
                 <ChevronRight className="h-4 w-4 text-zik-muted shrink-0" />
               </button>
@@ -481,7 +481,7 @@ export default function GroupDetailPage() {
                 <span className="text-base shrink-0">{event.type === 'jam' ? '🎸' : '🎤'}</span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-zik-text truncate">{event.title}</p>
-                  <p className="text-xs text-zik-muted">{formatDate(event.start_time)}</p>
+                  <p className="text-sm text-zik-text">{formatDate(event.start_time)}</p>
                 </div>
                 <ChevronRight className="h-4 w-4 text-zik-muted shrink-0" />
               </button>

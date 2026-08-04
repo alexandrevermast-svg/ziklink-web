@@ -62,7 +62,7 @@ export default function JamCard({
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-zik-text truncate">{jam.title}</h3>
-          <p className="text-sm text-zik-muted mt-1 line-clamp-2">{jam.description}</p>
+          <p className="text-base text-zik-text/80 mt-1 line-clamp-2">{jam.description}</p>
         </div>
         <span className={`shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
           jam.is_open ? "bg-zik-emerald/10 text-zik-emerald" : "bg-zik-orange/10 text-zik-orange"
@@ -71,16 +71,16 @@ export default function JamCard({
         </span>
       </div>
 
-      <div className="mt-3 space-y-1.5 text-xs text-zik-muted">
-        <div className="flex flex-wrap gap-3">
+      <div className="mt-3 space-y-1.5">
+        <div className="flex flex-wrap gap-3 text-sm text-zik-text">
           <span className="flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5" />
+            <Clock className="h-3.5 w-3.5 text-zik-muted" />
             {formatDate(jam.start_time)} · {formatTime(jam.start_time)}
             {jam.end_at && ` → ${formatTime(jam.end_at)}`}
           </span>
           {address && (
             <span className="flex items-center gap-1 truncate max-w-xs">
-              <MapPin className="h-3.5 w-3.5 shrink-0" />{address}
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted" />{address}
             </span>
           )}
           {distanceKm !== undefined && (
@@ -90,7 +90,7 @@ export default function JamCard({
             </span>
           )}
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 text-xs text-zik-muted">
           <span className="flex items-center gap-1">
             <Drum className="h-3.5 w-3.5" />
             {jam.has_drums ? "Avec batterie" : "Sans batterie"}

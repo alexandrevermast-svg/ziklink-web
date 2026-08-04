@@ -440,7 +440,7 @@ export default function MyProfilePage() {
                     <p className="text-sm font-medium truncate" style={{ color: '#F1F0F6' }}>
                       {event.title}
                     </p>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.60)' }}>
+                    <p className="text-sm" style={{ color: '#F1F0F6' }}>
                       {formatDate(event.start_time)}
                     </p>
                   </div>
@@ -484,7 +484,7 @@ export default function MyProfilePage() {
                     <p className="text-sm font-medium truncate" style={{ color: '#F1F0F6' }}>
                       {event.title}
                     </p>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.60)' }}>
+                    <p className="text-sm" style={{ color: '#F1F0F6' }}>
                       {formatDate(event.start_time)}
                     </p>
                   </div>
