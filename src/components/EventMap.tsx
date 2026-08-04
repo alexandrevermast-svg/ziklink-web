@@ -161,7 +161,7 @@ export default function EventMap({
                 )}
 
                 {/* ✅ Date et heure adaptées */}
-                <p className="text-zik-muted text-xs mb-2">
+                <p className="text-zik-text text-xs mb-2">
                   {formatDay(m.start_time)} · {formatTime(m.start_time)}
                 </p>
 
