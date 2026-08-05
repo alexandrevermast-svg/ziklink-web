@@ -43,37 +43,11 @@ export function GuitarHeadstockIcon({ className }: IconProps) {
   );
 }
 
-// Tête de basse — fournie par l'utilisateur.
+// Tête de basse — illustration fournie par l'utilisateur, recadrée sur le
+// dessin (le fichier Inkscape d'origine est une page A4 avec l'illustration
+// dans un coin).
 export function BassHeadstockIcon({ className }: IconProps) {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      role="img"
-      aria-label="Tête de basse à quatre mécaniques"
-      className={className}
-    >
-      <path d="M10 22V8.5c0-3.7 2.5-6.5 6-6.5 2.8 0 4.5 1.8 4.5 4.2 0 2-1 3.2-2.5 4.3V22" />
-      <path d="M13 22V10" />
-      <path d="M15.5 22V8.5" />
-      <path d="M10.2 6.1 6.7 5" />
-      <path d="M10 9.8 6.2 8.8" />
-      <path d="M10 13.5 5.8 12.6" />
-      <path d="M10 17.2 6.5 16.4" />
-      <path d="M6.7 5 5 3.8 3.1 4.5 2.5 6.3 3.8 7.5 5.7 6.8Z" />
-      <path d="M6.2 8.8 4.4 7.8 2.8 8.8 2.5 10.7 4 11.7 5.8 10.8Z" />
-      <path d="M5.8 12.6 4 11.8 2.5 13 2.5 14.9 4.1 15.7 5.9 14.6Z" />
-      <path d="M6.5 16.4 4.8 15.7 3.3 17 3.5 18.9 5.2 19.5 6.8 18.3Z" />
-      <circle cx="11.8" cy="6.4" r="1.2" />
-      <circle cx="11.8" cy="10.2" r="1.2" />
-      <circle cx="11.8" cy="14" r="1.2" />
-      <circle cx="11.8" cy="17.8" r="1.2" />
-      <path d="M9.5 20h8.8" />
-    </svg>
+    <img src="/icons/bass-headstock.svg" alt="Tête de basse à quatre mécaniques" className={className} />
   );
 }
