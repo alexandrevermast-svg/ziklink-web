@@ -569,21 +569,21 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
       </div>
 
       {/* ── ONGLETS ─────────────────────────────────────────────────────── */}
-      <Tabs defaultValue="participants" className="flex-1 flex flex-col overflow-hidden">
+      <Tabs defaultValue="slots" className="flex-1 flex flex-col overflow-hidden">
         <TabsList className="grid grid-cols-3 mx-4 mt-3 shrink-0">
-          <TabsTrigger value="participants" className="text-zik-text">
-            Participants
-            {confirmedParticipants.length > 0 && (
-              <span className="ml-1.5 bg-zik-purple/10 text-zik-purple text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
-                {confirmedParticipants.length}
-              </span>
-            )}
-          </TabsTrigger>
           <TabsTrigger value="slots" className="text-zik-text">
             Passages
             {totalSlotsTaken > 0 && (
               <span className="ml-1.5 bg-zik-purple/10 text-zik-purple text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                 {totalSlotsTaken}
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="participants" className="text-zik-text">
+            Participants
+            {confirmedParticipants.length > 0 && (
+              <span className="ml-1.5 bg-zik-purple/10 text-zik-purple text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                {confirmedParticipants.length}
               </span>
             )}
           </TabsTrigger>
