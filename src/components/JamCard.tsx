@@ -70,7 +70,7 @@ export default function JamCard({
         </span>
       </div>
 
-      <div className="mt-3 space-y-1.5">
+      <div className="mt-3">
         <div className="flex flex-wrap gap-3 text-sm text-zik-text">
           <span className="flex items-center gap-1">
             <Clock className="h-3.5 w-3.5 text-zik-muted" />
@@ -89,19 +89,19 @@ export default function JamCard({
             </span>
           )}
         </div>
-        <div className="flex flex-wrap gap-3 text-xs text-zik-muted">
+      </div>
+
+      <div className="flex items-center justify-between mt-3 gap-2">
+        <div className="flex items-center gap-2 text-xs text-zik-muted shrink-0">
           <span className="flex items-center gap-1">
             <Drum className="h-3.5 w-3.5" />
-            {jam.has_drums ? "Avec batterie" : "Sans batterie"}
+            {jam.has_drums ? "avec" : "sans"}
           </span>
           <span className="flex items-center gap-1">
             <Piano className="h-3.5 w-3.5" />
-            {jam.has_keyboard ? "Avec clavier" : "Sans clavier"}
+            {jam.has_keyboard ? "avec" : "sans"}
           </span>
         </div>
-      </div>
-
-      <div className="flex items-center justify-end mt-3">
         <div className="flex items-center gap-1.5">
           <ShareButton url={`/events/jams/${jam.id}`} title={jam.title} text={jam.description ?? undefined} />
           {!isCreator && (
