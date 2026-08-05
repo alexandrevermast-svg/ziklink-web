@@ -49,8 +49,6 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
   const [isLoading, setIsLoading] = useState(!initialJam);
   const [messageInput, setMessageInput] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [draggedSlot, setDraggedSlot] = useState<{ id: string; instrument: string; slot_index: number } | null>(null);
-  const [dragOverCell, setDragOverCell] = useState<{ instrument: string; slot_index: number } | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingSongSlotId, setEditingSongSlotId] = useState<string | null>(null);
   const [songInputValue, setSongInputValue] = useState("");
@@ -307,7 +305,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
     setClaimingCell(null);
   };
 
-  const handleEmptyCellClick = (instrument: string, slot_index: number, e: React.MouseEvent<HTMLTableCellElement>) => {
+  const handleEmptyCellClick = (instrument: string, slot_index: number, e: React.MouseEvent<HTMLButtonElement>) => {
     if (!canInteract) return;
     if (isOrganizer) {
       setPickerCell({ instrument, slot_index, anchorEl: e.currentTarget });
@@ -320,43 +318,6 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
     await supabase.from("jam_slots").delete().eq("id", slotId);
     await fetchAll();
   };
-
-  const handleDragStart = (slot: JamSlot) => {
-    if (slot.user_id !== currentUserId && !isOrganizer) return;
-    setDraggedSlot({ id: slot.id, instrument: slot.instrument, slot_index: slot.slot_index });
-  };
-
-  const handleDragOver = (e: React.DragEvent, instrument: string, slot_index: number) => {
-    e.preventDefault(); setDragOverCell({ instrument, slot_index });
-  };
-
-  const handleDrop = async (instrument: string, slot_index: number) => {
-    setDragOverCell(null);
-    if (!draggedSlot) return;
-    const movedSlot = slots.find((s) => s.id === draggedSlot.id);
-    if (!movedSlot) { setDraggedSlot(null); return; }
-    if (instrument !== draggedSlot.instrument) {
-      const movedIdentity = movedSlot.user_id ?? (movedSlot.guest_name ? `guest:${movedSlot.guest_name}` : null);
-      const otherSlotsElsewhere = movedIdentity !== null && slots.some((s) => {
-        const identity = s.user_id ?? (s.guest_name ? `guest:${s.guest_name}` : null);
-        return identity === movedIdentity && s.id !== movedSlot.id && s.instrument !== instrument;
-      });
-      if (otherSlotsElsewhere) { setDraggedSlot(null); return; }
-    }
-    const target = getSlot(instrument, slot_index);
-    if (target) {
-      await Promise.all([
-        supabase.from("jam_slots").update({ instrument, slot_index }).eq("id", draggedSlot.id),
-        supabase.from("jam_slots").update({ instrument: draggedSlot.instrument, slot_index: draggedSlot.slot_index }).eq("id", target.id),
-      ]);
-    } else {
-      await supabase.from("jam_slots").update({ instrument, slot_index }).eq("id", draggedSlot.id);
-    }
-    setDraggedSlot(null);
-    await fetchAll();
-  };
-
-  const handleDragEnd = () => { setDraggedSlot(null); setDragOverCell(null); };
 
   const handleStartEditSong = (slot: JamSlot, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -619,8 +580,6 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           slots={slots}
           numRows={numRows}
           currentSlotIndex={currentSlotIndex}
-          draggedSlot={draggedSlot}
-          dragOverCell={dragOverCell}
           claimingCell={claimingCell}
           pickerCell={pickerCell}
           editingSongSlotId={editingSongSlotId}
@@ -628,11 +587,6 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           onSongInputChange={setSongInputValue}
           onSetCurrentSlot={handleSetCurrentSlot}
           onEmptyCellClick={handleEmptyCellClick}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-          onDragEnd={handleDragEnd}
-          onDragLeave={() => setDragOverCell(null)}
           onRelease={handleRelease}
           onAvatarClick={handleAvatarClick}
           onStartEditSong={handleStartEditSong}
