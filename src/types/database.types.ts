@@ -579,6 +579,7 @@ export type Database = {
           instrument: string | null
           jam_id: string | null
           label: string | null
+          scale: string | null
           slot_index: number | null
           slot_order: number
           song: string | null
@@ -592,6 +593,7 @@ export type Database = {
           instrument?: string | null
           jam_id?: string | null
           label?: string | null
+          scale?: string | null
           slot_index?: number | null
           slot_order?: number
           song?: string | null
@@ -605,6 +607,7 @@ export type Database = {
           instrument?: string | null
           jam_id?: string | null
           label?: string | null
+          scale?: string | null
           slot_index?: number | null
           slot_order?: number
           song?: string | null

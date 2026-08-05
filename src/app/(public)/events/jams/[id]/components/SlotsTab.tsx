@@ -1,8 +1,15 @@
 import { TabsContent } from "@/components/ui/tabs";
-import { UserPlus, Play, Radio, Music, X } from "lucide-react";
+import { UserPlus, Play, Radio, Music, X, Plus } from "lucide-react";
 import { Avatar } from "./Avatar";
+import { GuitarHeadstockIcon, BassHeadstockIcon } from "./InstrumentIcons";
 import { INSTRUMENTS } from "../types";
 import type { JamSlot, Profile } from "../types";
+
+function InstrumentIcon({ instKey, emoji, className }: { instKey: string; emoji: string; className?: string }) {
+  if (instKey === "guitare") return <GuitarHeadstockIcon className={className} />;
+  if (instKey === "basse") return <BassHeadstockIcon className={className} />;
+  return <span className="text-sm leading-none">{emoji}</span>;
+}
 
 interface SlotsTabProps {
   canInteract: boolean;
@@ -18,6 +25,9 @@ interface SlotsTabProps {
   editingSongSlotId: string | null;
   songInputValue: string;
   onSongInputChange: (v: string) => void;
+  editingScaleSlotId: string | null;
+  scaleInputValue: string;
+  onScaleInputChange: (v: string) => void;
   onSetCurrentSlot: (rowIdx: number) => void;
   onEmptyCellClick: (instrument: string, slot_index: number, e: React.MouseEvent<HTMLButtonElement>) => void;
   onRelease: (slotId: string) => void;
@@ -25,14 +35,19 @@ interface SlotsTabProps {
   onStartEditSong: (slot: JamSlot, e: React.MouseEvent) => void;
   onSaveSong: (slotId: string) => void;
   onCancelEditSong: () => void;
+  onStartEditScale: (slot: JamSlot, e: React.MouseEvent) => void;
+  onSaveScale: (slotId: string) => void;
+  onCancelEditScale: () => void;
 }
 
 export function SlotsTab({
   canInteract, isOrganizer, currentUserId, hasDrums, hasKeyboard, slots, numRows, currentSlotIndex,
   claimingCell, pickerCell,
   editingSongSlotId, songInputValue, onSongInputChange,
+  editingScaleSlotId, scaleInputValue, onScaleInputChange,
   onSetCurrentSlot, onEmptyCellClick,
   onRelease, onAvatarClick, onStartEditSong, onSaveSong, onCancelEditSong,
+  onStartEditScale, onSaveScale, onCancelEditScale,
 }: SlotsTabProps) {
   const getSlot = (instrument: string, slot_index: number) =>
     slots.find((s) => s.instrument === instrument && s.slot_index === slot_index) ?? null;
@@ -60,10 +75,15 @@ export function SlotsTab({
       {Array.from({ length: numRows }, (_, rowIdx) => {
         const isTrailing = rowIdx > maxOccupiedIndex;
         const isCurrentSlot = currentSlotIndex === rowIdx;
+        // Créneau représentatif du passage — le même pour tout le monde, pour que le
+        // morceau/la gamme affichés soient partagés plutôt que propres à chaque visiteur.
         const rowSlots = slots.filter((s) => s.slot_index === rowIdx && !!s.user_id);
-        const songSlot = rowSlots.find((s) => s.user_id === currentUserId) ?? rowSlots[0] ?? null;
-        const isEditingSong = !!songSlot && editingSongSlotId === songSlot.id;
-        const canEditSong = !!songSlot && (songSlot.user_id === currentUserId || isOrganizer);
+        const infoSlot = rowSlots[0] ?? null;
+        const isEditingSong = !!infoSlot && editingSongSlotId === infoSlot.id;
+        const isEditingScale = !!infoSlot && editingScaleSlotId === infoSlot.id;
+        // N'importe quel musicien assigné à ce passage (ou l'organisateur) peut compléter
+        // le morceau et la gamme — pas seulement celui dont dépend le créneau représentatif.
+        const canEditInfo = !!infoSlot && (isOrganizer || rowSlots.some((s) => s.user_id === currentUserId));
 
         return (
           <div key={rowIdx} className={`rounded-xl border overflow-hidden transition-colors ${
@@ -94,36 +114,67 @@ export function SlotsTab({
                 </span>
               </div>
 
-              {songSlot && (
-                isEditingSong ? (
-                  <input autoFocus value={songInputValue}
-                    onChange={(e) => onSongInputChange(e.target.value)}
-                    onBlur={() => onSaveSong(songSlot.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") onSaveSong(songSlot.id);
-                      if (e.key === "Escape") onCancelEditSong();
-                    }}
-                    placeholder="Ex: Wonderwall"
-                    className="flex-1 min-w-0 text-xs border border-zik-purple/30 rounded px-2 py-1 outline-none focus:ring-1 focus:ring-zik-purple/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
-                  />
-                ) : (
-                  <button
-                    onClick={(e) => canEditSong ? onStartEditSong(songSlot, e) : undefined}
-                    className={`flex items-center gap-1 text-xs min-w-0 shrink-0 max-w-32 ${
-                      canEditSong ? "cursor-pointer hover:text-zik-purple" : ""
-                    }`}>
-                    {songSlot.song ? (
-                      <><Music className="h-3 w-3 text-zik-purple shrink-0" /><span className="truncate text-zik-text">{songSlot.song}</span></>
-                    ) : canEditSong ? (
-                      <span className="text-zik-muted">+ Morceau</span>
-                    ) : null}
-                  </button>
-                )
+              {infoSlot && (
+                <div className="flex items-center gap-1.5 min-w-0">
+                  {isEditingSong ? (
+                    <input autoFocus value={songInputValue}
+                      onChange={(e) => onSongInputChange(e.target.value)}
+                      onBlur={() => onSaveSong(infoSlot.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") onSaveSong(infoSlot.id);
+                        if (e.key === "Escape") onCancelEditSong();
+                      }}
+                      placeholder="Ex: Wonderwall"
+                      className="min-w-0 w-24 text-xs border border-zik-purple/30 rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-zik-purple/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
+                    />
+                  ) : (
+                    <button
+                      onClick={(e) => canEditInfo ? onStartEditSong(infoSlot, e) : undefined}
+                      className={`flex items-center gap-1 text-xs min-w-0 shrink-0 max-w-24 ${
+                        canEditInfo ? "cursor-pointer hover:text-zik-purple" : ""
+                      }`}>
+                      {infoSlot.song ? (
+                        <><Music className="h-3 w-3 text-zik-purple shrink-0" /><span className="truncate text-zik-text">{infoSlot.song}</span></>
+                      ) : canEditInfo ? (
+                        <span className="text-zik-muted">+ Morceau</span>
+                      ) : null}
+                    </button>
+                  )}
+
+                  {(infoSlot.song || infoSlot.scale || canEditInfo) && (
+                    <span className="text-zik-muted/40 shrink-0">·</span>
+                  )}
+
+                  {isEditingScale ? (
+                    <input autoFocus value={scaleInputValue}
+                      onChange={(e) => onScaleInputChange(e.target.value)}
+                      onBlur={() => onSaveScale(infoSlot.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") onSaveScale(infoSlot.id);
+                        if (e.key === "Escape") onCancelEditScale();
+                      }}
+                      placeholder="Ex: La mineur"
+                      className="min-w-0 w-20 text-xs border border-zik-purple/30 rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-zik-purple/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
+                    />
+                  ) : (
+                    <button
+                      onClick={(e) => canEditInfo ? onStartEditScale(infoSlot, e) : undefined}
+                      className={`text-xs min-w-0 shrink-0 max-w-20 truncate ${
+                        canEditInfo ? "cursor-pointer hover:text-zik-purple" : ""
+                      }`}>
+                      {infoSlot.scale ? (
+                        <span className="truncate text-zik-text">{infoSlot.scale}</span>
+                      ) : canEditInfo ? (
+                        <span className="text-zik-muted">+ Gamme</span>
+                      ) : null}
+                    </button>
+                  )}
+                </div>
               )}
             </div>
 
             {/* Instruments */}
-            <div className="p-2 space-y-1">
+            <div className="grid grid-cols-3 gap-1.5 p-2">
               {displayInstruments.map((inst) => {
                 const slot = getSlot(inst.key, rowIdx);
                 const isMe = slot?.user_id === currentUserId;
@@ -131,13 +182,14 @@ export function SlotsTab({
                 const isPickerOpen = pickerCell?.instrument === inst.key && pickerCell?.slot_index === rowIdx;
 
                 return (
-                  <div key={inst.key} className="flex items-center gap-2 px-1 py-0.5">
-                    <span className="flex items-center gap-1.5 text-xs text-zik-muted w-24 shrink-0">
-                      <span className="text-sm">{inst.emoji}</span> {inst.label}
+                  <div key={inst.key} className="flex flex-col items-center gap-1 rounded-lg border border-zik-border/60 p-1.5 min-w-0">
+                    <span className="flex items-center gap-1 text-[10px] text-zik-muted truncate max-w-full">
+                      <InstrumentIcon instKey={inst.key} emoji={inst.emoji} className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{inst.label}</span>
                     </span>
 
                     {slot ? (
-                      <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium flex-1 min-w-0 ${
+                      <div className={`flex items-center gap-1 px-1.5 py-1 rounded-full text-[10px] font-medium w-full min-w-0 ${
                         isMe && isCurrentSlot
                           ? "bg-zik-emerald/10 text-zik-emerald border border-zik-emerald/30"
                           : isMe
@@ -153,26 +205,29 @@ export function SlotsTab({
                         {(isMe || isOrganizer) && (
                           <button onClick={() => onRelease(slot.id)}
                             className="opacity-60 hover:opacity-100 hover:text-zik-red transition-colors shrink-0">
-                            <X className="h-3.5 w-3.5" />
+                            <X className="h-3 w-3" />
                           </button>
                         )}
                       </div>
                     ) : canInteract ? (
                       <button
                         onClick={(e) => onEmptyCellClick(inst.key, rowIdx, e)}
-                        className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border border-dashed transition-colors ${
+                        title={isOrganizer ? "Assigner" : "Rejoindre"}
+                        className={`flex items-center justify-center gap-1 w-full py-1 rounded-full text-[10px] font-medium border border-dashed transition-colors ${
                           isClaiming || isPickerOpen
                             ? "border-zik-purple/50 bg-zik-purple/10 text-zik-purple"
                             : "border-zik-border text-zik-muted hover:border-zik-purple/50 hover:text-zik-purple"
                         }`}>
                         {isClaiming ? (
                           <span className="animate-pulse">...</span>
+                        ) : isOrganizer ? (
+                          <UserPlus className="h-3.5 w-3.5" />
                         ) : (
-                          <><UserPlus className="h-3 w-3" /> {isOrganizer ? "Assigner" : "Rejoindre"}</>
+                          <Plus className="h-3.5 w-3.5" />
                         )}
                       </button>
                     ) : (
-                      <span className="text-xs text-zik-muted/50">—</span>
+                      <span className="text-[10px] text-zik-muted/50">—</span>
                     )}
                   </div>
                 );

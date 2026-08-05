@@ -52,6 +52,8 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingSongSlotId, setEditingSongSlotId] = useState<string | null>(null);
   const [songInputValue, setSongInputValue] = useState("");
+  const [editingScaleSlotId, setEditingScaleSlotId] = useState<string | null>(null);
+  const [scaleInputValue, setScaleInputValue] = useState("");
   const [popupProfile, setPopupProfile] = useState<Profile | null>(null);
   const popupAnchorRef = useRef<HTMLElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -321,7 +323,6 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
 
   const handleStartEditSong = (slot: JamSlot, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (slot.user_id !== currentUserId && !isOrganizer) return;
     setEditingSongSlotId(slot.id);
     setSongInputValue(slot.song ?? "");
   };
@@ -330,6 +331,19 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
     await supabase.from("jam_slots").update({ song: songInputValue.trim() || null }).eq("id", slotId);
     setEditingSongSlotId(null);
     setSongInputValue("");
+    await fetchAll();
+  };
+
+  const handleStartEditScale = (slot: JamSlot, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingScaleSlotId(slot.id);
+    setScaleInputValue(slot.scale ?? "");
+  };
+
+  const handleSaveScale = async (slotId: string) => {
+    await supabase.from("jam_slots").update({ scale: scaleInputValue.trim() || null }).eq("id", slotId);
+    setEditingScaleSlotId(null);
+    setScaleInputValue("");
     await fetchAll();
   };
 
@@ -585,6 +599,9 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           editingSongSlotId={editingSongSlotId}
           songInputValue={songInputValue}
           onSongInputChange={setSongInputValue}
+          editingScaleSlotId={editingScaleSlotId}
+          scaleInputValue={scaleInputValue}
+          onScaleInputChange={setScaleInputValue}
           onSetCurrentSlot={handleSetCurrentSlot}
           onEmptyCellClick={handleEmptyCellClick}
           onRelease={handleRelease}
@@ -592,6 +609,9 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           onStartEditSong={handleStartEditSong}
           onSaveSong={handleSaveSong}
           onCancelEditSong={() => { setEditingSongSlotId(null); setSongInputValue(""); }}
+          onStartEditScale={handleStartEditScale}
+          onSaveScale={handleSaveScale}
+          onCancelEditScale={() => { setEditingScaleSlotId(null); setScaleInputValue(""); }}
         />
 
         <ChatTab

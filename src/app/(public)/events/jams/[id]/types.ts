@@ -3,7 +3,7 @@ export interface Participant { user_id: string; status: string; is_organizer: bo
 export interface Message { id: string; user_id: string; content: string; created_at: string; profile: Profile | null; }
 export interface JamSlot {
   id: string; jam_id: string; user_id: string | null;
-  instrument: string; slot_index: number; song?: string | null; profile?: Profile | null;
+  instrument: string; slot_index: number; song?: string | null; scale?: string | null; profile?: Profile | null;
   guest_name?: string | null;
 }
 
