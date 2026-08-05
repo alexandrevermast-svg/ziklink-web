@@ -552,27 +552,36 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
 
       {/* ── ONGLETS ─────────────────────────────────────────────────────── */}
       <Tabs defaultValue="slots" className="flex-1 flex flex-col overflow-hidden">
-        <TabsList className="grid grid-cols-3 mx-4 mt-3 shrink-0">
-          <TabsTrigger value="slots" className="text-zik-text">
+        <TabsList className="grid grid-cols-3 bg-zik-card/50 p-1 rounded-xl border border-zik-border mx-4 mt-3 shrink-0">
+          <TabsTrigger
+            value="slots"
+            className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+          >
             Passages
             {totalSlotsTaken > 0 && (
-              <span className="ml-1.5 bg-zik-purple/10 text-zik-purple text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 bg-white/20 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                 {totalSlotsTaken}
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="participants" className="text-zik-text">
+          <TabsTrigger
+            value="participants"
+            className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+          >
             Participants
             {confirmedParticipants.length > 0 && (
-              <span className="ml-1.5 bg-zik-purple/10 text-zik-purple text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 bg-white/20 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                 {confirmedParticipants.length}
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="chat" className="text-zik-text">
+          <TabsTrigger
+            value="chat"
+            className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+          >
             Chat
             {messages.length > 0 && (
-              <span className="ml-1.5 bg-zik-purple/10 text-zik-purple text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 bg-white/20 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                 {messages.length}
               </span>
             )}

@@ -68,9 +68,9 @@ export function SlotsTab({
 
   return (
     <TabsContent value="slots" className="flex-1 overflow-auto px-3 py-3 space-y-2.5">
-      {!canInteract && <p className="text-xs text-zik-muted text-center mb-1">Rejoins la jam pour t'inscrire dans un créneau 🎸</p>}
+      {!canInteract && <p className="text-sm text-zik-muted text-center mb-1">Rejoins la jam pour t'inscrire dans un créneau 🎸</p>}
       {isOrganizer && (
-        <p className="text-xs text-zik-muted text-center mb-1">
+        <p className="text-sm text-zik-muted text-center mb-1">
           ▶️ passage en cours · 🏁 dernier passage (ferme les inscriptions après)
         </p>
       )}
@@ -128,18 +128,18 @@ export function SlotsTab({
                   </button>
                 )}
                 {isPast && <Check className="h-3.5 w-3.5 text-zik-muted shrink-0" />}
-                <span className={`text-sm font-semibold ${
+                <span className={`text-base font-semibold ${
                   isCurrentSlot ? "text-zik-emerald" : isLastSlot ? "text-zik-orange" : isPast || isTrailing ? "text-zik-muted" : "text-zik-text"
                 }`}>
                   Passage {rowIdx + 1}
                 </span>
                 {isLastSlot && (
-                  <span className="text-[10px] font-semibold text-zik-orange bg-zik-orange/10 px-1.5 py-0.5 rounded-full shrink-0">
+                  <span className="text-xs font-semibold text-zik-orange bg-zik-orange/10 px-1.5 py-0.5 rounded-full shrink-0">
                     Dernier
                   </span>
                 )}
                 {isPast && (
-                  <span className="text-[10px] font-medium text-zik-muted shrink-0">Terminé</span>
+                  <span className="text-xs font-medium text-zik-muted shrink-0">Terminé</span>
                 )}
               </div>
 
@@ -154,12 +154,12 @@ export function SlotsTab({
                         if (e.key === "Escape") onCancelEditSong();
                       }}
                       placeholder="Ex: Wonderwall"
-                      className="min-w-0 w-24 text-xs border border-zik-purple/30 rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-zik-purple/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
+                      className="min-w-0 w-24 text-sm border border-zik-purple/30 rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-zik-purple/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
                     />
                   ) : (
                     <button
                       onClick={(e) => canEditInfo ? onStartEditSong(infoSlot, e) : undefined}
-                      className={`flex items-center gap-1 text-xs min-w-0 shrink-0 max-w-24 ${
+                      className={`flex items-center gap-1 text-sm min-w-0 shrink-0 max-w-24 ${
                         canEditInfo ? "cursor-pointer hover:text-zik-purple" : ""
                       }`}>
                       {infoSlot.song ? (
@@ -171,7 +171,7 @@ export function SlotsTab({
                   )}
 
                   {(infoSlot.song || infoSlot.scale || canEditInfo) && (
-                    <span className="text-zik-muted/40 shrink-0">·</span>
+                    <span className="text-sm text-zik-muted/40 shrink-0">·</span>
                   )}
 
                   {isEditingScale ? (
@@ -183,12 +183,12 @@ export function SlotsTab({
                         if (e.key === "Escape") onCancelEditScale();
                       }}
                       placeholder="Ex: La mineur"
-                      className="min-w-0 w-20 text-xs border border-zik-purple/30 rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-zik-purple/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
+                      className="min-w-0 w-20 text-sm border border-zik-purple/30 rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-zik-purple/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
                     />
                   ) : (
                     <button
                       onClick={(e) => canEditInfo ? onStartEditScale(infoSlot, e) : undefined}
-                      className={`text-xs min-w-0 shrink-0 max-w-20 truncate ${
+                      className={`text-sm min-w-0 shrink-0 max-w-20 truncate ${
                         canEditInfo ? "cursor-pointer hover:text-zik-purple" : ""
                       }`}>
                       {infoSlot.scale ? (
@@ -212,13 +212,13 @@ export function SlotsTab({
 
                 return (
                   <div key={inst.key} className="flex flex-col items-center gap-1 rounded-lg border border-zik-border/60 p-1.5 min-w-0">
-                    <span className="flex items-center gap-1 text-[10px] text-zik-muted truncate max-w-full">
+                    <span className="flex items-center gap-1 text-xs text-zik-muted truncate max-w-full">
                       <InstrumentIcon instKey={inst.key} emoji={inst.emoji} />
                       <span className="truncate">{inst.label}</span>
                     </span>
 
                     {slot ? (
-                      <div className={`flex items-center gap-1 px-1.5 py-1 rounded-full text-[10px] font-medium w-full min-w-0 ${
+                      <div className={`flex items-center gap-1 px-1.5 py-1 rounded-full text-xs font-medium w-full min-w-0 ${
                         isMe && isCurrentSlot
                           ? "bg-zik-emerald/10 text-zik-emerald border border-zik-emerald/30"
                           : isMe
@@ -242,7 +242,7 @@ export function SlotsTab({
                       <button
                         onClick={(e) => onEmptyCellClick(inst.key, rowIdx, e)}
                         title={isOrganizer ? "Assigner" : "Rejoindre"}
-                        className={`flex items-center justify-center gap-1 w-full py-1 rounded-full text-[10px] font-medium border border-dashed transition-colors ${
+                        className={`flex items-center justify-center gap-1 w-full py-1 rounded-full text-xs font-medium border border-dashed transition-colors ${
                           isClaiming || isPickerOpen
                             ? "border-zik-purple/50 bg-zik-purple/10 text-zik-purple"
                             : "border-zik-border text-zik-muted hover:border-zik-purple/50 hover:text-zik-purple"
@@ -256,7 +256,7 @@ export function SlotsTab({
                         )}
                       </button>
                     ) : (
-                      <span className="text-[10px] text-zik-muted/50">—</span>
+                      <span className="text-xs text-zik-muted/50">—</span>
                     )}
                   </div>
                 );
