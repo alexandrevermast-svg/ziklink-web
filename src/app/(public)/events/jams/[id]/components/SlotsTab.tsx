@@ -6,8 +6,8 @@ import { INSTRUMENTS } from "../types";
 import type { JamSlot, Profile } from "../types";
 
 function InstrumentIcon({ instKey, emoji }: { instKey: string; emoji: string }) {
-  if (instKey === "guitare") return <GuitarHeadstockIcon className="h-4 w-3 shrink-0" />;
-  if (instKey === "basse") return <BassHeadstockIcon className="h-4 w-3 shrink-0" />;
+  if (instKey === "guitare") return <GuitarHeadstockIcon className="h-4 w-4 shrink-0" />;
+  if (instKey === "basse") return <BassHeadstockIcon className="h-4 w-4 shrink-0" />;
   return <span className="text-sm leading-none">{emoji}</span>;
 }
 
