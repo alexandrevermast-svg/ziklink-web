@@ -62,7 +62,6 @@ export default function JamCard({
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-zik-text truncate">{jam.title}</h3>
-          <p className="text-base text-zik-text/80 mt-1 line-clamp-1">{jam.description}</p>
         </div>
         <span className={`shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
           jam.is_open ? "bg-zik-emerald/10 text-zik-emerald" : "bg-zik-orange/10 text-zik-orange"

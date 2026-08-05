@@ -145,23 +145,23 @@ export default function EventMap({
             icon={m.type === "jam" ? JAM_ICON : CONCERT_ICON}
           >
             <Popup>
-              <div className="text-sm min-w-40">
+              <div className="text-sm min-w-32 leading-tight">
                 {/* ✅ Badge de type d'événement adapté */}
-                <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mb-1 ${
+                <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                   m.type === "jam" ? "bg-zik-emerald/20 text-zik-emerald" : "bg-zik-red/20 text-zik-red"
                 }`}>
                   {m.type === "jam" ? "🎸 Jam" : "🎤 Concert"}
                 </span>
 
                 {/* ✅ Titre adapté */}
-                <p className="font-semibold text-zik-text mb-0.5">{m.title}</p>
+                <p className="font-semibold text-zik-text">{m.title}</p>
 
                 {m.type === "concert" && m.artist && (
-                  <p className="text-zik-purple text-xs font-medium mb-0.5">{m.artist}</p>
+                  <p className="text-zik-purple text-xs font-medium">{m.artist}</p>
                 )}
 
                 {/* ✅ Date et heure adaptées */}
-                <p className="text-zik-text text-xs mb-2">
+                <p className="text-zik-text text-xs mb-1.5">
                   {formatDay(m.start_time)} · {formatTime(m.start_time)}
                 </p>
 
