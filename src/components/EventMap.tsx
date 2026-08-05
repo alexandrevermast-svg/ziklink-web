@@ -161,7 +161,7 @@ export default function EventMap({
                 )}
 
                 {/* ✅ Date et heure adaptées */}
-                <p className="text-zik-text text-xs mb-1.5">
+                <p className="text-zik-text text-xs mb-1">
                   {formatDay(m.start_time)} · {formatTime(m.start_time)}
                 </p>
 
@@ -170,7 +170,7 @@ export default function EventMap({
                     ? <span className="text-xs text-zik-emerald font-medium">✓ Inscrit</span>
                     : <button
                         onClick={() => onJoinJam?.(m.id)}
-                        className="text-xs bg-zik-purple text-white px-3 py-1 rounded-full hover:bg-zik-indigo transition-colors"
+                        className="text-xs bg-zik-purple text-white px-3 py-0.5 rounded-full hover:bg-zik-indigo transition-colors"
                       >
                         Rejoindre
                       </button>
