@@ -79,10 +79,10 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
   const joinOpen = jam ? canJoinJam(jam.start_time) : false;
 
   const numRows = useMemo(() => {
-    if (slots.length === 0) return TRAILING_EMPTY_ROWS;
-    const maxIndex = Math.max(...slots.map((s) => s.slot_index));
-    return maxIndex + 1 + TRAILING_EMPTY_ROWS;
-  }, [slots]);
+    if (jam?.last_slot_index != null) return jam.last_slot_index + 1;
+    const maxOccupied = slots.length > 0 ? Math.max(...slots.map((s) => s.slot_index)) : -1;
+    return maxOccupied + 1 + TRAILING_EMPTY_ROWS;
+  }, [slots, jam?.last_slot_index]);
 
   const fetchAll = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -210,6 +210,13 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
       }
     }
   }, [isOrganizer, jam, slots, id, currentUserId]);
+
+  const handleSetLastSlot = useCallback(async (slotIndex: number) => {
+    if (!isOrganizer || !jam) return;
+    const newIndex = jam.last_slot_index === slotIndex ? null : slotIndex;
+    setJam((prev) => prev ? { ...prev, last_slot_index: newIndex } : prev);
+    await supabase.from("jam_sessions").update({ last_slot_index: newIndex }).eq("id", id);
+  }, [isOrganizer, jam, id]);
 
   const handleJoin = async () => {
     if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${id}`)}`); return; }
@@ -594,6 +601,8 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           slots={slots}
           numRows={numRows}
           currentSlotIndex={currentSlotIndex}
+          lastSlotIndex={jam.last_slot_index}
+          onSetLastSlot={handleSetLastSlot}
           claimingCell={claimingCell}
           pickerCell={pickerCell}
           editingSongSlotId={editingSongSlotId}

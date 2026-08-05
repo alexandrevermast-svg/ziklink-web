@@ -523,6 +523,7 @@ export type Database = {
           has_keyboard: boolean
           id: string
           is_open: boolean
+          last_slot_index: number | null
           location: string | null
           poster_url: string | null
           start_time: string
@@ -539,6 +540,7 @@ export type Database = {
           has_keyboard?: boolean
           id?: string
           is_open?: boolean
+          last_slot_index?: number | null
           location?: string | null
           poster_url?: string | null
           start_time: string
@@ -555,6 +557,7 @@ export type Database = {
           has_keyboard?: boolean
           id?: string
           is_open?: boolean
+          last_slot_index?: number | null
           location?: string | null
           poster_url?: string | null
           start_time?: string

@@ -1,13 +1,13 @@
 import { TabsContent } from "@/components/ui/tabs";
-import { UserPlus, Play, Radio, Music, X, Plus } from "lucide-react";
+import { UserPlus, Play, Radio, Music, X, Plus, Flag, Check } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { GuitarHeadstockIcon, BassHeadstockIcon } from "./InstrumentIcons";
 import { INSTRUMENTS } from "../types";
 import type { JamSlot, Profile } from "../types";
 
-function InstrumentIcon({ instKey, emoji, className }: { instKey: string; emoji: string; className?: string }) {
-  if (instKey === "guitare") return <GuitarHeadstockIcon className={className} />;
-  if (instKey === "basse") return <BassHeadstockIcon className={className} />;
+function InstrumentIcon({ instKey, emoji }: { instKey: string; emoji: string }) {
+  if (instKey === "guitare") return <GuitarHeadstockIcon className="h-4 w-3 shrink-0" />;
+  if (instKey === "basse") return <BassHeadstockIcon className="h-4 w-3 shrink-0" />;
   return <span className="text-sm leading-none">{emoji}</span>;
 }
 
@@ -20,6 +20,8 @@ interface SlotsTabProps {
   slots: JamSlot[];
   numRows: number;
   currentSlotIndex: number | null;
+  lastSlotIndex: number | null;
+  onSetLastSlot: (rowIdx: number) => void;
   claimingCell: { instrument: string; slot_index: number } | null;
   pickerCell: { instrument: string; slot_index: number; anchorEl: HTMLElement } | null;
   editingSongSlotId: string | null;
@@ -42,6 +44,7 @@ interface SlotsTabProps {
 
 export function SlotsTab({
   canInteract, isOrganizer, currentUserId, hasDrums, hasKeyboard, slots, numRows, currentSlotIndex,
+  lastSlotIndex, onSetLastSlot,
   claimingCell, pickerCell,
   editingSongSlotId, songInputValue, onSongInputChange,
   editingScaleSlotId, scaleInputValue, onScaleInputChange,
@@ -68,13 +71,15 @@ export function SlotsTab({
       {!canInteract && <p className="text-xs text-zik-muted text-center mb-1">Rejoins la jam pour t'inscrire dans un créneau 🎸</p>}
       {isOrganizer && (
         <p className="text-xs text-zik-muted text-center mb-1">
-          ▶️ pour marquer un passage en cours
+          ▶️ passage en cours · 🏁 dernier passage (ferme les inscriptions après)
         </p>
       )}
 
       {Array.from({ length: numRows }, (_, rowIdx) => {
         const isTrailing = rowIdx > maxOccupiedIndex;
         const isCurrentSlot = currentSlotIndex === rowIdx;
+        const isLastSlot = lastSlotIndex === rowIdx;
+        const isPast = currentSlotIndex !== null && rowIdx < currentSlotIndex;
         // Créneau représentatif du passage — le même pour tout le monde, pour que le
         // morceau/la gamme affichés soient partagés plutôt que propres à chaque visiteur.
         const rowSlots = slots.filter((s) => s.slot_index === rowIdx && !!s.user_id);
@@ -86,12 +91,16 @@ export function SlotsTab({
         const canEditInfo = !!infoSlot && (isOrganizer || rowSlots.some((s) => s.user_id === currentUserId));
 
         return (
-          <div key={rowIdx} className={`rounded-xl border overflow-hidden transition-colors ${
+          <div key={rowIdx} className={`rounded-xl border overflow-hidden transition-all ${
             isCurrentSlot
               ? "border-zik-emerald/40 bg-zik-emerald/5"
-              : isTrailing
-                ? "border-dashed border-zik-border/50 bg-zik-card/20"
-                : "border-zik-border bg-zik-card/50"
+              : isLastSlot
+                ? "border-zik-orange/40 bg-zik-orange/5"
+                : isPast
+                  ? "border-zik-border/40 bg-zik-card/20 opacity-60"
+                  : isTrailing
+                    ? "border-dashed border-zik-border/50 bg-zik-card/20"
+                    : "border-zik-border bg-zik-card/50"
           }`}>
             {/* En-tête : numéro / marquer en cours / morceau */}
             <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-zik-border/60">
@@ -107,11 +116,31 @@ export function SlotsTab({
                     {isCurrentSlot ? <Radio className="h-3.5 w-3.5 animate-pulse" /> : <Play className="h-3.5 w-3.5" />}
                   </button>
                 )}
+                {isOrganizer && (
+                  <button onClick={() => onSetLastSlot(rowIdx)}
+                    title={isLastSlot ? "Retirer la limite" : "Marquer comme dernier passage"}
+                    className={`h-6 w-6 flex items-center justify-center rounded-full shrink-0 transition-all duration-150 ${
+                      isLastSlot
+                        ? "bg-zik-orange text-white shadow-md shadow-zik-orange/20"
+                        : "text-zik-muted hover:text-zik-orange hover:bg-zik-orange/10"
+                    }`}>
+                    <Flag className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                {isPast && <Check className="h-3.5 w-3.5 text-zik-muted shrink-0" />}
                 <span className={`text-sm font-semibold ${
-                  isCurrentSlot ? "text-zik-emerald" : isTrailing ? "text-zik-muted" : "text-zik-text"
+                  isCurrentSlot ? "text-zik-emerald" : isLastSlot ? "text-zik-orange" : isPast || isTrailing ? "text-zik-muted" : "text-zik-text"
                 }`}>
                   Passage {rowIdx + 1}
                 </span>
+                {isLastSlot && (
+                  <span className="text-[10px] font-semibold text-zik-orange bg-zik-orange/10 px-1.5 py-0.5 rounded-full shrink-0">
+                    Dernier
+                  </span>
+                )}
+                {isPast && (
+                  <span className="text-[10px] font-medium text-zik-muted shrink-0">Terminé</span>
+                )}
               </div>
 
               {infoSlot && (
@@ -184,7 +213,7 @@ export function SlotsTab({
                 return (
                   <div key={inst.key} className="flex flex-col items-center gap-1 rounded-lg border border-zik-border/60 p-1.5 min-w-0">
                     <span className="flex items-center gap-1 text-[10px] text-zik-muted truncate max-w-full">
-                      <InstrumentIcon instKey={inst.key} emoji={inst.emoji} className="h-3.5 w-3.5 shrink-0" />
+                      <InstrumentIcon instKey={inst.key} emoji={inst.emoji} />
                       <span className="truncate">{inst.label}</span>
                     </span>
 
