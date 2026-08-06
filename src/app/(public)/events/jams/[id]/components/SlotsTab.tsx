@@ -6,9 +6,9 @@ import { INSTRUMENTS } from "../types";
 import type { JamSlot, Profile } from "../types";
 
 function InstrumentIcon({ instKey, emoji }: { instKey: string; emoji: string }) {
-  if (instKey === "guitare") return <GuitarHeadstockIcon className="h-4 w-4 object-contain shrink-0" />;
-  if (instKey === "basse") return <BassHeadstockIcon className="h-4 w-4 object-contain shrink-0" />;
-  return <span className="text-sm leading-none">{emoji}</span>;
+  if (instKey === "guitare") return <GuitarHeadstockIcon className="h-5 w-5 object-contain shrink-0" />;
+  if (instKey === "basse") return <BassHeadstockIcon className="h-5 w-5 object-contain shrink-0" />;
+  return <span className="text-base leading-none">{emoji}</span>;
 }
 
 interface SlotsTabProps {
@@ -68,9 +68,9 @@ export function SlotsTab({
 
   return (
     <TabsContent value="slots" className="flex-1 overflow-auto px-3 py-3 space-y-2.5">
-      {!canInteract && <p className="text-sm text-zik-muted text-center mb-1">Rejoins la jam pour t'inscrire dans un créneau 🎸</p>}
+      {!canInteract && <p className="text-base text-zik-muted text-center mb-1">Rejoins la jam pour t'inscrire dans un créneau 🎸</p>}
       {isOrganizer && (
-        <p className="text-sm text-zik-muted text-center mb-1">
+        <p className="text-base text-zik-muted text-center mb-1">
           ▶️ passage en cours · 🏁 dernier passage (ferme les inscriptions après)
         </p>
       )}
@@ -108,38 +108,38 @@ export function SlotsTab({
                 {isOrganizer && (
                   <button onClick={() => onSetCurrentSlot(rowIdx)}
                     title={isCurrentSlot ? "Désactiver ce passage" : "Marquer comme en cours"}
-                    className={`h-6 w-6 flex items-center justify-center rounded-full shrink-0 transition-all duration-150 ${
+                    className={`h-7 w-7 flex items-center justify-center rounded-full shrink-0 transition-all duration-150 ${
                       isCurrentSlot
                         ? "bg-zik-emerald text-white shadow-md shadow-zik-emerald/20 hover:bg-zik-red"
                         : "text-zik-muted hover:text-zik-emerald hover:bg-zik-emerald/10"
                     }`}>
-                    {isCurrentSlot ? <Radio className="h-3.5 w-3.5 animate-pulse" /> : <Play className="h-3.5 w-3.5" />}
+                    {isCurrentSlot ? <Radio className="h-4 w-4 animate-pulse" /> : <Play className="h-4 w-4" />}
                   </button>
                 )}
                 {isOrganizer && (
                   <button onClick={() => onSetLastSlot(rowIdx)}
                     title={isLastSlot ? "Retirer la limite" : "Marquer comme dernier passage"}
-                    className={`h-6 w-6 flex items-center justify-center rounded-full shrink-0 transition-all duration-150 ${
+                    className={`h-7 w-7 flex items-center justify-center rounded-full shrink-0 transition-all duration-150 ${
                       isLastSlot
                         ? "bg-zik-orange text-white shadow-md shadow-zik-orange/20"
                         : "text-zik-muted hover:text-zik-orange hover:bg-zik-orange/10"
                     }`}>
-                    <Flag className="h-3.5 w-3.5" />
+                    <Flag className="h-4 w-4" />
                   </button>
                 )}
-                {isPast && <Check className="h-3.5 w-3.5 text-zik-muted shrink-0" />}
-                <span className={`text-base font-semibold ${
+                {isPast && <Check className="h-4 w-4 text-zik-muted shrink-0" />}
+                <span className={`text-lg font-semibold ${
                   isCurrentSlot ? "text-zik-emerald" : isLastSlot ? "text-zik-orange" : isPast || isTrailing ? "text-zik-muted" : "text-zik-text"
                 }`}>
                   Passage {rowIdx + 1}
                 </span>
                 {isLastSlot && (
-                  <span className="text-xs font-semibold text-zik-orange bg-zik-orange/10 px-1.5 py-0.5 rounded-full shrink-0">
+                  <span className="text-sm font-semibold text-zik-orange bg-zik-orange/10 px-1.5 py-0.5 rounded-full shrink-0">
                     Dernier
                   </span>
                 )}
                 {isPast && (
-                  <span className="text-xs font-medium text-zik-muted shrink-0">Terminé</span>
+                  <span className="text-sm font-medium text-zik-muted shrink-0">Terminé</span>
                 )}
               </div>
 
@@ -154,16 +154,16 @@ export function SlotsTab({
                         if (e.key === "Escape") onCancelEditSong();
                       }}
                       placeholder="Ex: Wonderwall"
-                      className="min-w-0 w-24 text-sm border border-zik-purple/30 rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-zik-purple/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
+                      className="min-w-0 w-24 text-base border border-zik-purple/30 rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-zik-purple/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
                     />
                   ) : (
                     <button
                       onClick={(e) => canEditInfo ? onStartEditSong(infoSlot, e) : undefined}
-                      className={`flex items-center gap-1 text-sm min-w-0 shrink-0 max-w-24 ${
+                      className={`flex items-center gap-1 text-base min-w-0 shrink-0 max-w-24 ${
                         canEditInfo ? "cursor-pointer hover:text-zik-purple" : ""
                       }`}>
                       {infoSlot.song ? (
-                        <><Music className="h-3 w-3 text-zik-purple shrink-0" /><span className="truncate text-zik-text">{infoSlot.song}</span></>
+                        <><Music className="h-3.5 w-3.5 text-zik-purple shrink-0" /><span className="truncate text-zik-text">{infoSlot.song}</span></>
                       ) : canEditInfo ? (
                         <span className="text-zik-muted">+ Morceau</span>
                       ) : null}
@@ -171,7 +171,7 @@ export function SlotsTab({
                   )}
 
                   {(infoSlot.song || infoSlot.scale || canEditInfo) && (
-                    <span className="text-sm text-zik-muted/40 shrink-0">·</span>
+                    <span className="text-base text-zik-muted/40 shrink-0">·</span>
                   )}
 
                   {isEditingScale ? (
@@ -183,12 +183,12 @@ export function SlotsTab({
                         if (e.key === "Escape") onCancelEditScale();
                       }}
                       placeholder="Ex: La mineur"
-                      className="min-w-0 w-20 text-sm border border-zik-purple/30 rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-zik-purple/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
+                      className="min-w-0 w-20 text-base border border-zik-purple/30 rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-zik-purple/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
                     />
                   ) : (
                     <button
                       onClick={(e) => canEditInfo ? onStartEditScale(infoSlot, e) : undefined}
-                      className={`text-sm min-w-0 shrink-0 max-w-20 truncate ${
+                      className={`text-base min-w-0 shrink-0 max-w-20 truncate ${
                         canEditInfo ? "cursor-pointer hover:text-zik-purple" : ""
                       }`}>
                       {infoSlot.scale ? (
@@ -212,13 +212,13 @@ export function SlotsTab({
 
                 return (
                   <div key={inst.key} className="flex flex-col items-center gap-1 rounded-lg border border-zik-border/60 p-1.5 min-w-0">
-                    <span className="flex items-center gap-1 text-xs text-zik-muted truncate max-w-full">
+                    <span className="flex items-center gap-1 text-sm text-zik-muted truncate max-w-full">
                       <InstrumentIcon instKey={inst.key} emoji={inst.emoji} />
                       <span className="truncate">{inst.label}</span>
                     </span>
 
                     {slot ? (
-                      <div className={`flex items-center gap-1 px-1.5 py-1 rounded-full text-xs font-medium w-full min-w-0 ${
+                      <div className={`flex items-center gap-1 px-1.5 py-1 rounded-full text-sm font-medium w-full min-w-0 ${
                         isMe && isCurrentSlot
                           ? "bg-zik-emerald/10 text-zik-emerald border border-zik-emerald/30"
                           : isMe
@@ -234,7 +234,7 @@ export function SlotsTab({
                         {(isMe || isOrganizer) && (
                           <button onClick={() => onRelease(slot.id)}
                             className="opacity-60 hover:opacity-100 hover:text-zik-red transition-colors shrink-0">
-                            <X className="h-3 w-3" />
+                            <X className="h-3.5 w-3.5" />
                           </button>
                         )}
                       </div>
@@ -242,7 +242,7 @@ export function SlotsTab({
                       <button
                         onClick={(e) => onEmptyCellClick(inst.key, rowIdx, e)}
                         title={isOrganizer ? "Assigner" : "Rejoindre"}
-                        className={`flex items-center justify-center gap-1 w-full py-1 rounded-full text-xs font-medium border border-dashed transition-colors ${
+                        className={`flex items-center justify-center gap-1 w-full py-1 rounded-full text-sm font-medium border border-dashed transition-colors ${
                           isClaiming || isPickerOpen
                             ? "border-zik-purple/50 bg-zik-purple/10 text-zik-purple"
                             : "border-zik-border text-zik-muted hover:border-zik-purple/50 hover:text-zik-purple"
@@ -250,13 +250,13 @@ export function SlotsTab({
                         {isClaiming ? (
                           <span className="animate-pulse">...</span>
                         ) : isOrganizer ? (
-                          <UserPlus className="h-3.5 w-3.5" />
+                          <UserPlus className="h-4 w-4" />
                         ) : (
-                          <Plus className="h-3.5 w-3.5" />
+                          <Plus className="h-4 w-4" />
                         )}
                       </button>
                     ) : (
-                      <span className="text-xs text-zik-muted/50">—</span>
+                      <span className="text-sm text-zik-muted/50">—</span>
                     )}
                   </div>
                 );
