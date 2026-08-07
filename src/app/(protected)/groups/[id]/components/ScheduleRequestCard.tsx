@@ -110,6 +110,14 @@ export function ScheduleRequestCard({
     await fetchAll();
   };
 
+  const officeCells = useMemo(() => days
+    .filter((d) => { const wd = d.getDay(); return wd >= 1 && wd <= 5; })
+    .flatMap((d) => (["matin", "apres_midi"] as PeriodKey[]).map((period) => ({ date: toDateStr(d), period }))), [days]);
+
+  const isOfficePatternChecked = currentUserId
+    ? officeCells.every((c) => isMarked(currentUserId, c.date, c.period))
+    : false;
+
   const applyWeekdayOfficePattern = async () => {
     if (!currentUserId || !showEditor) return;
     if (myMode !== "indisponibilite") {
@@ -117,14 +125,25 @@ export function ScheduleRequestCard({
         .upsert({ request_id: requestId, user_id: currentUserId, mode: "indisponibilite", updated_at: new Date().toISOString() }, { onConflict: "request_id,user_id" });
       await supabase.from("group_schedule_marks").delete().eq("request_id", requestId).eq("user_id", currentUserId);
     }
-    const officeCells = days
-      .filter((d) => { const wd = d.getDay(); return wd >= 1 && wd <= 5; })
-      .flatMap((d) => (["matin", "apres_midi"] as PeriodKey[]).map((period) => ({ date: toDateStr(d), period })));
     await supabase.from("group_schedule_marks").upsert(
       officeCells.map((c) => ({ request_id: requestId, user_id: currentUserId, date: c.date, period: c.period })),
       { onConflict: "request_id,user_id,date,period" }
     );
     await fetchAll();
+  };
+
+  const removeWeekdayOfficePattern = async () => {
+    if (!currentUserId || !showEditor) return;
+    await supabase.from("group_schedule_marks").delete()
+      .eq("request_id", requestId).eq("user_id", currentUserId)
+      .in("date", officeCells.map((c) => c.date))
+      .in("period", officeCells.map((c) => c.period));
+    await fetchAll();
+  };
+
+  const handleToggleOfficePattern = async (checked: boolean) => {
+    if (checked) await applyWeekdayOfficePattern();
+    else await removeWeekdayOfficePattern();
   };
 
   const handleValidate = async () => {
@@ -235,10 +254,15 @@ export function ScheduleRequestCard({
               : "Coche les cases où tu n'es PAS disponible."}
           </p>
           {showEditor && (
-            <button type="button" onClick={applyWeekdayOfficePattern}
-              className="text-[11px] text-zik-purple font-medium mb-3 hover:underline">
+            <label className="flex items-center gap-2 text-[11px] text-zik-text font-medium mb-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isOfficePatternChecked}
+                onChange={(e) => handleToggleOfficePattern(e.target.checked)}
+                className="h-3.5 w-3.5 rounded border-zik-border accent-zik-purple"
+              />
               🏢 Indispo en semaine, matin + après-midi (Lun-Ven)
-            </button>
+            </label>
           )}
 
           <div className="overflow-x-auto -mx-3 px-3">
