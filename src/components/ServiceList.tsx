@@ -19,7 +19,11 @@ const TYPE_CONFIG = {
   prestation: { label: "Prestation", icon: Mic2 },
 } as const;
 
-export default function ServiceList() {
+interface ServiceListProps {
+  kind: "offre" | "demande";
+}
+
+export default function ServiceList({ kind }: ServiceListProps) {
   const supabase = createClient();
   const router = useRouter();
   const [services, setServices] = useState<ServiceWithProfile[]>([]);
@@ -60,7 +64,9 @@ export default function ServiceList() {
     setDeletingId(null);
   };
 
-  const filtered = services.filter((s) => typeFilter === "tous" || s.type === typeFilter);
+  const filtered = services
+    .filter((s) => s.kind === kind)
+    .filter((s) => typeFilter === "tous" || s.type === typeFilter);
 
   if (isLoading) return (
     <div className="space-y-3">

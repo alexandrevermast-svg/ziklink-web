@@ -1095,6 +1095,7 @@ export type Database = {
           description: string | null
           id: string
           instrument: string | null
+          kind: string
           photo_url: string | null
           price_info: string | null
           title: string
@@ -1107,6 +1108,7 @@ export type Database = {
           description?: string | null
           id?: string
           instrument?: string | null
+          kind?: string
           photo_url?: string | null
           price_info?: string | null
           title: string
@@ -1119,6 +1121,7 @@ export type Database = {
           description?: string | null
           id?: string
           instrument?: string | null
+          kind?: string
           photo_url?: string | null
           price_info?: string | null
           title?: string

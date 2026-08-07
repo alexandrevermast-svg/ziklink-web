@@ -5,20 +5,22 @@ import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { GraduationCap, Mic2, Upload, X } from "lucide-react";
+import { GraduationCap, Mic2, Megaphone, Search, Upload, X } from "lucide-react";
 import type { Service } from "@/types";
 
 interface ServiceFormProps {
   service?: Service;
+  defaultKind?: "offre" | "demande";
   onSuccess?: () => void;
   onClose?: () => void;
 }
 
-export default function ServiceForm({ service, onSuccess, onClose }: ServiceFormProps) {
+export default function ServiceForm({ service, defaultKind = "offre", onSuccess, onClose }: ServiceFormProps) {
   const supabase = createClient();
   const isEdit = !!service;
 
   const [type, setType] = useState<"cours" | "prestation">((service?.type as "cours" | "prestation") ?? "cours");
+  const [kind, setKind] = useState<"offre" | "demande">((service?.kind as "offre" | "demande") ?? defaultKind);
   const [title, setTitle] = useState(service?.title ?? "");
   const [instrument, setInstrument] = useState(service?.instrument ?? "");
   const [city, setCity] = useState(service?.city ?? "");
@@ -58,6 +60,7 @@ export default function ServiceForm({ service, onSuccess, onClose }: ServiceForm
 
       const payload = {
         type,
+        kind,
         title: title.trim(),
         instrument: instrument.trim() || null,
         city: city.trim() || null,
@@ -82,6 +85,36 @@ export default function ServiceForm({ service, onSuccess, onClose }: ServiceForm
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="text-sm font-medium text-zik-text mb-1.5 block">
+          Offre ou demande <span className="text-zik-red">*</span>
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setKind("offre")}
+            className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
+              kind === "offre"
+                ? "border-zik-purple/40 bg-zik-purple/10 text-zik-purple"
+                : "border-zik-border text-zik-muted hover:border-zik-purple/30"
+            }`}
+          >
+            <Megaphone className="h-4 w-4" /> J&apos;offre
+          </button>
+          <button
+            type="button"
+            onClick={() => setKind("demande")}
+            className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
+              kind === "demande"
+                ? "border-zik-purple/40 bg-zik-purple/10 text-zik-purple"
+                : "border-zik-border text-zik-muted hover:border-zik-purple/30"
+            }`}
+          >
+            <Search className="h-4 w-4" /> Je cherche
+          </button>
+        </div>
+      </div>
+
       <div>
         <label className="text-sm font-medium text-zik-text mb-1.5 block">
           Type d&apos;annonce <span className="text-zik-red">*</span>
