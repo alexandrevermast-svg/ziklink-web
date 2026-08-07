@@ -18,14 +18,15 @@ import { useJamParticipation } from "@/hooks/useJamParticipation";
 import { useJamInterest } from "@/hooks/useJamInterest";
 import { isOwner } from "@/lib/permissions";
 import { canJoinJam, joinOpensAt } from "@/lib/jamJoinWindow";
-import type { Profile, Participant, Message, JamSlot } from "./types";
-import { TRAILING_EMPTY_ROWS } from "./types";
+import type { Profile, Participant, Message, JamSlot, JamInstrument } from "./types";
+import { TRAILING_EMPTY_ROWS, slugifyInstrumentKey } from "./types";
 import { formatDate, formatTime, getAddress } from "./utils";
 import { ParticipantPicker } from "./components/ParticipantPicker";
 import { ProfilePopup } from "./components/ProfilePopup";
 import { JamPoster } from "./components/JamPoster";
 import { ParticipantsTab } from "./components/ParticipantsTab";
 import { SlotsTab } from "./components/SlotsTab";
+import { InstrumentManagerModal } from "./components/InstrumentManagerModal";
 import { ChatTab } from "./components/ChatTab";
 
 interface JamDetailClientProps {
@@ -33,9 +34,10 @@ interface JamDetailClientProps {
   initialJam: JamSession | null;
   initialParticipants: Participant[];
   initialSlots: JamSlot[];
+  initialInstruments: JamInstrument[];
 }
 
-export default function JamDetailClient({ jamId, initialJam, initialParticipants, initialSlots }: JamDetailClientProps) {
+export default function JamDetailClient({ jamId, initialJam, initialParticipants, initialSlots, initialInstruments }: JamDetailClientProps) {
   const id = jamId;
   const router = useRouter();
   const supabase = createClient();
@@ -45,6 +47,8 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
   const [participants, setParticipants] = useState<Participant[]>(initialParticipants);
   const [messages, setMessages] = useState<Message[]>([]);
   const [slots, setSlots] = useState<JamSlot[]>(initialSlots);
+  const [instruments, setInstruments] = useState<JamInstrument[]>(initialInstruments);
+  const [isInstrumentManagerOpen, setIsInstrumentManagerOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(!initialJam);
   const [messageInput, setMessageInput] = useState("");
@@ -124,6 +128,11 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
     const { data: slotsData } = await supabase
       .from("jam_slots").select("*, profile:profiles(id, username, avatar_url)").eq("jam_id", id);
     setSlots((slotsData ?? []).map((s: any) => ({ ...s, profile: s.profile ?? null })));
+
+    const { data: instrumentsData } = await supabase
+      .from("jam_instruments").select("*").eq("jam_id", id).order("position", { ascending: true });
+    setInstruments(instrumentsData ?? []);
+
     setIsLoading(false);
   }, [id]);
 
@@ -257,6 +266,27 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
 
   const handleToggleCoOrganizer = async (userId: string, currentIsOrganizer: boolean) => {
     await supabase.from("jam_participants").update({ is_organizer: !currentIsOrganizer }).eq("jam_id", id).eq("user_id", userId);
+    await fetchAll();
+  };
+
+  const handleAddInstrument = async (label: string, emoji: string) => {
+    if (!isOrganizer) return;
+    const key = slugifyInstrumentKey(label, instruments.map((i) => i.key));
+    const position = instruments.length > 0 ? Math.max(...instruments.map((i) => i.position)) + 1 : 0;
+    await supabase.from("jam_instruments").insert({ jam_id: id, key, label, emoji, position });
+    await fetchAll();
+  };
+
+  const handleUpdateInstrument = async (instrumentId: string, updates: { label?: string; emoji?: string }) => {
+    if (!isOrganizer) return;
+    await supabase.from("jam_instruments").update(updates).eq("id", instrumentId);
+    await fetchAll();
+  };
+
+  const handleRemoveInstrument = async (instrument: JamInstrument) => {
+    if (!isOrganizer) return;
+    await supabase.from("jam_slots").delete().eq("jam_id", id).eq("instrument", instrument.key);
+    await supabase.from("jam_instruments").delete().eq("id", instrument.id);
     await fetchAll();
   };
 
@@ -416,6 +446,15 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           participants={participants} slots={slots} anchorEl={pickerCell.anchorEl}
           onPick={handleAssign} onPickGuest={handleAssignGuest} onClose={() => setPickerCell(null)} />
       )}
+
+      <InstrumentManagerModal
+        open={isInstrumentManagerOpen}
+        onClose={() => setIsInstrumentManagerOpen(false)}
+        instruments={instruments}
+        onAdd={handleAddInstrument}
+        onUpdate={handleUpdateInstrument}
+        onRemove={handleRemoveInstrument}
+      />
 
       {/* ── POSTER ──────────────────────────────────────────────────────── */}
       {(jam.poster_url || isOrganizer) && (
@@ -605,8 +644,8 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           canInteract={canInteract}
           isOrganizer={isOrganizer}
           currentUserId={currentUserId}
-          hasDrums={jam.has_drums}
-          hasKeyboard={jam.has_keyboard}
+          instruments={instruments}
+          onManageInstruments={() => setIsInstrumentManagerOpen(true)}
           slots={slots}
           numRows={numRows}
           currentSlotIndex={currentSlotIndex}

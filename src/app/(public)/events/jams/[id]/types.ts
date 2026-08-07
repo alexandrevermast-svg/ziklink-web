@@ -7,7 +7,27 @@ export interface JamSlot {
   guest_name?: string | null;
 }
 
-export const INSTRUMENTS = [
+export interface JamInstrument {
+  id: string; jam_id: string; key: string; label: string; emoji: string; position: number;
+}
+
+const DIACRITICS_RE = new RegExp("[̀-ͯ]", "g");
+
+export function slugifyInstrumentKey(label: string, existingKeys: string[]) {
+  const base = label
+    .normalize("NFD").replace(DIACRITICS_RE, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "") || "instrument";
+  if (!existingKeys.includes(base)) return base;
+  let i = 2;
+  while (existingKeys.includes(`${base}_${i}`)) i++;
+  return `${base}_${i}`;
+}
+
+// Instruments par défaut appliqués à la création d'une jam — au-delà de ça, la
+// liste devient éditable par jam via la table jam_instruments.
+export const DEFAULT_INSTRUMENTS = [
   { key: "chant",    label: "Chant",    emoji: "🎤" },
   { key: "guitare",  label: "Guitare",  emoji: "🎸" },
   { key: "basse",    label: "Basse",    emoji: "🎵" },

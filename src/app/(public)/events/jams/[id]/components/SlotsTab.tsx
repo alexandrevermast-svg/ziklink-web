@@ -1,9 +1,8 @@
 import { TabsContent } from "@/components/ui/tabs";
-import { UserPlus, Play, Radio, Music, X, Plus, Flag, Check } from "lucide-react";
+import { UserPlus, Play, Radio, Music, X, Plus, Flag, Check, Settings2 } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { GuitarHeadstockIcon, BassHeadstockIcon } from "./InstrumentIcons";
-import { INSTRUMENTS } from "../types";
-import type { JamSlot, Profile } from "../types";
+import type { JamSlot, JamInstrument, Profile } from "../types";
 
 function InstrumentIcon({ instKey, emoji }: { instKey: string; emoji: string }) {
   if (instKey === "guitare") return <GuitarHeadstockIcon className="h-5 w-5 object-contain shrink-0" />;
@@ -15,8 +14,8 @@ interface SlotsTabProps {
   canInteract: boolean;
   isOrganizer: boolean;
   currentUserId: string | null;
-  hasDrums: boolean;
-  hasKeyboard: boolean;
+  instruments: JamInstrument[];
+  onManageInstruments: () => void;
   slots: JamSlot[];
   numRows: number;
   currentSlotIndex: number | null;
@@ -43,7 +42,7 @@ interface SlotsTabProps {
 }
 
 export function SlotsTab({
-  canInteract, isOrganizer, currentUserId, hasDrums, hasKeyboard, slots, numRows, currentSlotIndex,
+  canInteract, isOrganizer, currentUserId, instruments, onManageInstruments, slots, numRows, currentSlotIndex,
   lastSlotIndex, onSetLastSlot,
   claimingCell, pickerCell,
   editingSongSlotId, songInputValue, onSongInputChange,
@@ -55,14 +54,7 @@ export function SlotsTab({
   const getSlot = (instrument: string, slot_index: number) =>
     slots.find((s) => s.instrument === instrument && s.slot_index === slot_index) ?? null;
 
-  // Colonne clavier masquée si la jam n'en a pas ; batterie relabellisée en
-  // percussions plutôt que masquée, puisqu'on peut toujours jouer des percus sans kit.
-  const displayInstruments = INSTRUMENTS
-    .filter((inst) => inst.key !== "clavier" || hasKeyboard)
-    .map((inst) => inst.key === "batterie" && !hasDrums
-      ? { ...inst, label: "Percussions", emoji: "🪘" }
-      : inst
-    );
+  const displayInstruments = instruments;
 
   const maxOccupiedIndex = slots.length > 0 ? Math.max(...slots.map((s) => s.slot_index)) : -1;
 
@@ -70,9 +62,15 @@ export function SlotsTab({
     <TabsContent value="slots" className="flex-1 overflow-auto px-3 py-3 space-y-2.5">
       {!canInteract && <p className="text-base text-zik-muted text-center mb-1">Rejoins la jam pour t'inscrire dans un créneau 🎸</p>}
       {isOrganizer && (
-        <p className="text-base text-zik-muted text-center mb-1">
-          ▶️ passage en cours · 🏁 dernier passage (ferme les inscriptions après)
-        </p>
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <p className="text-base text-zik-muted text-center">
+            ▶️ passage en cours · 🏁 dernier passage (ferme les inscriptions après)
+          </p>
+          <button onClick={onManageInstruments} title="Gérer les instruments"
+            className="flex items-center gap-1 text-sm font-medium text-zik-purple hover:underline shrink-0">
+            <Settings2 className="h-3.5 w-3.5" /> Instruments
+          </button>
+        </div>
       )}
 
       {Array.from({ length: numRows }, (_, rowIdx) => {

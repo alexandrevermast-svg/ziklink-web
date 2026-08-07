@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import JamDetailClient from "./JamDetailClient";
-import type { Participant, JamSlot } from "./types";
+import type { Participant, JamSlot, JamInstrument } from "./types";
 
 export default async function JamDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -27,12 +27,20 @@ export default async function JamDetailPage({ params }: { params: Promise<{ id: 
     .eq("jam_id", id);
   const slots: JamSlot[] = (slotsData ?? []).map((s: any) => ({ ...s, profile: s.profile ?? null }));
 
+  const { data: instrumentsData } = await supabase
+    .from("jam_instruments")
+    .select("*")
+    .eq("jam_id", id)
+    .order("position", { ascending: true });
+  const instruments: JamInstrument[] = instrumentsData ?? [];
+
   return (
     <JamDetailClient
       jamId={id}
       initialJam={jamData}
       initialParticipants={participants}
       initialSlots={slots}
+      initialInstruments={instruments}
     />
   );
 }

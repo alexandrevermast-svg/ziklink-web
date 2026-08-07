@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import TimePicker from '@/components/ui/TimePicker';
+import { DEFAULT_INSTRUMENTS } from "@/app/(public)/events/jams/[id]/types";
 
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
@@ -176,6 +177,19 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         setError(`Erreur: ${rpcError.message}`);
         setIsLoading(false);
         return;
+      }
+
+      const instrumentDefaults = DEFAULT_INSTRUMENTS
+        .filter((inst) => inst.key !== "clavier" || formData.has_keyboard)
+        .map((inst, position) => inst.key === "batterie" && !formData.has_drums
+          ? { key: inst.key, label: "Percussions", emoji: "🪘", position }
+          : { key: inst.key, label: inst.label, emoji: inst.emoji, position }
+        );
+      const instrumentRows = (createdJams ?? []).flatMap((j: any) =>
+        instrumentDefaults.map((inst) => ({ jam_id: j.jam_id, ...inst }))
+      );
+      if (instrumentRows.length > 0) {
+        await supabase.from("jam_instruments").insert(instrumentRows);
       }
 
       setFormData({ title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true, location: { lat: 48.8566, lng: 2.3522, address: "" } });

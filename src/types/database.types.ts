@@ -427,6 +427,44 @@ export type Database = {
         }
         Relationships: []
       }
+      jam_instruments: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          jam_id: string
+          key: string
+          label: string
+          position: number
+        }
+        Insert: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          jam_id: string
+          key: string
+          label: string
+          position?: number
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          jam_id?: string
+          key?: string
+          label?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jam_instruments_jam_id_fkey"
+            columns: ["jam_id"]
+            isOneToOne: false
+            referencedRelation: "jam_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jam_interested: {
         Row: {
           created_at: string
