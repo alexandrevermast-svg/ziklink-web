@@ -76,11 +76,12 @@ export function RehearsalTab({ groupId, currentUserId, isMember, isAdmin, member
       .limit(2);
     setUpcoming(rehData ?? []);
 
-    const { data: reqData } = await supabase
+    const { data: reqData, error: reqError } = await supabase
       .from("group_schedule_requests")
-      .select("id, week_start, created_by, creator:profiles(username)")
+      .select("id, week_start, created_by, creator:profiles!group_schedule_requests_created_by_fkey(username)")
       .eq("group_id", groupId)
       .order("created_at", { ascending: true });
+    if (reqError) console.error(`group_schedule_requests fetch failed: ${reqError.message} (code: ${reqError.code}, hint: ${reqError.hint})`);
     setRequests((reqData ?? []).map((r: any) => ({ ...r, creator: r.creator ?? null })));
 
     setIsLoading(false);
