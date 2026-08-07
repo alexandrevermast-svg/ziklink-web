@@ -49,7 +49,8 @@ function InstrumentRow({ instrument, onUpdate, onRemove }: {
         onChange={(e) => setEmoji(e.target.value)}
         onBlur={saveEmoji}
         onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
-        className="w-10 text-center text-lg zik-input"
+        className="shrink-0 text-center text-lg zik-input"
+        style={{ width: 44 }}
         maxLength={4}
       />
       <input
@@ -93,7 +94,8 @@ export function InstrumentManagerModal({ open, onClose, instruments, onAdd, onUp
         <input
           value={newEmoji}
           onChange={(e) => setNewEmoji(e.target.value)}
-          className="w-10 text-center text-lg zik-input"
+          className="shrink-0 text-center text-lg zik-input"
+          style={{ width: 44 }}
           maxLength={4}
           placeholder="🎶"
         />
