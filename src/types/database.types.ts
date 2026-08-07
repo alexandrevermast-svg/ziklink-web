@@ -1096,6 +1096,8 @@ export type Database = {
           id: string
           instrument: string | null
           kind: string
+          lat: number | null
+          lng: number | null
           photo_url: string | null
           price_info: string | null
           title: string
@@ -1109,6 +1111,8 @@ export type Database = {
           id?: string
           instrument?: string | null
           kind?: string
+          lat?: number | null
+          lng?: number | null
           photo_url?: string | null
           price_info?: string | null
           title: string
@@ -1122,6 +1126,8 @@ export type Database = {
           id?: string
           instrument?: string | null
           kind?: string
+          lat?: number | null
+          lng?: number | null
           photo_url?: string | null
           price_info?: string | null
           title?: string

@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { GraduationCap, Mic2, MapPin, Music2, MessageCircle, Pencil, Trash2 } from "lucide-react";
+import { GraduationCap, Mic2, MapPin, Music2, MessageCircle, Pencil, Trash2, LocateFixed, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import Modal from "@/components/Modal";
 import ShareButton from "@/components/ShareButton";
 import ReportButton from "@/components/ReportButton";
 import ServiceForm from "@/components/ServiceForm";
+import { haversineDistanceKm, formatDistanceKm, type LatLng } from "@/lib/geo";
 import type { Service, Profile as ProfileRow } from "@/types";
 
 type Profile = Pick<ProfileRow, "id" | "username" | "avatar_url">;
@@ -33,6 +35,12 @@ export default function ServiceList({ kind }: ServiceListProps) {
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [contactingId, setContactingId] = useState<string | null>(null);
+
+  const [nearMe, setNearMe] = useState(false);
+  const [userPosition, setUserPosition] = useState<LatLng | null>(null);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
+  const [radiusKm, setRadiusKm] = useState<number | null>(null);
 
   const fetchAll = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -64,9 +72,56 @@ export default function ServiceList({ kind }: ServiceListProps) {
     setDeletingId(null);
   };
 
-  const filtered = services
+  const handleToggleNearMe = useCallback((checked: boolean) => {
+    setNearMe(checked);
+    setGeoError(null);
+    setRadiusKm(null);
+    if (!checked) return;
+    if (!navigator.geolocation) {
+      setGeoError("La géolocalisation n'est pas disponible sur cet appareil.");
+      setNearMe(false);
+      return;
+    }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setGeoLoading(false);
+      },
+      () => {
+        setGeoError("Localisation refusée ou indisponible.");
+        setGeoLoading(false);
+        setNearMe(false);
+      },
+      { enableHighAccuracy: false, timeout: 10000 }
+    );
+  }, []);
+
+  const baseFiltered = services
     .filter((s) => s.kind === kind)
     .filter((s) => typeFilter === "tous" || s.type === typeFilter);
+
+  const distanceById = useMemo(() => {
+    if (!nearMe || !userPosition) return {} as Record<string, number>;
+    const map: Record<string, number> = {};
+    for (const s of baseFiltered) {
+      if (s.lat != null && s.lng != null) {
+        map[s.id] = haversineDistanceKm(userPosition, { lat: s.lat, lng: s.lng });
+      }
+    }
+    return map;
+  }, [baseFiltered, nearMe, userPosition]);
+
+  const filtered = !nearMe || !userPosition
+    ? baseFiltered
+    : baseFiltered
+        .filter((s) => radiusKm === null || (distanceById[s.id] !== undefined && distanceById[s.id] <= radiusKm))
+        .sort((a, b) => {
+          const da = distanceById[a.id], db = distanceById[b.id];
+          if (da === undefined) return 1;
+          if (db === undefined) return -1;
+          return da - db;
+        });
 
   if (isLoading) return (
     <div className="space-y-3">
@@ -76,7 +131,7 @@ export default function ServiceList({ kind }: ServiceListProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {([
           { key: "tous", label: "Tous" },
           { key: "cours", label: "Cours" },
@@ -92,6 +147,63 @@ export default function ServiceList({ kind }: ServiceListProps) {
             {label}
           </button>
         ))}
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              onClick={() => { if (!nearMe) handleToggleNearMe(true); }}
+              className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                nearMe ? "border-zik-purple/40 bg-zik-purple/10 text-zik-purple" : "border-transparent bg-zik-card text-zik-muted hover:bg-zik-card-hover"
+              }`}
+            >
+              <LocateFixed className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">
+                {geoLoading
+                  ? "Localisation..."
+                  : nearMe && userPosition
+                  ? `Près de moi · ${radiusKm === null ? "Tout" : radiusKm + " km"}`
+                  : "Près de moi"}
+              </span>
+              <ChevronDown className="h-3 w-3 shrink-0" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 bg-zik-card border-zik-border p-4 space-y-3" align="start">
+            {geoError && <p className="text-xs text-zik-red">{geoError}</p>}
+            {nearMe && userPosition && (
+              <div>
+                <p className="text-xs text-zik-muted mb-1.5">Rayon</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {([
+                    { key: null, label: "Tout" },
+                    { key: 1, label: "1 km" },
+                    { key: 5, label: "5 km" },
+                    { key: 10, label: "10 km" },
+                    { key: 25, label: "25 km" },
+                  ] as const).map(({ key, label }) => {
+                    const isActive = radiusKm === key;
+                    return (
+                      <button
+                        key={label}
+                        onClick={() => setRadiusKm(key)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                          isActive ? "bg-zik-purple text-white" : "bg-zik-card-hover text-zik-muted hover:bg-zik-border"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => handleToggleNearMe(false)}
+                  className="mt-3 text-xs text-zik-muted hover:text-zik-red transition-colors"
+                >
+                  Désactiver la localisation
+                </button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
       </div>
 
       {filtered.length === 0 ? (
@@ -138,6 +250,11 @@ export default function ServiceList({ kind }: ServiceListProps) {
                       {service.instrument && <span>🎸 {service.instrument}</span>}
                       {service.city && (
                         <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{service.city}</span>
+                      )}
+                      {distanceById[service.id] !== undefined && (
+                        <span className="flex items-center gap-1 text-zik-purple font-medium">
+                          <LocateFixed className="h-3 w-3" />{formatDistanceKm(distanceById[service.id])}
+                        </span>
                       )}
                       {service.price_info && <span className="font-medium text-zik-text">{service.price_info}</span>}
                     </div>

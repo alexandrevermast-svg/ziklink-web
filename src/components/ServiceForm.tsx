@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import AddressSearchInput from "@/components/AddressSearchInput";
 import { GraduationCap, Mic2, Megaphone, Search, Upload, X } from "lucide-react";
 import type { Service } from "@/types";
 
@@ -24,6 +25,9 @@ export default function ServiceForm({ service, defaultKind = "offre", onSuccess,
   const [title, setTitle] = useState(service?.title ?? "");
   const [instrument, setInstrument] = useState(service?.instrument ?? "");
   const [city, setCity] = useState(service?.city ?? "");
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
+    service?.lat != null && service?.lng != null ? { lat: service.lat, lng: service.lng } : null
+  );
   const [priceInfo, setPriceInfo] = useState(service?.price_info ?? "");
   const [description, setDescription] = useState(service?.description ?? "");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -64,6 +68,8 @@ export default function ServiceForm({ service, defaultKind = "offre", onSuccess,
         title: title.trim(),
         instrument: instrument.trim() || null,
         city: city.trim() || null,
+        lat: location?.lat ?? null,
+        lng: location?.lng ?? null,
         price_info: priceInfo.trim() || null,
         description: description.trim() || null,
         photo_url: photoUrl,
@@ -158,25 +164,24 @@ export default function ServiceForm({ service, defaultKind = "offre", onSuccess,
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-sm font-medium text-zik-text">Instrument</label>
-          <Input
-            value={instrument}
-            onChange={(e) => setInstrument(e.target.value)}
-            placeholder="Ex: Guitare"
-            className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50 mt-0.5"
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-zik-text">Ville</label>
-          <Input
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="Ex: Paris"
-            className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50 mt-0.5"
-          />
-        </div>
+      <div>
+        <label className="text-sm font-medium text-zik-text">Instrument</label>
+        <Input
+          value={instrument}
+          onChange={(e) => setInstrument(e.target.value)}
+          placeholder="Ex: Guitare"
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50 mt-0.5"
+        />
+      </div>
+
+      <div>
+        <label className="text-sm font-medium text-zik-text mb-1 block">Ville</label>
+        <AddressSearchInput
+          value={city}
+          placeholder="Ex: Paris"
+          onChange={({ address, lat, lng }) => { setCity(address); setLocation({ lat, lng }); }}
+          onClear={() => { setCity(""); setLocation(null); }}
+        />
       </div>
 
       <div>
