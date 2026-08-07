@@ -95,6 +95,7 @@ export function ScheduleRequestCard({
   };
 
   const participantIds = Array.from(new Set(prefs.map((p) => p.user_id)));
+  const validatedCount = prefs.filter((p) => !!p.submitted_at).length;
 
   const tally = (date: string, period: string) =>
     participantIds.filter((uid) => isAvailable(uid, date, period) === true).length;
@@ -231,7 +232,7 @@ export function ScheduleRequestCard({
       ) : (
         <>
           <p className="text-xs text-zik-muted mb-2">
-            {participantIds.length}/{memberCount} membre{memberCount > 1 ? "s" : ""} ont indiqué leur planning
+            {validatedCount}/{memberCount} membre{memberCount > 1 ? "s" : ""} ont validé leur planning
           </p>
 
           <div className="flex gap-2 mb-3">
@@ -266,10 +267,10 @@ export function ScheduleRequestCard({
           )}
 
           <div className="overflow-x-auto -mx-3 px-3">
-            <table className="border-collapse text-xs mx-auto" style={{ minWidth: 380 }}>
+            <table className="border-collapse text-xs mx-auto">
               <thead>
                 <tr>
-                  <th className="w-14" />
+                  <th className="w-10" />
                   {days.map((d) => (
                     <th key={toDateStr(d)} className="text-center font-medium text-zik-text pb-1.5 px-0.5">
                       <div className="text-[9px] text-zik-muted uppercase">
@@ -283,7 +284,7 @@ export function ScheduleRequestCard({
               <tbody>
                 {PERIODS.map((period) => (
                   <tr key={period.key}>
-                    <td className="text-[11px] text-zik-muted pr-1.5 whitespace-nowrap">{period.label}</td>
+                    <td className="w-10 text-[11px] text-zik-muted pr-1 leading-tight">{period.label}</td>
                     {days.map((d) => {
                       const dateStr = toDateStr(d);
                       const count = tally(dateStr, period.key);
