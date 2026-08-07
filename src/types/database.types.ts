@@ -275,33 +275,33 @@ export type Database = {
         Row: {
           created_at: string
           date: string
-          group_id: string
           id: string
           period: string
+          request_id: string
           user_id: string
         }
         Insert: {
           created_at?: string
           date: string
-          group_id: string
           id?: string
           period: string
+          request_id: string
           user_id: string
         }
         Update: {
           created_at?: string
           date?: string
-          group_id?: string
           id?: string
           period?: string
+          request_id?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "group_schedule_marks_group_id_fkey"
-            columns: ["group_id"]
+            foreignKeyName: "group_schedule_marks_request_id_fkey"
+            columns: ["request_id"]
             isOneToOne: false
-            referencedRelation: "groups"
+            referencedRelation: "group_schedule_requests"
             referencedColumns: ["id"]
           },
           {
@@ -315,35 +315,32 @@ export type Database = {
       }
       group_schedule_prefs: {
         Row: {
-          group_id: string
           mode: string
+          request_id: string
           submitted_at: string | null
-          submitted_week_start: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
-          group_id: string
           mode?: string
+          request_id: string
           submitted_at?: string | null
-          submitted_week_start?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
-          group_id?: string
           mode?: string
+          request_id?: string
           submitted_at?: string | null
-          submitted_week_start?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "group_schedule_prefs_group_id_fkey"
-            columns: ["group_id"]
+            foreignKeyName: "group_schedule_prefs_request_id_fkey"
+            columns: ["request_id"]
             isOneToOne: false
-            referencedRelation: "groups"
+            referencedRelation: "group_schedule_requests"
             referencedColumns: ["id"]
           },
           {
@@ -351,6 +348,45 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_schedule_requests: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          group_id: string
+          id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          group_id: string
+          id?: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          group_id?: string
+          id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_schedule_requests_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_schedule_requests_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
             referencedColumns: ["id"]
           },
         ]
@@ -366,7 +402,6 @@ export type Database = {
           id: string
           is_open: boolean
           name: string
-          schedule_week_start: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -378,7 +413,6 @@ export type Database = {
           id?: string
           is_open?: boolean
           name: string
-          schedule_week_start?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -390,7 +424,6 @@ export type Database = {
           id?: string
           is_open?: boolean
           name?: string
-          schedule_week_start?: string | null
         }
         Relationships: []
       }
