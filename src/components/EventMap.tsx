@@ -130,7 +130,7 @@ export default function EventMap({
         zoomControl={true}
       >
         <TileLayer
-  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+  url={`https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png?key=${process.env.NEXT_PUBLIC_CARTO_API_KEY}`}
   attribution='&copy; OpenStreetMap contributors &copy; CARTO'
   maxZoom={19}
   crossOrigin="anonymous"
