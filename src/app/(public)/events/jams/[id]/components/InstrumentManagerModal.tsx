@@ -6,6 +6,33 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Plus, Loader2 } from "lucide-react";
 import type { JamInstrument } from "../types";
 
+const PRESET_INSTRUMENTS = [
+  { label: "Chant", emoji: "🎤" },
+  { label: "Guitare", emoji: "🎸" },
+  { label: "Guitare électrique", emoji: "🎸" },
+  { label: "Guitare acoustique", emoji: "🎸" },
+  { label: "Basse", emoji: "🎵" },
+  { label: "Batterie", emoji: "🥁" },
+  { label: "Percussions", emoji: "🪘" },
+  { label: "Clavier / Piano", emoji: "🎹" },
+  { label: "Synthé", emoji: "🎛️" },
+  { label: "Violon", emoji: "🎻" },
+  { label: "Violoncelle", emoji: "🎻" },
+  { label: "Saxophone", emoji: "🎷" },
+  { label: "Trompette", emoji: "🎺" },
+  { label: "Trombone", emoji: "🎺" },
+  { label: "Flûte", emoji: "🪈" },
+  { label: "Clarinette", emoji: "🪈" },
+  { label: "Accordéon", emoji: "🪗" },
+  { label: "Banjo", emoji: "🪕" },
+  { label: "Ukulélé", emoji: "🪕" },
+  { label: "Harmonica", emoji: "🎵" },
+  { label: "DJ / Platines", emoji: "🎧" },
+  { label: "Beatbox", emoji: "🗣️" },
+] as const;
+
+const OTHER_VALUE = "__other__";
+
 interface InstrumentManagerModalProps {
   open: boolean;
   onClose: () => void;
@@ -69,14 +96,29 @@ function InstrumentRow({ instrument, onUpdate, onRemove }: {
 }
 
 export function InstrumentManagerModal({ open, onClose, instruments, onAdd, onUpdate, onRemove }: InstrumentManagerModalProps) {
+  const [selectedPreset, setSelectedPreset] = useState("");
   const [newLabel, setNewLabel] = useState("");
   const [newEmoji, setNewEmoji] = useState("🎶");
   const [isAdding, setIsAdding] = useState(false);
+
+  const isOther = selectedPreset === OTHER_VALUE;
+
+  const handlePresetChange = (value: string) => {
+    setSelectedPreset(value);
+    if (value === OTHER_VALUE) {
+      setNewLabel("");
+      setNewEmoji("🎶");
+    } else {
+      const preset = PRESET_INSTRUMENTS.find((p) => p.label === value);
+      if (preset) { setNewLabel(preset.label); setNewEmoji(preset.emoji); }
+    }
+  };
 
   const handleAdd = async () => {
     if (!newLabel.trim()) return;
     setIsAdding(true);
     await onAdd(newLabel.trim(), newEmoji.trim() || "🎶");
+    setSelectedPreset("");
     setNewLabel("");
     setNewEmoji("🎶");
     setIsAdding(false);
@@ -90,25 +132,43 @@ export function InstrumentManagerModal({ open, onClose, instruments, onAdd, onUp
         ))}
       </div>
 
-      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-zik-border">
-        <input
-          value={newEmoji}
-          onChange={(e) => setNewEmoji(e.target.value)}
-          className="shrink-0 text-center text-lg zik-input"
-          style={{ width: 44 }}
-          maxLength={4}
-          placeholder="🎶"
-        />
-        <input
-          value={newLabel}
-          onChange={(e) => setNewLabel(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
-          placeholder="Ex: Saxophone"
-          className="flex-1 min-w-0 text-sm zik-input"
-        />
-        <Button size="sm" className="bg-zik-purple hover:bg-zik-indigo shrink-0"
+      <div className="mt-3 pt-3 border-t border-zik-border space-y-2">
+        <select
+          value={selectedPreset}
+          onChange={(e) => handlePresetChange(e.target.value)}
+          className="w-full text-sm zik-input"
+        >
+          <option value="" disabled>Choisir un instrument…</option>
+          {PRESET_INSTRUMENTS.map((p) => (
+            <option key={p.label} value={p.label}>{p.emoji} {p.label}</option>
+          ))}
+          <option value={OTHER_VALUE}>✏️ Autre…</option>
+        </select>
+
+        {isOther && (
+          <div className="flex items-center gap-2">
+            <input
+              value={newEmoji}
+              onChange={(e) => setNewEmoji(e.target.value)}
+              className="shrink-0 text-center text-lg zik-input"
+              style={{ width: 44 }}
+              maxLength={4}
+              placeholder="🎶"
+            />
+            <input
+              value={newLabel}
+              onChange={(e) => setNewLabel(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
+              placeholder="Ex: Saxophone"
+              className="flex-1 min-w-0 text-sm zik-input"
+              autoFocus
+            />
+          </div>
+        )}
+
+        <Button size="sm" className="w-full bg-zik-purple hover:bg-zik-indigo"
           disabled={!newLabel.trim() || isAdding} onClick={handleAdd}>
-          {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+          {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="h-4 w-4 mr-1" /> Ajouter</>}
         </Button>
       </div>
     </Modal>
