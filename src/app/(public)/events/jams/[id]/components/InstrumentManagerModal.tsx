@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Modal from "@/components/Modal";
 import { Button } from "@/components/ui/button";
-import { Trash2, Plus, Loader2, Guitar } from "lucide-react";
+import { Trash2, Plus, Loader2, Guitar, ChevronDown, Pencil } from "lucide-react";
 import { GuitarHeadstockIcon, BassHeadstockIcon } from "./InstrumentIcons";
 import type { JamInstrument } from "../types";
 
@@ -94,6 +94,66 @@ function InstrumentRow({ instrument, onUpdate, onRemove }: {
   );
 }
 
+function InstrumentPresetDropdown({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const selected = PRESET_INSTRUMENTS.find((p) => p.label === value);
+  const isOther = value === OTHER_VALUE;
+
+  return (
+    <div ref={ref} className="relative">
+      <button type="button" onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center gap-2 text-sm zik-input text-left">
+        {selected || isOther ? (
+          <>
+            <span className="shrink-0 flex items-center justify-center w-5">
+              {isOther ? <Pencil className="h-4 w-4 text-zik-muted" /> : <span className="text-lg leading-none">{selected!.emoji}</span>}
+            </span>
+            <span className="flex-1 min-w-0 truncate text-zik-text">{isOther ? "Autre…" : selected!.label}</span>
+          </>
+        ) : (
+          <span className="flex-1 min-w-0 truncate text-zik-muted">Choisir un instrument…</span>
+        )}
+        <ChevronDown className={`h-4 w-4 text-zik-muted shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="absolute z-20 mt-1.5 w-full max-h-60 overflow-y-auto bg-zik-card border border-zik-border rounded-xl shadow-xl py-1">
+          {PRESET_INSTRUMENTS.map((p) => (
+            <button key={p.label} type="button"
+              onClick={() => { onChange(p.label); setOpen(false); }}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-zik-card-hover transition-colors ${
+                value === p.label ? "text-zik-purple" : "text-zik-text"
+              }`}>
+              <span className="w-5 shrink-0 text-lg leading-none text-center">{p.emoji}</span>
+              <span className="truncate">{p.label}</span>
+            </button>
+          ))}
+          <div className="border-t border-zik-border/60 my-1" />
+          <button type="button"
+            onClick={() => { onChange(OTHER_VALUE); setOpen(false); }}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-zik-card-hover transition-colors ${
+              isOther ? "text-zik-purple" : "text-zik-text"
+            }`}>
+            <span className="w-5 shrink-0 flex items-center justify-center"><Pencil className="h-4 w-4" /></span>
+            <span className="truncate">Autre…</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function InstrumentManagerModal({ open, onClose, instruments, onAdd, onUpdate, onRemove }: InstrumentManagerModalProps) {
   const [selectedPreset, setSelectedPreset] = useState("");
   const [newLabel, setNewLabel] = useState("");
@@ -132,17 +192,7 @@ export function InstrumentManagerModal({ open, onClose, instruments, onAdd, onUp
       </div>
 
       <div className="mt-3 pt-3 border-t border-zik-border space-y-2">
-        <select
-          value={selectedPreset}
-          onChange={(e) => handlePresetChange(e.target.value)}
-          className="w-full text-sm zik-input"
-        >
-          <option value="" disabled>Choisir un instrument…</option>
-          {PRESET_INSTRUMENTS.map((p) => (
-            <option key={p.label} value={p.label}>{p.emoji} {p.label}</option>
-          ))}
-          <option value={OTHER_VALUE}>✏️ Autre…</option>
-        </select>
+        <InstrumentPresetDropdown value={selectedPreset} onChange={handlePresetChange} />
 
         {isOther && (
           <div className="flex items-center gap-2">
