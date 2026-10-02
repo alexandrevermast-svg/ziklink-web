@@ -4,6 +4,7 @@ import { useState } from "react";
 import Modal from "@/components/Modal";
 import { Button } from "@/components/ui/button";
 import { Trash2, Plus, Loader2 } from "lucide-react";
+import { GuitarHeadstockIcon, BassHeadstockIcon } from "./InstrumentIcons";
 import type { JamInstrument } from "../types";
 
 const PRESET_INSTRUMENTS = [
@@ -69,17 +70,27 @@ function InstrumentRow({ instrument, onUpdate, onRemove }: {
     await onRemove(instrument);
   };
 
+  const hasCustomIcon = instrument.key === "guitare" || instrument.key === "basse";
+
   return (
     <div className="flex items-center gap-2 py-1.5">
-      <input
-        value={emoji}
-        onChange={(e) => setEmoji(e.target.value)}
-        onBlur={saveEmoji}
-        onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
-        className="shrink-0 text-center text-lg zik-input"
-        style={{ width: 44 }}
-        maxLength={4}
-      />
+      {hasCustomIcon ? (
+        <div className="shrink-0 flex items-center justify-center" style={{ width: 44 }} title="Logo personnalisé">
+          {instrument.key === "guitare"
+            ? <GuitarHeadstockIcon className="h-6 w-6 object-contain" />
+            : <BassHeadstockIcon className="h-6 w-6 object-contain" />}
+        </div>
+      ) : (
+        <input
+          value={emoji}
+          onChange={(e) => setEmoji(e.target.value)}
+          onBlur={saveEmoji}
+          onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+          className="shrink-0 text-center text-lg zik-input"
+          style={{ width: 44 }}
+          maxLength={4}
+        />
+      )}
       <input
         value={label}
         onChange={(e) => setLabel(e.target.value)}
