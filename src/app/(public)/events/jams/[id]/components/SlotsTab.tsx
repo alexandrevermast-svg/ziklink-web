@@ -127,11 +127,33 @@ export function SlotsTab({
                   </button>
                 )}
                 {isPast && <Check className="h-4 w-4 text-zik-muted shrink-0" />}
-                <span className={`text-lg font-semibold ${
-                  isCurrentSlot ? "text-zik-emerald" : isLastSlot ? "text-zik-orange" : isPast || isTrailing ? "text-zik-muted" : "text-zik-text"
-                }`}>
-                  Passage {rowIdx + 1}
-                </span>
+                {isEditingSong ? (
+                  <input autoFocus value={songInputValue}
+                    onChange={(e) => onSongInputChange(e.target.value)}
+                    onBlur={() => onSaveSong(infoSlot!.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") onSaveSong(infoSlot!.id);
+                      if (e.key === "Escape") onCancelEditSong();
+                    }}
+                    placeholder="Ex: Wonderwall"
+                    className="min-w-0 w-32 text-lg font-semibold border border-zik-purple/30 rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-zik-purple/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
+                  />
+                ) : infoSlot?.song ? (
+                  <button
+                    onClick={(e) => canEditInfo ? onStartEditSong(infoSlot, e) : undefined}
+                    className={`flex items-center gap-1.5 text-lg font-semibold min-w-0 truncate ${
+                      canEditInfo ? "cursor-pointer hover:text-zik-purple" : ""
+                    } ${isCurrentSlot ? "text-zik-emerald" : isLastSlot ? "text-zik-orange" : isPast || isTrailing ? "text-zik-muted" : "text-zik-text"}`}>
+                    <Music className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{infoSlot.song}</span>
+                  </button>
+                ) : (
+                  <span className={`text-lg font-semibold ${
+                    isCurrentSlot ? "text-zik-emerald" : isLastSlot ? "text-zik-orange" : isPast || isTrailing ? "text-zik-muted" : "text-zik-text"
+                  }`}>
+                    Passage {rowIdx + 1}
+                  </span>
+                )}
                 {isLastSlot && (
                   <span className="text-sm font-semibold text-zik-orange bg-zik-orange/10 px-1.5 py-0.5 rounded-full shrink-0">
                     Dernier
@@ -144,32 +166,15 @@ export function SlotsTab({
 
               {infoSlot && (
                 <div className="flex items-center gap-1.5 min-w-0">
-                  {isEditingSong ? (
-                    <input autoFocus value={songInputValue}
-                      onChange={(e) => onSongInputChange(e.target.value)}
-                      onBlur={() => onSaveSong(infoSlot.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") onSaveSong(infoSlot.id);
-                        if (e.key === "Escape") onCancelEditSong();
-                      }}
-                      placeholder="Ex: Wonderwall"
-                      className="min-w-0 w-24 text-base border border-zik-purple/30 rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-zik-purple/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
-                    />
-                  ) : (
+                  {!infoSlot.song && !isEditingSong && canEditInfo && (
                     <button
-                      onClick={(e) => canEditInfo ? onStartEditSong(infoSlot, e) : undefined}
-                      className={`flex items-center gap-1 text-base min-w-0 shrink-0 max-w-24 ${
-                        canEditInfo ? "cursor-pointer hover:text-zik-purple" : ""
-                      }`}>
-                      {infoSlot.song ? (
-                        <><Music className="h-3.5 w-3.5 text-zik-purple shrink-0" /><span className="truncate text-zik-text">{infoSlot.song}</span></>
-                      ) : canEditInfo ? (
-                        <span className="text-zik-muted">+ Morceau</span>
-                      ) : null}
+                      onClick={(e) => onStartEditSong(infoSlot, e)}
+                      className="text-base text-zik-muted hover:text-zik-purple shrink-0 cursor-pointer">
+                      + Morceau
                     </button>
                   )}
 
-                  {(infoSlot.song || infoSlot.scale || canEditInfo) && (
+                  {!infoSlot.song && !isEditingSong && canEditInfo && (infoSlot.scale || canEditInfo) && (
                     <span className="text-base text-zik-muted/40 shrink-0">·</span>
                   )}
 
