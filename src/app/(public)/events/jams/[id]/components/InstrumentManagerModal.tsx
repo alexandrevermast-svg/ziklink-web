@@ -33,6 +33,13 @@ const PRESET_INSTRUMENTS = [
 
 const OTHER_VALUE = "__other__";
 
+function PresetIcon({ label, emoji }: { label: string; emoji: string }) {
+  if (label === "Guitare") return <GuitarHeadstockIcon className="h-5 w-5 object-contain" />;
+  if (label === "Basse") return <BassHeadstockIcon className="h-5 w-5 object-contain" />;
+  if (label === "Guitare acoustique") return <Guitar className="h-5 w-5" />;
+  return <span className="text-lg leading-none">{emoji}</span>;
+}
+
 interface InstrumentManagerModalProps {
   open: boolean;
   onClose: () => void;
@@ -117,7 +124,7 @@ function InstrumentPresetDropdown({ value, onChange }: { value: string; onChange
         {selected || isOther ? (
           <>
             <span className="shrink-0 flex items-center justify-center w-5">
-              {isOther ? <Pencil className="h-4 w-4 text-zik-muted" /> : <span className="text-lg leading-none">{selected!.emoji}</span>}
+              {isOther ? <Pencil className="h-4 w-4 text-zik-muted" /> : <PresetIcon label={selected!.label} emoji={selected!.emoji} />}
             </span>
             <span className="flex-1 min-w-0 truncate text-zik-text">{isOther ? "Autre…" : selected!.label}</span>
           </>
@@ -135,7 +142,7 @@ function InstrumentPresetDropdown({ value, onChange }: { value: string; onChange
               className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-zik-card-hover transition-colors ${
                 value === p.label ? "text-zik-purple" : "text-zik-text"
               }`}>
-              <span className="w-5 shrink-0 text-lg leading-none text-center">{p.emoji}</span>
+              <span className="w-5 shrink-0 flex items-center justify-center"><PresetIcon label={p.label} emoji={p.emoji} /></span>
               <span className="truncate">{p.label}</span>
             </button>
           ))}
