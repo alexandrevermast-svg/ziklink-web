@@ -48,19 +48,12 @@ function InstrumentRow({ instrument, onUpdate, onRemove }: {
   onRemove: (instrument: JamInstrument) => Promise<void>;
 }) {
   const [label, setLabel] = useState(instrument.label);
-  const [emoji, setEmoji] = useState(instrument.emoji);
   const [isRemoving, setIsRemoving] = useState(false);
 
   const saveLabel = () => {
     const trimmed = label.trim();
     if (trimmed && trimmed !== instrument.label) onUpdate(instrument.id, { label: trimmed });
     else setLabel(instrument.label);
-  };
-
-  const saveEmoji = () => {
-    const trimmed = emoji.trim();
-    if (trimmed && trimmed !== instrument.emoji) onUpdate(instrument.id, { emoji: trimmed });
-    else setEmoji(instrument.emoji);
   };
 
   const handleRemove = async () => {
@@ -82,15 +75,9 @@ function InstrumentRow({ instrument, onUpdate, onRemove }: {
               : <Guitar className="h-6 w-6" />}
         </div>
       ) : (
-        <input
-          value={emoji}
-          onChange={(e) => setEmoji(e.target.value)}
-          onBlur={saveEmoji}
-          onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
-          className="shrink-0 text-center text-lg zik-input"
-          style={{ width: 44 }}
-          maxLength={4}
-        />
+        <div className="shrink-0 flex items-center justify-center text-lg" style={{ width: 44 }}>
+          {instrument.emoji}
+        </div>
       )}
       <input
         value={label}
