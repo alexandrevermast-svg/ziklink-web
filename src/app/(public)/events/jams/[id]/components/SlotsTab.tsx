@@ -210,20 +210,10 @@ export function SlotsTab({
 
                 return (
   <div key={inst.key} className="flex flex-col items-center gap-1.5 rounded-lg border border-zik-border/60 p-1.5 min-w-0">
-    {/* Ligne du haut : instrument à gauche, avatar à droite */}
-    <div className="flex items-center justify-between gap-1 w-full min-w-0">
-      <span className="flex items-center gap-1 text-sm text-zik-muted truncate min-w-0">
-        <InstrumentIcon instKey={inst.key} emoji={inst.emoji} />
-        <span className="truncate">{inst.label}</span>
-      </span>
-      {slot && (
-        <Avatar
-          profile={slot.profile ?? (slot.guest_name ? { id: "", username: slot.guest_name, avatar_url: null } : null)}
-          size="sm"
-          onClick={slot.profile && slot.user_id !== currentUserId
-            ? (e) => onAvatarClick(slot.profile!, e) : undefined} />
-      )}
-    </div>
+    <span className="flex items-center gap-1 text-sm text-zik-muted truncate max-w-full">
+      <InstrumentIcon instKey={inst.key} emoji={inst.emoji} />
+      <span className="truncate">{inst.label}</span>
+    </span>
 
     {slot ? (
       <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-base font-semibold w-full min-w-0 ${
@@ -233,7 +223,12 @@ export function SlotsTab({
             ? "bg-zik-purple/10 text-zik-purple border border-zik-purple/30"
             : "bg-zik-card text-zik-text border border-zik-border"
       }`}>
-        <span className="truncate flex-1 text-center">{slot.profile?.username ?? slot.guest_name ?? "?"}</span>
+        <Avatar
+          profile={slot.profile ?? (slot.guest_name ? { id: "", username: slot.guest_name, avatar_url: null } : null)}
+          size="sm"
+          onClick={slot.profile && slot.user_id !== currentUserId
+            ? (e) => onAvatarClick(slot.profile!, e) : undefined} />
+        <span className="truncate flex-1">{slot.profile?.username ?? slot.guest_name ?? "?"}</span>
         {(isMe || isOrganizer) && (
           <button onClick={() => onRelease(slot.id)}
             className="opacity-60 hover:opacity-100 hover:text-zik-red transition-colors shrink-0">
