@@ -3,14 +3,13 @@
 import { useState } from "react";
 import Modal from "@/components/Modal";
 import { Button } from "@/components/ui/button";
-import { Trash2, Plus, Loader2 } from "lucide-react";
+import { Trash2, Plus, Loader2, Guitar } from "lucide-react";
 import { GuitarHeadstockIcon, BassHeadstockIcon } from "./InstrumentIcons";
 import type { JamInstrument } from "../types";
 
 const PRESET_INSTRUMENTS = [
   { label: "Chant", emoji: "🎤" },
   { label: "Guitare", emoji: "🎸" },
-  { label: "Guitare électrique", emoji: "🎸" },
   { label: "Guitare acoustique", emoji: "🎸" },
   { label: "Basse", emoji: "🎵" },
   { label: "Batterie", emoji: "🥁" },
@@ -70,7 +69,7 @@ function InstrumentRow({ instrument, onUpdate, onRemove }: {
     await onRemove(instrument);
   };
 
-  const hasCustomIcon = instrument.key === "guitare" || instrument.key === "basse";
+  const hasCustomIcon = instrument.key === "guitare" || instrument.key === "basse" || instrument.key === "guitare_acoustique";
 
   return (
     <div className="flex items-center gap-2 py-1.5">
@@ -78,7 +77,9 @@ function InstrumentRow({ instrument, onUpdate, onRemove }: {
         <div className="shrink-0 flex items-center justify-center" style={{ width: 44 }} title="Logo personnalisé">
           {instrument.key === "guitare"
             ? <GuitarHeadstockIcon className="h-6 w-6 object-contain" />
-            : <BassHeadstockIcon className="h-6 w-6 object-contain" />}
+            : instrument.key === "basse"
+              ? <BassHeadstockIcon className="h-6 w-6 object-contain" />
+              : <Guitar className="h-6 w-6" />}
         </div>
       ) : (
         <input

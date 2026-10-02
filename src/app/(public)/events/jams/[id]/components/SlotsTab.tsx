@@ -1,5 +1,5 @@
 import { TabsContent } from "@/components/ui/tabs";
-import { UserPlus, Play, Radio, Music, X, Plus, Flag, Check, Settings2 } from "lucide-react";
+import { UserPlus, Play, Radio, Music, X, Plus, Flag, Check, Settings2, Guitar } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { GuitarHeadstockIcon, BassHeadstockIcon } from "./InstrumentIcons";
 import type { JamSlot, JamInstrument, Profile } from "../types";
@@ -7,6 +7,7 @@ import type { JamSlot, JamInstrument, Profile } from "../types";
 function InstrumentIcon({ instKey, emoji }: { instKey: string; emoji: string }) {
   if (instKey === "guitare") return <GuitarHeadstockIcon className="h-5 w-5 object-contain shrink-0" />;
   if (instKey === "basse") return <BassHeadstockIcon className="h-5 w-5 object-contain shrink-0" />;
+  if (instKey === "guitare_acoustique") return <Guitar className="h-5 w-5 shrink-0" />;
   return <span className="text-base leading-none">{emoji}</span>;
 }
 
