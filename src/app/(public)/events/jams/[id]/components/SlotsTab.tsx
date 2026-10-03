@@ -65,17 +65,6 @@ export function SlotsTab({
   return (
     <TabsContent value="slots" className="flex-1 overflow-auto px-3 py-3 space-y-2.5">
       {!canInteract && <p className="text-base text-zik-muted text-center mb-1">Rejoins la jam pour t'inscrire dans un créneau 🎸</p>}
-      {isOrganizer && (
-        <div className="flex items-center justify-center gap-2 mb-1">
-          <p className="text-base text-zik-muted text-center">
-            ▶️ passage en cours · 🏁 dernier passage (ferme les inscriptions après)
-          </p>
-          <button onClick={onManageInstruments} title="Gérer les instruments"
-            className="flex items-center gap-1 text-sm font-medium text-zik-purple hover:underline shrink-0">
-            <Settings2 className="h-3.5 w-3.5" /> Instruments
-          </button>
-        </div>
-      )}
 
       {pastCount > 0 && (
         <button onClick={() => setShowPast((s) => !s)}
@@ -281,6 +270,18 @@ export function SlotsTab({
           </div>
         );
       })}
+
+      {isOrganizer && (
+        <div className="flex items-center justify-center gap-2 mt-1">
+          <p className="text-base text-zik-muted text-center">
+            ▶️ passage en cours · 🏁 dernier passage (ferme les inscriptions après)
+          </p>
+          <button onClick={onManageInstruments} title="Gérer les instruments"
+            className="flex items-center gap-1 text-sm font-medium text-zik-purple hover:underline shrink-0">
+            <Settings2 className="h-3.5 w-3.5" /> Instruments
+          </button>
+        </div>
+      )}
     </TabsContent>
   );
 }
