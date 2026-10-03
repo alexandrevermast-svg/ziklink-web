@@ -506,7 +506,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
             <h1 className="text-xl font-bold text-zik-text truncate">{jam.title}</h1>
             {jam.description && (
               <div className="mt-1">
-                <p className={`text-base text-zik-text/80 whitespace-pre-wrap transition-all duration-200 ${
+                <p className={`text-base text-zik-text/80 whitespace-normal transition-all duration-200 ${
                   expandedDescriptions[jam.id] ? '' : 'line-clamp-2'
                 }`}>
                   {jam.description}
