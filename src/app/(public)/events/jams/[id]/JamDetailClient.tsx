@@ -529,19 +529,21 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           </div>
         )}
 
-        <div className="mt-2 text-sm text-zik-text">
-          <div className="flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5 text-zik-muted" />
-            {formatDate(jam.start_time)} · {formatTime(jam.start_time)}
-            {jam.end_at && ` → ${formatTime(jam.end_at)}`}
-          </div>
-          {address && (
-            <div className="flex items-center gap-1 mt-1 min-w-0">
-              <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted" />
-              <span className="truncate min-w-0" title={address}>{address}</span>
+        {(!jam.description || jam.description.length <= 100 || expandedDescriptions[jam.id]) && (
+          <div className="mt-2 text-sm text-zik-text">
+            <div className="flex items-center gap-1">
+              <Clock className="h-3.5 w-3.5 text-zik-muted" />
+              {formatDate(jam.start_time)} · {formatTime(jam.start_time)}
+              {jam.end_at && ` → ${formatTime(jam.end_at)}`}
             </div>
-          )}
-        </div>
+            {address && (
+              <div className="flex items-center gap-1 mt-1 min-w-0">
+                <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted" />
+                <span className="truncate min-w-0" title={address}>{address}</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {myActiveSlot && (
           <div className="mt-3 flex items-center gap-2 bg-zik-emerald/10 border border-zik-emerald/30 rounded-lg px-3 py-2">
