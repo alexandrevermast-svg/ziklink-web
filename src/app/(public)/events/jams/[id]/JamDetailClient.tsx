@@ -537,9 +537,9 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
             {jam.end_at && ` → ${formatTime(jam.end_at)}`}
           </div>
           {address && (
-            <div className="flex items-center gap-1 mt-1">
+            <div className="flex items-center gap-1 mt-1 min-w-0">
               <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted" />
-              <span className="whitespace-normal">{address}</span>
+              <span className="truncate min-w-0" title={address}>{address}</span>
             </div>
           )}
         </div>
