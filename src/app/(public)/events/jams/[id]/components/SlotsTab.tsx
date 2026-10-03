@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { TabsContent } from "@/components/ui/tabs";
-import { UserPlus, Play, Radio, Music, X, Plus, Flag, Check, Settings2, Guitar } from "lucide-react";
+import { UserPlus, Play, Radio, Music, X, Plus, Flag, Check, Settings2, Guitar, ChevronDown, ChevronUp } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { GuitarHeadstockIcon, BassHeadstockIcon } from "./InstrumentIcons";
 import type { JamSlot, JamInstrument, Profile } from "../types";
@@ -58,6 +59,8 @@ export function SlotsTab({
   const displayInstruments = instruments;
 
   const maxOccupiedIndex = slots.length > 0 ? Math.max(...slots.map((s) => s.slot_index)) : -1;
+  const pastCount = currentSlotIndex ?? 0;
+  const [showPast, setShowPast] = useState(false);
 
   return (
     <TabsContent value="slots" className="flex-1 overflow-auto px-3 py-3 space-y-2.5">
@@ -74,11 +77,20 @@ export function SlotsTab({
         </div>
       )}
 
+      {pastCount > 0 && (
+        <button onClick={() => setShowPast((s) => !s)}
+          className="flex items-center gap-1.5 text-sm font-medium text-zik-muted hover:text-zik-purple transition-colors mb-1">
+          {showPast ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          {showPast ? "Masquer" : "Afficher"} les {pastCount} passage{pastCount > 1 ? "s" : ""} déjà effectué{pastCount > 1 ? "s" : ""}
+        </button>
+      )}
+
       {Array.from({ length: numRows }, (_, rowIdx) => {
         const isTrailing = rowIdx > maxOccupiedIndex;
         const isCurrentSlot = currentSlotIndex === rowIdx;
         const isLastSlot = lastSlotIndex === rowIdx;
         const isPast = currentSlotIndex !== null && rowIdx < currentSlotIndex;
+        if (isPast && !showPast) return null;
         // Créneau représentatif du passage — le même pour tout le monde, pour que le
         // morceau/la gamme affichés soient partagés plutôt que propres à chaque visiteur.
         const rowSlots = slots.filter((s) => s.slot_index === rowIdx && !!s.user_id);
@@ -216,7 +228,7 @@ export function SlotsTab({
 
                 return (
   <div key={inst.key} className="flex items-center gap-1.5 rounded-lg border border-zik-border/60 px-2 py-1 min-w-0">
-    <span className="flex items-center gap-1 text-sm text-zik-text/80 shrink-0 w-17.5 truncate">
+    <span className="flex items-center gap-1 text-sm text-zik-text/80 shrink-0 w-24 truncate">
       <InstrumentIcon instKey={inst.key} emoji={inst.emoji} />
       <span className="truncate">{inst.label}</span>
     </span>
