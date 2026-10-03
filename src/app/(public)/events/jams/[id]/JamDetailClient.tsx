@@ -502,33 +502,32 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
         </div>
 
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-zik-text truncate">{jam.title}</h1>
-            {jam.description && (
-              <div className="mt-1">
-                <p className={`text-base text-zik-text/80 whitespace-normal transition-all duration-200 ${
-                  expandedDescriptions[jam.id] ? '' : 'line-clamp-2'
-                }`}>
-                  {jam.description}
-                </p>
-                {jam.description.length > 100 && (
-                  <button onClick={() => toggleDescription(jam.id)}
-                    className="text-xs text-zik-purple mt-1 hover:bg-zik-purple/10 rounded-lg px-2 py-1 flex items-center gap-1 transition-colors">
-                    {expandedDescriptions[jam.id]
-                      ? <><ChevronUp className="h-3 w-3" /> Voir moins</>
-                      : <><ChevronDown className="h-3 w-3" /> Voir plus</>
-                    }
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+          <h1 className="flex-1 min-w-0 text-xl font-bold text-zik-text truncate">{jam.title}</h1>
           <span className={`shrink-0 flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${
             jam.is_open ? "bg-zik-emerald/10 text-zik-emerald" : "bg-zik-orange/10 text-zik-orange"
           }`}>
             {jam.is_open ? <><Unlock className="h-3 w-3" />Ouverte</> : <><Lock className="h-3 w-3" />Inscription requise</>}
           </span>
         </div>
+
+        {jam.description && (
+          <div className="mt-1">
+            <p className={`text-base text-zik-text/80 whitespace-normal transition-all duration-200 ${
+              expandedDescriptions[jam.id] ? '' : 'line-clamp-2'
+            }`}>
+              {jam.description}
+            </p>
+            {jam.description.length > 100 && (
+              <button onClick={() => toggleDescription(jam.id)}
+                className="text-xs text-zik-purple mt-1 hover:bg-zik-purple/10 rounded-lg px-2 py-1 flex items-center gap-1 transition-colors">
+                {expandedDescriptions[jam.id]
+                  ? <><ChevronUp className="h-3 w-3" /> Voir moins</>
+                  : <><ChevronDown className="h-3 w-3" /> Voir plus</>
+                }
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="mt-2 text-sm text-zik-text">
           <div className="flex items-center gap-1">
