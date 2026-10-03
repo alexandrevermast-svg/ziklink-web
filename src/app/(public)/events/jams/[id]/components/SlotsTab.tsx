@@ -155,13 +155,13 @@ export function SlotsTab({
                     onClick={(e) => canEditInfo ? onStartEditSong(infoSlot, e) : undefined}
                     className={`flex items-center gap-1.5 text-lg font-semibold min-w-0 truncate ${
                       canEditInfo ? "cursor-pointer hover:text-zik-purple" : ""
-                    } ${isCurrentSlot ? "text-zik-emerald" : isLastSlot ? "text-zik-orange" : isPast || isTrailing ? "text-zik-muted" : "text-zik-text"}`}>
+                    } ${isCurrentSlot ? "text-zik-emerald" : isLastSlot ? "text-zik-orange" : isTrailing ? "text-zik-muted" : "text-zik-text"}`}>
                     <Music className="h-4 w-4 shrink-0" />
                     <span className="truncate">{infoSlot.song}</span>
                   </button>
                 ) : (
                   <span className={`text-lg font-semibold ${
-                    isCurrentSlot ? "text-zik-emerald" : isLastSlot ? "text-zik-orange" : isPast || isTrailing ? "text-zik-muted" : "text-zik-text"
+                    isCurrentSlot ? "text-zik-emerald" : isLastSlot ? "text-zik-orange" : isTrailing ? "text-zik-muted" : "text-zik-text"
                   }`}>
                     Passage {rowIdx + 1}
                   </span>
