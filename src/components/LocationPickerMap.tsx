@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet";
+import React from "react";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
@@ -10,20 +10,6 @@ interface LocationPickerMapProps {
   center: { lat: number; lng: number };
   selectedLocation: { lat: number; lng: number } | null;
   onLocationChange: (location: { lat: number; lng: number; address: string }) => void;
-}
-
-// La carte s'ouvre dans une modale qui vient d'apparaître/se redimensionner :
-// sans ça Leaflet garde la taille mesurée au montage et le quadrillage des
-// tuiles se décale au zoom, laissant des zones blanches.
-function InvalidateSize() {
-  const map = useMap();
-  useEffect(() => {
-    const t1 = setTimeout(() => map.invalidateSize(), 100);
-    const t2 = setTimeout(() => map.invalidateSize(), 500);
-    const t3 = setTimeout(() => map.invalidateSize(), 1000);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, [map]);
-  return null;
 }
 
 function MapClickHandler({ onLocationChange }: Pick<LocationPickerMapProps, "onLocationChange">) {
@@ -62,10 +48,7 @@ export default function LocationPickerMap({
         <TileLayer
           url={`https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png?key=${process.env.NEXT_PUBLIC_CARTO_API_KEY}`}
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          maxZoom={19}
-          crossOrigin="anonymous"
         />
-        <InvalidateSize />
         {selectedLocation && (
           <Marker position={[selectedLocation.lat, selectedLocation.lng]} />
         )}
