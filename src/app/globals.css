@@ -272,12 +272,8 @@ textarea.zik-input {
 .leaflet-popup-close-button:hover {
   color: #C084FC !important;
 }
-.leaflet-tile {
-  /* brightness(2) écrêtait en blanc pur tout pixel déjà à mi-gris ou plus
-     (routes, bâtiments en surbrillance du style sombre) — visible comme des
-     "tuiles blanches" à certains niveaux de zoom selon la densité de détails. */
-  filter: brightness(1.5) contrast(1) saturate(1.2) !important;
-}
+/* Le fond de carte Voyager a ses propres couleurs (routes, parcs, eau) et
+   n'a pas besoin du filtre de luminosité qu'exigeait l'ancien style sombre. */
 
 /* globals.css — à ajouter */
 .conv-row { transition: background 0.15s; }
