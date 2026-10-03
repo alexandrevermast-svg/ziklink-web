@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { TabsContent } from "@/components/ui/tabs";
-import { UserPlus, Play, Radio, Music, X, Plus, Flag, Check, Settings2, Guitar, ChevronDown, ChevronUp } from "lucide-react";
+import { UserPlus, Play, Radio, Music, X, Plus, Flag, Check, Guitar, ChevronDown, ChevronUp } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { GuitarHeadstockIcon, BassHeadstockIcon } from "./InstrumentIcons";
 import type { JamSlot, JamInstrument, Profile } from "../types";
@@ -17,7 +17,6 @@ interface SlotsTabProps {
   isOrganizer: boolean;
   currentUserId: string | null;
   instruments: JamInstrument[];
-  onManageInstruments: () => void;
   slots: JamSlot[];
   numRows: number;
   currentSlotIndex: number | null;
@@ -44,7 +43,7 @@ interface SlotsTabProps {
 }
 
 export function SlotsTab({
-  canInteract, isOrganizer, currentUserId, instruments, onManageInstruments, slots, numRows, currentSlotIndex,
+  canInteract, isOrganizer, currentUserId, instruments, slots, numRows, currentSlotIndex,
   lastSlotIndex, onSetLastSlot,
   claimingCell, pickerCell,
   editingSongSlotId, songInputValue, onSongInputChange,
@@ -272,15 +271,9 @@ export function SlotsTab({
       })}
 
       {isOrganizer && (
-        <div className="flex items-center justify-center gap-2 mt-1">
-          <p className="text-base text-zik-muted text-center">
-            ▶️ passage en cours · 🏁 dernier passage (ferme les inscriptions après)
-          </p>
-          <button onClick={onManageInstruments} title="Gérer les instruments"
-            className="flex items-center gap-1 text-sm font-medium text-zik-purple hover:underline shrink-0">
-            <Settings2 className="h-3.5 w-3.5" /> Instruments
-          </button>
-        </div>
+        <p className="text-base text-zik-muted text-center mt-1">
+          ▶️ passage en cours · 🏁 dernier passage (ferme les inscriptions après)
+        </p>
       )}
     </TabsContent>
   );

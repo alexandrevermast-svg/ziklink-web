@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import {
   ArrowLeft, Lock, Unlock, MapPin, Clock,
   UserPlus, Check, Crown, ShieldCheck, Pencil,
-  Radio, Trash2, ChevronUp, ChevronDown, Heart
+  Radio, Trash2, ChevronUp, ChevronDown, Heart, Settings2
 } from 'lucide-react';
 import JamEditForm from "@/components/JamEditForm";
 import Modal from "@/components/Modal";
@@ -581,11 +581,17 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           </div>
         )}
         {isOrganizer && (
-          <div className="mt-2 flex items-center gap-1.5 text-xs font-medium">
-            {isMainOrganizer
-              ? <><Crown className="h-3.5 w-3.5 text-zik-indigo" /><span className="text-zik-indigo">Organisateur</span></>
-              : <><ShieldCheck className="h-3.5 w-3.5 text-zik-purple" /><span className="text-zik-purple">Co-organisateur</span></>
-            }
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-xs font-medium">
+              {isMainOrganizer
+                ? <><Crown className="h-3.5 w-3.5 text-zik-indigo" /><span className="text-zik-indigo">Organisateur</span></>
+                : <><ShieldCheck className="h-3.5 w-3.5 text-zik-purple" /><span className="text-zik-purple">Co-organisateur</span></>
+              }
+            </div>
+            <button onClick={() => setIsInstrumentManagerOpen(true)} title="Gérer les instruments"
+              className="flex items-center gap-1 text-xs font-medium text-zik-purple hover:underline shrink-0">
+              <Settings2 className="h-3.5 w-3.5" /> Instruments
+            </button>
           </div>
         )}
       </div>
@@ -646,7 +652,6 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           isOrganizer={isOrganizer}
           currentUserId={currentUserId}
           instruments={instruments}
-          onManageInstruments={() => setIsInstrumentManagerOpen(true)}
           slots={slots}
           numRows={numRows}
           currentSlotIndex={currentSlotIndex}
