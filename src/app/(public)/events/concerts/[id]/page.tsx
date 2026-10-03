@@ -242,7 +242,7 @@ export default function ConcertDetailPage() {
           {concert.description && (
             <div className="mt-2">
               <p
-                className={`text-base text-zik-text/80 whitespace-pre-wrap transition-all duration-200 ${
+                className={`text-base text-zik-text/80 whitespace-normal transition-all duration-200 ${
                   expandedDescriptions[concert.id] ? '' : 'line-clamp-3'
                 }`}
               >
