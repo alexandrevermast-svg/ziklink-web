@@ -216,7 +216,7 @@ export function SlotsTab({
 
                 return (
   <div key={inst.key} className="flex flex-col items-center gap-1.5 rounded-lg border border-zik-border/60 p-1.5 min-w-0">
-    <span className="flex items-center gap-1 text-sm text-zik-muted truncate max-w-full">
+    <span className="flex items-center gap-1 text-sm text-zik-text/80 truncate max-w-full">
       <InstrumentIcon instKey={inst.key} emoji={inst.emoji} />
       <span className="truncate">{inst.label}</span>
     </span>
