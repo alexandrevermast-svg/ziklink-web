@@ -192,6 +192,15 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         await supabase.from("jam_instruments").insert(instrumentRows);
       }
 
+      // Plusieurs occurrences créées ensemble = une même série récurrente :
+      // on les relie pour permettre une modification groupée plus tard.
+      if ((createdJams ?? []).length > 1) {
+        const recurrenceId = crypto.randomUUID();
+        await supabase.from("jam_sessions")
+          .update({ recurrence_id: recurrenceId })
+          .in("id", (createdJams ?? []).map((j: any) => j.jam_id));
+      }
+
       setFormData({ title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true, location: { lat: 48.8566, lng: 2.3522, address: "" } });
       setSelectedLocation(null);
       setSelectedGroupId("");

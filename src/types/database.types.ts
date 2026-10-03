@@ -597,6 +597,7 @@ export type Database = {
           last_slot_index: number | null
           location: string | null
           poster_url: string | null
+          recurrence_id: string | null
           start_time: string
           title: string
         }
@@ -614,6 +615,7 @@ export type Database = {
           last_slot_index?: number | null
           location?: string | null
           poster_url?: string | null
+          recurrence_id?: string | null
           start_time: string
           title: string
         }
@@ -631,6 +633,7 @@ export type Database = {
           last_slot_index?: number | null
           location?: string | null
           poster_url?: string | null
+          recurrence_id?: string | null
           start_time?: string
           title?: string
         }

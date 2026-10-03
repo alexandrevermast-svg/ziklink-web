@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,7 @@ interface JamEditFormProps {
   jam: {
     id: string; title: string; description: string; start_time: string;
     end_at: string | null; location: string | null; is_open: boolean; has_drums: boolean; has_keyboard: boolean;
+    recurrence_id?: string | null;
   };
   onSuccess?: () => void;
   onClose?: () => void;
@@ -59,6 +60,15 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
   );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [seriesCount, setSeriesCount] = useState(0);
+  const [applyToSeries, setApplyToSeries] = useState(false);
+
+  useEffect(() => {
+    if (!jam.recurrence_id) { setSeriesCount(0); return; }
+    supabase.from("jam_sessions").select("id", { count: "exact", head: true })
+      .eq("recurrence_id", jam.recurrence_id)
+      .then(({ count }) => setSeriesCount(count ?? 0));
+  }, [jam.recurrence_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,6 +98,26 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
         .eq("id", jam.id);
 
       if (updateError) { setError(`Erreur : ${updateError.message}`); setIsLoading(false); return; }
+
+      // Propage uniquement les champs communs à toute la série — jamais la
+      // date/heure, qui reste propre à chaque occurrence.
+      if (applyToSeries && jam.recurrence_id) {
+        const { error: seriesError } = await supabase
+          .from("jam_sessions")
+          .update({
+            title,
+            description,
+            location: JSON.stringify(location),
+            is_open: isOpen,
+            has_drums: hasDrums,
+            has_keyboard: hasKeyboard,
+          })
+          .eq("recurrence_id", jam.recurrence_id)
+          .neq("id", jam.id);
+
+        if (seriesError) { setError(`Erreur sur la série : ${seriesError.message}`); setIsLoading(false); return; }
+      }
+
       onSuccess?.();
       onClose?.();
     } catch {
@@ -324,6 +354,33 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
           </p>
         )}
       </div>
+
+      {/* Série récurrente */}
+      {seriesCount > 1 && (
+        <div className="rounded-lg border border-zik-border p-4 bg-zik-card/50 space-y-2">
+          <p className="text-sm font-medium text-zik-text">
+            Cette jam fait partie d'une série de {seriesCount} occurrences
+          </p>
+          <label className="flex items-center gap-2 text-sm text-zik-text cursor-pointer">
+            <input type="radio" name="edit-scope" checked={!applyToSeries}
+              onChange={() => setApplyToSeries(false)}
+              className="accent-zik-purple" />
+            Cette jam uniquement
+          </label>
+          <label className="flex items-center gap-2 text-sm text-zik-text cursor-pointer">
+            <input type="radio" name="edit-scope" checked={applyToSeries}
+              onChange={() => setApplyToSeries(true)}
+              className="accent-zik-purple" />
+            Toutes les jams de cette série ({seriesCount})
+          </label>
+          {applyToSeries && (
+            <p className="text-xs text-zik-muted">
+              La date et l'heure restent propres à chaque occurrence ; seuls le titre, la description,
+              le lieu, l'ouverture et les options batterie/clavier seront appliqués à toute la série.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Erreur */}
       {error && (
