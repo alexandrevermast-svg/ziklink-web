@@ -113,11 +113,10 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
 
       {/* Description */}
       <div>
-        <label className="text-sm font-medium text-zik-text mb-1 block">Description</label>
+        <label className="text-sm font-medium text-zik-text mb-1 block">Description (facultatif)</label>
         <Textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          required
           rows={3}
           className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50 resize-none"
         />

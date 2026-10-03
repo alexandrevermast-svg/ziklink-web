@@ -135,7 +135,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setError("Vous devez être connecté"); setIsLoading(false); return; }
-      if (!formData.title || !formData.description || !formData.date || !formData.start_hour) {
+      if (!formData.title || !formData.date || !formData.start_hour) {
         setError("Veuillez remplir tous les champs obligatoires"); setIsLoading(false); return;
       }
       const start_time = toUtcDateTime(formData.date, formData.start_hour);
@@ -223,13 +223,12 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
 
       {/* Description */}
       <div>
-        <label className="text-sm font-medium text-zik-text">Description</label>
+        <label className="text-sm font-medium text-zik-text">Description (facultatif)</label>
         <Textarea
           name="description"
           value={formData.description}
           onChange={handleInputChange}
           placeholder="Décrivez votre jam..."
-          required
           className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
         />
       </div>
