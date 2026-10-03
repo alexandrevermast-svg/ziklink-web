@@ -207,7 +207,7 @@ export function SlotsTab({
             </div>
 
             {/* Instruments */}
-            <div className="grid grid-cols-2 gap-1.5 p-2">
+            <div className="flex flex-col gap-1 p-1.5">
               {displayInstruments.map((inst) => {
                 const slot = getSlot(inst.key, rowIdx);
                 const isMe = slot?.user_id === currentUserId;
@@ -215,14 +215,14 @@ export function SlotsTab({
                 const isPickerOpen = pickerCell?.instrument === inst.key && pickerCell?.slot_index === rowIdx;
 
                 return (
-  <div key={inst.key} className="flex flex-col items-center gap-1.5 rounded-lg border border-zik-border/60 p-1.5 min-w-0">
-    <span className="flex items-center gap-1 text-sm text-zik-text/80 truncate max-w-full">
+  <div key={inst.key} className="flex items-center gap-1.5 rounded-lg border border-zik-border/60 px-2 py-1 min-w-0">
+    <span className="flex items-center gap-1 text-sm text-zik-text/80 shrink-0 w-17.5 truncate">
       <InstrumentIcon instKey={inst.key} emoji={inst.emoji} />
       <span className="truncate">{inst.label}</span>
     </span>
 
     {slot ? (
-      <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-base font-semibold w-full min-w-0 ${
+      <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-base font-semibold flex-1 min-w-0 ${
         isMe && isCurrentSlot
           ? "bg-zik-emerald/10 text-zik-emerald border border-zik-emerald/30"
           : isMe
@@ -246,7 +246,7 @@ export function SlotsTab({
                       <button
                         onClick={(e) => onEmptyCellClick(inst.key, rowIdx, e)}
                         title={isOrganizer ? "Assigner" : "Rejoindre"}
-                        className={`flex items-center justify-center gap-1 w-full py-1 rounded-full text-sm font-medium border border-dashed transition-colors ${
+                        className={`flex items-center justify-center gap-1 flex-1 py-0.5 rounded-full text-sm font-medium border border-dashed transition-colors ${
                           isClaiming || isPickerOpen
                             ? "border-zik-purple/50 bg-zik-purple/10 text-zik-purple"
                             : "border-zik-border text-zik-muted hover:border-zik-purple/50 hover:text-zik-purple"
@@ -260,7 +260,7 @@ export function SlotsTab({
                         )}
                       </button>
                     ) : (
-                      <span className="text-sm text-zik-muted/50">—</span>
+                      <span className="flex-1 text-right text-sm text-zik-muted/50">—</span>
                     )}
                   </div>
                 );
