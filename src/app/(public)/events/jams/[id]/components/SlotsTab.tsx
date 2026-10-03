@@ -108,7 +108,7 @@ export function SlotsTab({
               : isLastSlot
                 ? "border-zik-orange/40 bg-zik-orange/5"
                 : isPast
-                  ? "border-zik-border/40 bg-zik-card/20 opacity-60"
+                  ? "border-zik-border/40 bg-zik-card/20"
                   : isTrailing
                     ? "border-dashed border-zik-border/50 bg-zik-card/20"
                     : "border-zik-border bg-zik-card/50"
