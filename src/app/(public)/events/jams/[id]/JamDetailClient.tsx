@@ -540,9 +540,9 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
               {jam.end_at && ` → ${formatTime(jam.end_at)}`}
             </div>
             {address && (
-              <div className="flex items-center gap-1 mt-1 min-w-0">
-                <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted" />
-                <MapLink address={address} mapsUrl={mapsUrl} className="truncate min-w-0 text-left hover:text-zik-purple hover:underline">
+              <div className="flex items-start gap-1 mt-1 min-w-0">
+                <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted mt-0.5" />
+                <MapLink address={address} mapsUrl={mapsUrl} className="block w-full min-w-0 text-left whitespace-normal wrap-break-word hover:text-zik-purple hover:underline">
                   {address}
                 </MapLink>
               </div>

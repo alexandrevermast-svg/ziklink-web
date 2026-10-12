@@ -28,9 +28,9 @@ export function MapLink({ address, mapsUrl, className, children }: MapLinkProps)
   if (!mapsUrl) return <span className={className}>{children}</span>;
 
   return (
-    <div ref={ref} className="relative inline-block min-w-0 max-w-full" onClick={(e) => e.stopPropagation()}>
+    <div ref={ref} className="relative min-w-0 max-w-full" onClick={(e) => e.stopPropagation()}>
       <button type="button" onClick={() => setOpen((o) => !o)} title={address}
-        className={`bg-transparent border-0 p-0 m-0 font-inherit text-inherit cursor-pointer ${className ?? ""}`}>
+        className={`min-w-0 max-w-full bg-transparent border-0 p-0 m-0 text-inherit cursor-pointer ${className ?? ""}`}>
         {children}
       </button>
 
