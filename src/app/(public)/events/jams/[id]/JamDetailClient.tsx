@@ -14,6 +14,7 @@ import JamEditForm from "@/components/JamEditForm";
 import Modal from "@/components/Modal";
 import ShareButton from "@/components/ShareButton";
 import { Linkify } from "@/components/Linkify";
+import { MapLink } from "@/components/MapLink";
 import type { JamSession } from "@/types";
 import { useJamParticipation } from "@/hooks/useJamParticipation";
 import { useJamInterest } from "@/hooks/useJamInterest";
@@ -541,14 +542,9 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
             {address && (
               <div className="flex items-center gap-1 mt-1 min-w-0">
                 <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted" />
-                {mapsUrl ? (
-                  <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
-                    className="truncate min-w-0 hover:text-zik-purple hover:underline" title={address}>
-                    {address}
-                  </a>
-                ) : (
-                  <span className="truncate min-w-0" title={address}>{address}</span>
-                )}
+                <MapLink address={address} mapsUrl={mapsUrl} className="truncate min-w-0 text-left hover:text-zik-purple hover:underline">
+                  {address}
+                </MapLink>
               </div>
             )}
           </div>

@@ -1,0 +1,49 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { ExternalLink } from "lucide-react";
+
+interface MapLinkProps {
+  address: string;
+  mapsUrl: string | null;
+  className?: string;
+  children: React.ReactNode;
+}
+
+// Au clic, propose d'ouvrir Google Maps dans une petite popover plutôt que
+// de rediriger directement — évite de faire quitter l'app sans confirmation.
+export function MapLink({ address, mapsUrl, className, children }: MapLinkProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  if (!mapsUrl) return <span className={className}>{children}</span>;
+
+  return (
+    <div ref={ref} className="relative inline-block min-w-0 max-w-full">
+      <button type="button" onClick={() => setOpen((o) => !o)} title={address}
+        className={`bg-transparent border-0 p-0 m-0 font-inherit text-inherit cursor-pointer ${className ?? ""}`}>
+        {children}
+      </button>
+
+      {open && (
+        <div className="absolute z-30 mt-1.5 left-0 min-w-[240px] bg-zik-card border border-zik-border rounded-xl shadow-xl p-1.5">
+          <p className="text-xs text-zik-muted px-2 py-1.5 truncate">{address}</p>
+          <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium text-zik-purple hover:bg-zik-purple/10 transition-colors">
+            <ExternalLink className="h-4 w-4 shrink-0" /> Ouvrir dans Google Maps
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}

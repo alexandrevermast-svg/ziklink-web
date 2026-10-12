@@ -18,6 +18,7 @@ import ReportButton from '@/components/ReportButton';
 import Modal from "@/components/Modal";
 import ShareButton from "@/components/ShareButton";
 import { Linkify } from "@/components/Linkify";
+import { MapLink } from "@/components/MapLink";
 import type { Concert } from "@/types";
 import { isOwner } from "@/lib/permissions";
 
@@ -288,16 +289,9 @@ export default function ConcertDetailPage() {
               {concert.end_at && ` → ${formatTime(concert.end_at)}`}
             </span>
             {address && (
-              mapsUrl ? (
-                <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 truncate max-w-xs hover:text-zik-purple hover:underline">
-                  <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-purple" />{address}
-                </a>
-              ) : (
-                <span className="flex items-center gap-1 truncate max-w-xs">
-                  <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-purple" />{address}
-                </span>
-              )
+              <MapLink address={address} mapsUrl={mapsUrl} className="flex items-center gap-1 truncate max-w-xs hover:text-zik-purple hover:underline">
+                <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-purple" />{address}
+              </MapLink>
             )}
           </div>
           <div className="flex items-center gap-2 mt-3">
