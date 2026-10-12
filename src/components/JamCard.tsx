@@ -60,20 +60,17 @@ export default function JamCard({
         isSelected ? "border-2 border-zik-purple shadow-sm shadow-zik-purple/20" : "border-zik-border hover:border-zik-purple/30"
       }`}
     >
-      <h3 className="font-semibold text-zik-text truncate">{jam.title}</h3>
-
-      {jam.genres && jam.genres.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-1.5">
-          {jam.genres.map((g) => (
-            <span key={g}
-              className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full"
-              style={{ backgroundColor: `${genreColor(g)}1A`, color: genreColor(g) }}
-            >
-              {g}
-            </span>
-          ))}
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="font-semibold text-zik-text truncate flex-1 min-w-0">{jam.title}</h3>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span title={jam.has_drums ? "Batterie disponible" : "Pas de batterie"}>
+            <Drum className={`h-4 w-4 ${jam.has_drums ? "text-zik-emerald" : "text-zik-muted/25"}`} />
+          </span>
+          <span title={jam.has_keyboard ? "Clavier disponible" : "Pas de clavier"}>
+            <Piano className={`h-4 w-4 ${jam.has_keyboard ? "text-zik-emerald" : "text-zik-muted/25"}`} />
+          </span>
         </div>
-      )}
+      </div>
 
       <div className="mt-3">
         <div className="flex flex-wrap gap-3 text-sm text-zik-text">
@@ -97,17 +94,17 @@ export default function JamCard({
       </div>
 
       <div className="flex items-center justify-between mt-3 gap-2">
-        <div className="flex items-center gap-2 text-xs text-zik-muted shrink-0">
-          <span className="flex items-center gap-1">
-            <Drum className="h-3.5 w-3.5" />
-            {jam.has_drums ? "avec" : "sans"}
-          </span>
-          <span className="flex items-center gap-1">
-            <Piano className="h-3.5 w-3.5" />
-            {jam.has_keyboard ? "avec" : "sans"}
-          </span>
+        <div className="flex flex-wrap gap-1 min-w-0">
+          {jam.genres?.map((g) => (
+            <span key={g}
+              className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: `${genreColor(g)}1A`, color: genreColor(g) }}
+            >
+              {g}
+            </span>
+          ))}
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           <ShareButton url={`/events/jams/${jam.id}`} title={jam.title} text={jam.description ?? undefined} />
           {!isCreator && (
             <button
