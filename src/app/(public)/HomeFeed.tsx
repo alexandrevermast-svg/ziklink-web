@@ -122,7 +122,7 @@ export default function HomeFeed({
 
     const { data: jamsData } = await supabase
       .from("jam_sessions")
-      .select("id, title, description, start_time, end_at, location, is_open, created_by, has_drums, has_keyboard, genre")
+      .select("id, title, description, start_time, end_at, location, is_open, created_by, has_drums, has_keyboard, genres")
       .or(`end_at.gte.${now.toISOString()},start_time.gte.${today.toISOString()}`)
       .lt("start_time", dayAfterTomorrow.toISOString())
       .order("start_time", { ascending: true });

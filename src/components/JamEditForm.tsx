@@ -28,7 +28,7 @@ interface JamEditFormProps {
   jam: {
     id: string; title: string; description: string; start_time: string;
     end_at: string | null; location: string | null; is_open: boolean; has_drums: boolean; has_keyboard: boolean;
-    genre?: string | null;
+    genres?: string[] | null;
     recurrence_id?: string | null;
   };
   onSuccess?: () => void;
@@ -56,7 +56,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
   const [isOpen, setIsOpen] = useState(jam.is_open);
   const [hasDrums, setHasDrums] = useState(jam.has_drums);
   const [hasKeyboard, setHasKeyboard] = useState(jam.has_keyboard);
-  const [genre, setGenre] = useState(jam.genre ?? "");
+  const [genres, setGenres] = useState<string[]>(jam.genres ?? []);
   const [location, setLocation] = useState<{ lat: number; lng: number; address: string }>(parsedLoc);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(
     { lat: parsedLoc.lat, lng: parsedLoc.lng }
@@ -97,7 +97,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
           is_open: isOpen,
           has_drums: hasDrums,
           has_keyboard: hasKeyboard,
-          genre: genre || null,
+          genres: genres.length > 0 ? genres : null,
         })
         .eq("id", jam.id);
 
@@ -115,7 +115,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
             is_open: isOpen,
             has_drums: hasDrums,
             has_keyboard: hasKeyboard,
-            genre: genre || null,
+            genres: genres.length > 0 ? genres : null,
           })
           .eq("recurrence_id", jam.recurrence_id)
           .neq("id", jam.id);
@@ -157,18 +157,18 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
         />
       </div>
 
-      {/* Style de musique */}
+      {/* Styles de musique */}
       <div>
-        <label className="text-sm font-medium text-zik-text mb-1 block">Style de musique (facultatif)</label>
+        <label className="text-sm font-medium text-zik-text mb-1 block">Styles de musique (facultatif)</label>
         <div className="flex flex-wrap gap-1.5">
           {MUSIC_GENRES.map((g) => {
-            const isActive = genre === g;
+            const isActive = genres.includes(g);
             const color = genreColor(g);
             return (
               <button
                 key={g}
                 type="button"
-                onClick={() => setGenre((prev) => prev === g ? "" : g)}
+                onClick={() => setGenres((prev) => prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g])}
                 className="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
                 style={isActive
                   ? { background: color, borderColor: color, color: "#0E0B16" }
@@ -405,7 +405,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
           {applyToSeries && (
             <p className="text-xs text-zik-muted">
               La date et l'heure restent propres à chaque occurrence ; seuls le titre, la description,
-              le lieu, l'ouverture, le style de musique et les options batterie/clavier seront appliqués à toute la série.
+              le lieu, l'ouverture, les styles de musique et les options batterie/clavier seront appliqués à toute la série.
             </p>
           )}
         </div>

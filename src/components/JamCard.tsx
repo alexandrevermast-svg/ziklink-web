@@ -20,7 +20,7 @@ export interface JamCardData {
   is_open: boolean;
   has_drums: boolean;
   has_keyboard: boolean;
-  genre?: string | null;
+  genres?: string[] | null;
 }
 
 interface JamCardProps {
@@ -60,17 +60,20 @@ export default function JamCard({
         isSelected ? "border-2 border-zik-purple shadow-sm shadow-zik-purple/20" : "border-zik-border hover:border-zik-purple/30"
       }`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="font-semibold text-zik-text truncate flex-1 min-w-0">{jam.title}</h3>
-        {jam.genre && (
-          <span
-            className="shrink-0 text-xs font-medium px-2 py-1 rounded-full"
-            style={{ backgroundColor: `${genreColor(jam.genre)}1A`, color: genreColor(jam.genre) }}
-          >
-            {jam.genre}
-          </span>
-        )}
-      </div>
+      <h3 className="font-semibold text-zik-text truncate">{jam.title}</h3>
+
+      {jam.genres && jam.genres.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-1.5">
+          {jam.genres.map((g) => (
+            <span key={g}
+              className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: `${genreColor(g)}1A`, color: genreColor(g) }}
+            >
+              {g}
+            </span>
+          ))}
+        </div>
+      )}
 
       <div className="mt-3">
         <div className="flex flex-wrap gap-3 text-sm text-zik-text">

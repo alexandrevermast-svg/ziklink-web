@@ -44,7 +44,7 @@ interface RecurrenceData {
 interface JamFormData {
   title: string; description: string; date: string;
   start_hour: string; end_hour: string; is_open: boolean; has_drums: boolean; has_keyboard: boolean;
-  genre: string;
+  genres: string[];
   location: { lat: number; lng: number; address: string };
 }
 
@@ -85,7 +85,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
   const supabase = createClient();
   const [formData, setFormData] = useState<JamFormData>({
     title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true,
-    genre: "",
+    genres: [],
     location: { lat: 48.8566, lng: 2.3522, address: "" },
   });
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -204,14 +204,14 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
           .in("id", (createdJams ?? []).map((j: any) => j.jam_id));
       }
 
-      // create_jam_sessions n'a pas de paramètre genre — appliqué après coup.
-      if (formData.genre) {
+      // create_jam_sessions n'a pas de paramètre genres — appliqué après coup.
+      if (formData.genres.length > 0) {
         await supabase.from("jam_sessions")
-          .update({ genre: formData.genre })
+          .update({ genres: formData.genres })
           .in("id", (createdJams ?? []).map((j: any) => j.jam_id));
       }
 
-      setFormData({ title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true, genre: "", location: { lat: 48.8566, lng: 2.3522, address: "" } });
+      setFormData({ title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true, genres: [], location: { lat: 48.8566, lng: 2.3522, address: "" } });
       setSelectedLocation(null);
       setSelectedGroupId("");
       setRecurrence({ enabled: false, frequency: 1, days: [], endType: "count", endDate: "", count: 8 });
@@ -252,18 +252,21 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         />
       </div>
 
-      {/* Style de musique */}
+      {/* Styles de musique */}
       <div>
-        <label className="text-sm font-medium text-zik-text">Style de musique (facultatif)</label>
+        <label className="text-sm font-medium text-zik-text">Styles de musique (facultatif)</label>
         <div className="flex flex-wrap gap-1.5 mt-1.5">
           {MUSIC_GENRES.map((g) => {
-            const isActive = formData.genre === g;
+            const isActive = formData.genres.includes(g);
             const color = genreColor(g);
             return (
               <button
                 key={g}
                 type="button"
-                onClick={() => setFormData((prev) => ({ ...prev, genre: prev.genre === g ? "" : g }))}
+                onClick={() => setFormData((prev) => ({
+                  ...prev,
+                  genres: prev.genres.includes(g) ? prev.genres.filter((x) => x !== g) : [...prev.genres, g],
+                }))}
                 className="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
                 style={isActive
                   ? { background: color, borderColor: color, color: "#0E0B16" }

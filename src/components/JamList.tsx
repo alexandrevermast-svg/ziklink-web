@@ -331,7 +331,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
       if (selectedDate && !isSameDay(new Date(j.start_time), selectedDate)) return false;
       if (drumsOnly && !j.has_drums) return false;
       if (keyboardOnly && !j.has_keyboard) return false;
-      if (genreFilters.length > 0 && !genreFilters.includes(j.genre ?? "")) return false;
+      if (genreFilters.length > 0 && !(j.genres ?? []).some((g) => genreFilters.includes(g))) return false;
       return true;
     });
     if (!nearMe || !userPosition) return filtered;
