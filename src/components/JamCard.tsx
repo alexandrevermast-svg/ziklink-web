@@ -38,9 +38,6 @@ interface JamCardProps {
   onLeave: (jamId: string, e: React.MouseEvent) => void;
 }
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-}
 function formatTime(d: string) {
   return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
@@ -76,7 +73,7 @@ export default function JamCard({
         <div className="flex flex-wrap gap-3 text-sm text-zik-text">
           <span className="flex items-center gap-1">
             <Clock className="h-3.5 w-3.5 text-zik-muted" />
-            {formatDate(jam.start_time)} · {formatTime(jam.start_time)}
+            {formatTime(jam.start_time)}
             {jam.end_at && ` → ${formatTime(jam.end_at)}`}
           </span>
           {address && (
