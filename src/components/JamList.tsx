@@ -513,6 +513,14 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
 
       {/* Filtre par style de musique */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
+        <button
+          onClick={() => setGenreFilters([])}
+          className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+            genreFilters.length === 0 ? "bg-zik-purple text-white" : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
+          }`}
+        >
+          Tous
+        </button>
         {MUSIC_GENRES.map((g) => {
           const isActive = genreFilters.includes(g);
           const color = genreColor(g);
