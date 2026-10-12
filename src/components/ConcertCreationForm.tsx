@@ -16,14 +16,13 @@ import { cn } from "@/lib/utils";
 import TimePicker from "@/components/ui/TimePicker";
 import AddressSearchInput from '@/components/AddressSearchInput';
 import { toUtcDateTime, resolveEndDateTime } from '@/lib/eventDateTime';
+import { MUSIC_GENRES, genreColor } from "@/lib/musicGenres";
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
   // ✅ Loading avec ton thème
   loading: () => <div className="h-64 w-full bg-zik-card animate-pulse rounded-lg" />,
 });
-
-const GENRES = ["Rock", "Jazz", "Blues", "Metal", "Pop", "Électro", "Folk", "Classique", "Hip-Hop", "Reggae", "Autre"];
 
 interface UserGroup { id: string; name: string; }
 
@@ -168,14 +167,25 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
         </div>
         <div>
           <label className="text-sm font-medium text-zik-text">Genre musical</label>
-          <select
-            value={genre}
-            onChange={(e) => setGenre(e.target.value)}
-            className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple mt-0.5"
-          >
-            <option value="">Sélectionner...</option>
-            {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
-          </select>
+          <div className="flex flex-wrap gap-1.5 mt-1.5">
+            {MUSIC_GENRES.map((g) => {
+              const isActive = genre === g;
+              const color = genreColor(g);
+              return (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => setGenre((prev) => prev === g ? "" : g)}
+                  className="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
+                  style={isActive
+                    ? { background: color, borderColor: color, color: "#0E0B16" }
+                    : { background: `${color}1A`, borderColor: `${color}33`, color }}
+                >
+                  {g}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
