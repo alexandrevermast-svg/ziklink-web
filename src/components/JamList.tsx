@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import moment from "moment-timezone";
 import { ChevronDown, Drum, Piano, LocateFixed } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import JamCard from "@/components/JamCard";
 import type { EventMarker } from "@/components/EventMap";
@@ -426,53 +425,43 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
       <DayFilter selectedDate={selectedDate} onChange={setSelectedDate} availableDates={availableDates} />
 
       {/* Filtres batterie + clavier + proximité */}
-      <div className="flex flex-wrap gap-2">
-        <div className="flex-1 min-w-35 flex items-center justify-between gap-2 rounded-lg border border-zik-border p-3 bg-zik-card/50">
-          <span className="flex items-center gap-1.5 text-sm font-medium text-zik-text truncate">
-            <Drum className="h-4 w-4 text-zik-muted shrink-0" />
-            <span className="truncate">Avec batterie</span>
-          </span>
-          <Switch
-            checked={drumsOnly}
-            onCheckedChange={setDrumsOnly}
-            className="shrink-0 data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
-          />
-        </div>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <button
+          onClick={() => setDrumsOnly((v) => !v)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+            drumsOnly ? "bg-zik-purple text-white" : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
+          }`}
+        >
+          <Drum className="h-3.5 w-3.5 shrink-0" /> Batterie
+        </button>
 
-        <div className="flex-1 min-w-35 flex items-center justify-between gap-2 rounded-lg border border-zik-border p-3 bg-zik-card/50">
-          <span className="flex items-center gap-1.5 text-sm font-medium text-zik-text truncate">
-            <Piano className="h-4 w-4 text-zik-muted shrink-0" />
-            <span className="truncate">Avec clavier</span>
-          </span>
-          <Switch
-            checked={keyboardOnly}
-            onCheckedChange={setKeyboardOnly}
-            className="shrink-0 data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
-          />
-        </div>
+        <button
+          onClick={() => setKeyboardOnly((v) => !v)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+            keyboardOnly ? "bg-zik-purple text-white" : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
+          }`}
+        >
+          <Piano className="h-3.5 w-3.5 shrink-0" /> Clavier
+        </button>
 
         <Popover>
           <PopoverTrigger asChild>
             <button
               onClick={() => { if (!nearMe) handleToggleNearMe(true); }}
-              className={`flex-1 min-w-35 flex items-center justify-between gap-2 rounded-lg border p-3 text-left transition-colors ${
-                nearMe ? "border-zik-purple/40 bg-zik-purple/10" : "border-zik-border bg-zik-card/50 hover:border-zik-purple/30"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                nearMe ? "bg-zik-purple text-white" : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
               }`}
             >
-              <span className="flex items-center gap-1.5 text-sm font-medium text-zik-text truncate">
-                <LocateFixed className={`h-4 w-4 shrink-0 ${nearMe ? "text-zik-purple" : "text-zik-muted"}`} />
-                <span className="truncate">
-                  {geoLoading
-                    ? "Localisation..."
-                    : nearMe && userPosition
-                    ? `Près de moi · ${radiusKm === null ? "Tout" : radiusKm + " km"}`
-                    : "Près de moi"}
-                </span>
-              </span>
-              {nearMe && <ChevronDown className="h-3.5 w-3.5 text-zik-muted shrink-0" />}
+              <LocateFixed className="h-3.5 w-3.5 shrink-0" />
+              {geoLoading
+                ? "Localisation..."
+                : nearMe && userPosition
+                ? `Près de moi · ${radiusKm === null ? "Tout" : radiusKm + " km"}`
+                : "Près de moi"}
+              {nearMe && <ChevronDown className="h-3 w-3 shrink-0" />}
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-64 bg-zik-card border-zik-border p-4 space-y-3" align="end">
+          <PopoverContent className="w-64 bg-zik-card border-zik-border p-4 space-y-3" align="start">
             {geoError && <p className="text-xs text-zik-red">{geoError}</p>}
             {nearMe && userPosition && (
               <div>
