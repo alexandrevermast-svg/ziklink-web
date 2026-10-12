@@ -32,6 +32,7 @@ interface JamCardProps {
   distanceKm?: number;
   participantCount?: number;
   interestedCount?: number;
+  isSelected?: boolean;
   onToggleInterest: (jamId: string, e: React.MouseEvent) => void;
   onJoin: (jamId: string, e: React.MouseEvent) => void;
   onLeave: (jamId: string, e: React.MouseEvent) => void;
@@ -46,7 +47,7 @@ function formatTime(d: string) {
 
 export default function JamCard({
   jam, isCreator, isParticipant, isJoining, isInterested, isInterestPending, joinOpen, distanceKm,
-  participantCount, interestedCount,
+  participantCount, interestedCount, isSelected,
   onToggleInterest, onJoin, onLeave,
 }: JamCardProps) {
   const router = useRouter();
@@ -56,7 +57,9 @@ export default function JamCard({
   return (
     <div
       onClick={() => router.push(`/events/jams/${jam.id}`)}
-      className="rounded-lg border border-zik-border p-4 hover:border-zik-purple/30 hover:shadow-sm transition-all cursor-pointer active:scale-[0.99] bg-zik-card"
+      className={`rounded-lg border p-4 hover:shadow-sm transition-all cursor-pointer active:scale-[0.99] bg-zik-card ${
+        isSelected ? "border-2 border-zik-purple shadow-sm shadow-zik-purple/20" : "border-zik-border hover:border-zik-purple/30"
+      }`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">

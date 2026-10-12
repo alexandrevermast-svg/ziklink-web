@@ -218,6 +218,8 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
+  const [selectedJamId, setSelectedJamId] = useState<string | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const fetchParticipants = useCallback(async (jamIds: string[]) => {
     const { data } = await supabase.from("jam_participants")
@@ -293,6 +295,13 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
     }
   }, [currentUserId, myJamInterests, markInterested, unmarkInterested, router]);
 
+  const handleMarkerClick = useCallback((marker: EventMarker) => {
+    setSelectedJamId(marker.id);
+    requestAnimationFrame(() => {
+      listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, []);
+
   const handleToggleNearMe = useCallback((checked: boolean) => {
     setNearMe(checked);
     setGeoError(null);
@@ -340,6 +349,18 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
     });
     return withDistance.map((w) => w.jam);
   }, [jams, selectedDate, drumsOnly, keyboardOnly, nearMe, userPosition, radiusKm]);
+
+  // La jam cliquée sur la carte remonte en tête de liste, sans changer
+  // l'ordre des autres.
+  const displayJams = useMemo(() => {
+    if (!selectedJamId) return filteredJams;
+    const idx = filteredJams.findIndex((j) => j.id === selectedJamId);
+    if (idx <= 0) return filteredJams;
+    const copy = [...filteredJams];
+    const [selected] = copy.splice(idx, 1);
+    copy.unshift(selected);
+    return copy;
+  }, [filteredJams, selectedJamId]);
 
   const distanceById = useMemo(() => {
     if (!nearMe || !userPosition) return {} as Record<string, number>;
@@ -394,6 +415,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
       <EventMap
         markers={jamMarkers}
         onJoinJam={(jamId) => handleJoin(jamId)}
+        onMarkerClick={handleMarkerClick}
         currentUserId={currentUserId}
         emptyMessage="Aucune jam à venir 🎸"
       />
@@ -488,8 +510,8 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
       {filteredJams.length === 0 ? (
         <p className="text-zik-muted text-sm text-center py-6">{emptyMessage}</p>
       ) : (
-        <div className="space-y-3">
-          {filteredJams.map((jam) => {
+        <div ref={listRef} className="space-y-3">
+          {displayJams.map((jam) => {
             const participants = participantsMap[jam.id] ?? [];
             const isParticipant = participants.some((p) => p.user_id === currentUserId);
             const isCreator = isOwner(jam, currentUserId);
@@ -507,6 +529,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
                 distanceKm={distanceById[jam.id]}
                 participantCount={participants.length}
                 interestedCount={jamInterestCounts[jam.id] ?? 0}
+                isSelected={jam.id === selectedJamId}
                 onToggleInterest={handleToggleInterest}
                 onJoin={handleJoin}
                 onLeave={handleLeave}

@@ -24,6 +24,7 @@ export interface EventMarker {
 interface EventMapProps {
   markers: EventMarker[];
   onJoinJam?: (jamId: string) => void;
+  onMarkerClick?: (marker: EventMarker) => void;
   currentUserId: string | null;
   emptyMessage?: string;
   height?: string;
@@ -46,7 +47,7 @@ function createDotIcon(color: string) {
 }
 
 // ✅ Couleurs adaptées à ton thème
-const JAM_ICON     = createDotIcon("var(--zik-emerald)");
+const JAM_ICON     = createDotIcon("var(--zik-purple)");
 const CONCERT_ICON = createDotIcon("var(--zik-red)");
 
 function InvalidateSize() {
@@ -82,6 +83,7 @@ function formatDay(d: string) {
 export default function EventMap({
   markers,
   onJoinJam,
+  onMarkerClick,
   currentUserId,
   emptyMessage = "Aucun événement 📍",
   height = "h-52",
@@ -111,7 +113,7 @@ export default function EventMap({
           {hasJam && (
             <span className="flex items-center gap-1">
               {/* ✅ Couleur de la légende adaptée */}
-              <span className="inline-block w-2.5 h-2.5 rounded-full bg-zik-emerald border border-zik-bg shadow-sm" /> Jam
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-zik-purple border border-zik-bg shadow-sm" /> Jam
             </span>
           )}
           {hasConcert && (
@@ -143,48 +145,51 @@ export default function EventMap({
             key={`${m.type}-${m.id}`}
             position={[m.lat, m.lng]}
             icon={m.type === "jam" ? JAM_ICON : CONCERT_ICON}
+            eventHandlers={onMarkerClick ? { click: () => onMarkerClick(m) } : undefined}
           >
-            <Popup>
-              <div className="text-sm min-w-32 leading-tight">
-                {/* ✅ Badge de type d'événement adapté */}
-                <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                  m.type === "jam" ? "bg-zik-emerald/20 text-zik-emerald" : "bg-zik-red/20 text-zik-red"
-                }`}>
-                  {m.type === "jam" ? "🎸 Jam" : "🎤 Concert"}
-                </span>
+            {!onMarkerClick && (
+              <Popup>
+                <div className="text-sm min-w-32 leading-tight">
+                  {/* ✅ Badge de type d'événement adapté */}
+                  <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                    m.type === "jam" ? "bg-zik-purple/20 text-zik-purple" : "bg-zik-red/20 text-zik-red"
+                  }`}>
+                    {m.type === "jam" ? "🎸 Jam" : "🎤 Concert"}
+                  </span>
 
-                {/* ✅ Titre adapté */}
-                <p className="font-semibold text-zik-text">{m.title}</p>
+                  {/* ✅ Titre adapté */}
+                  <p className="font-semibold text-zik-text">{m.title}</p>
 
-                {m.type === "concert" && m.artist && (
-                  <p className="text-zik-purple text-xs font-medium">{m.artist}</p>
-                )}
+                  {m.type === "concert" && m.artist && (
+                    <p className="text-zik-purple text-xs font-medium">{m.artist}</p>
+                  )}
 
-                {/* ✅ Date et heure adaptées */}
-                <p className="text-zik-text text-xs mb-1">
-                  {formatDay(m.start_time)} · {formatTime(m.start_time)}
-                </p>
+                  {/* ✅ Date et heure adaptées */}
+                  <p className="text-zik-text text-xs mb-1">
+                    {formatDay(m.start_time)} · {formatTime(m.start_time)}
+                  </p>
 
-                {m.type === "jam" && currentUserId && !m.isCreator && (
-                  m.isParticipant
-                    ? <span className="text-xs text-zik-emerald font-medium">✓ Inscrit</span>
-                    : <button
-                        onClick={() => onJoinJam?.(m.id)}
-                        className="text-xs bg-zik-purple text-white px-3 py-0.5 rounded-full hover:bg-zik-indigo transition-colors"
-                      >
-                        Rejoindre
-                      </button>
-                )}
+                  {m.type === "jam" && currentUserId && !m.isCreator && (
+                    m.isParticipant
+                      ? <span className="text-xs text-zik-emerald font-medium">✓ Inscrit</span>
+                      : <button
+                          onClick={() => onJoinJam?.(m.id)}
+                          className="text-xs bg-zik-purple text-white px-3 py-0.5 rounded-full hover:bg-zik-indigo transition-colors"
+                        >
+                          Rejoindre
+                        </button>
+                  )}
 
-                {m.type === "jam" && m.isCreator && (
-                  <span className="text-xs text-zik-muted italic">Organisateur</span>
-                )}
+                  {m.type === "jam" && m.isCreator && (
+                    <span className="text-xs text-zik-muted italic">Organisateur</span>
+                  )}
 
-                {m.type === "concert" && m.isInterested && (
-                  <span className="text-xs font-medium text-zik-red">❤️ Intéressé</span>
-                )}
-              </div>
-            </Popup>
+                  {m.type === "concert" && m.isInterested && (
+                    <span className="text-xs font-medium text-zik-red">❤️ Intéressé</span>
+                  )}
+                </div>
+              </Popup>
+            )}
           </Marker>
         ))}
       </MapContainer>
