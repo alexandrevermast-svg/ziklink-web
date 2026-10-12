@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReportButton from '@/components/ReportButton';
+import { Linkify } from '@/components/Linkify';
 
 const INSTRUMENTS = [
   { key: 'chant',    label: 'Chant',    emoji: '🎤' },
@@ -339,7 +340,7 @@ export default function PublicProfilePage() {
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
         >
           <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.70)' }}>
-            {profile.bio}
+            <Linkify text={profile.bio} />
           </p>
         </div>
       )}

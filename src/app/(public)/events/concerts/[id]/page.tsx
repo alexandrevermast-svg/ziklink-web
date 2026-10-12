@@ -17,6 +17,7 @@ import ConcertEditForm from "@/components/ConcertEditForm";
 import ReportButton from '@/components/ReportButton';
 import Modal from "@/components/Modal";
 import ShareButton from "@/components/ShareButton";
+import { Linkify } from "@/components/Linkify";
 import type { Concert } from "@/types";
 import { isOwner } from "@/lib/permissions";
 
@@ -246,7 +247,7 @@ export default function ConcertDetailPage() {
                   expandedDescriptions[concert.id] ? '' : 'line-clamp-3'
                 }`}
               >
-                {concert.description}
+                <Linkify text={concert.description} />
               </p>
               {concert.description.length > 100 && (
                 <button

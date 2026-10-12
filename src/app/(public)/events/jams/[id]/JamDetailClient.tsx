@@ -13,6 +13,7 @@ import {
 import JamEditForm from "@/components/JamEditForm";
 import Modal from "@/components/Modal";
 import ShareButton from "@/components/ShareButton";
+import { Linkify } from "@/components/Linkify";
 import type { JamSession } from "@/types";
 import { useJamParticipation } from "@/hooks/useJamParticipation";
 import { useJamInterest } from "@/hooks/useJamInterest";
@@ -515,7 +516,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
             <p className={`text-base text-zik-text/80 whitespace-normal transition-all duration-200 ${
               expandedDescriptions[jam.id] ? '' : 'line-clamp-2'
             }`}>
-              {jam.description}
+              <Linkify text={jam.description} />
             </p>
             {jam.description.length > 100 && (
               <button onClick={() => toggleDescription(jam.id)}
