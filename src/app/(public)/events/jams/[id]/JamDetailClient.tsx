@@ -515,7 +515,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
 
         {jam.description && (
           <div className="mt-1">
-            <p className={`text-base text-zik-text/80 whitespace-normal transition-all duration-200 ${
+            <p className={`selectable text-base text-zik-text/80 whitespace-normal transition-all duration-200 ${
               expandedDescriptions[jam.id] ? '' : 'line-clamp-2'
             }`}>
               <Linkify text={jam.description} />

@@ -189,7 +189,7 @@ const MessageClient: React.FC<MessageClientProps> = ({
                       <div className={`flex items-end gap-1.5 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
                         {/* Bulle */}
                         <div
-                          className="px-3.5 py-2 text-sm leading-relaxed"
+                          className="selectable px-3.5 py-2 text-sm leading-relaxed"
                           style={{
                             ...(isMe ? {
                               background: 'linear-gradient(135deg, #C084FC, #818CF8)',

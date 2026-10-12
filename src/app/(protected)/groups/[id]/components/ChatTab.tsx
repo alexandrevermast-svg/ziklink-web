@@ -74,7 +74,7 @@ export function ChatTab({
                         {msg.profile?.username ?? 'Inconnu'}
                       </span>
                     )}
-                    <div className={`px-3 py-2 rounded-2xl text-sm ${
+                    <div className={`selectable px-3 py-2 rounded-2xl text-sm ${
                       isMe
                         ? 'bg-zik-purple text-white rounded-tr-sm'
                         : 'bg-zik-card/80 text-zik-text rounded-tl-sm border border-zik-border'

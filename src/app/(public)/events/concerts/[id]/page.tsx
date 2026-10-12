@@ -258,7 +258,7 @@ export default function ConcertDetailPage() {
           {concert.description && (
             <div className="mt-2">
               <p
-                className={`text-base text-zik-text/80 whitespace-normal transition-all duration-200 ${
+                className={`selectable text-base text-zik-text/80 whitespace-normal transition-all duration-200 ${
                   expandedDescriptions[concert.id] ? '' : 'line-clamp-3'
                 }`}
               >
@@ -399,7 +399,7 @@ export default function ConcertDetailPage() {
                           </span>
                         )}
                         {/* ✅ Messages adaptés */}
-                        <div className={`px-3 py-2 rounded-2xl text-sm ${
+                        <div className={`selectable px-3 py-2 rounded-2xl text-sm ${
                           isMe
                             ? "bg-zik-purple text-white rounded-tr-sm"
                             : "bg-zik-card/80 text-zik-text rounded-tl-sm border border-zik-border"

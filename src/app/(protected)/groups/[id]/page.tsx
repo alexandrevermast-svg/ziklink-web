@@ -391,7 +391,7 @@ export default function GroupDetailPage() {
               </span>
             </div>
             {group.bio && (
-              <p className="text-sm text-zik-muted mt-2 leading-relaxed">{group.bio}</p>
+              <p className="selectable text-sm text-zik-muted mt-2 leading-relaxed">{group.bio}</p>
             )}
             {groupLinks.length > 0 && (
               <div className="flex flex-col gap-1.5 mt-2">

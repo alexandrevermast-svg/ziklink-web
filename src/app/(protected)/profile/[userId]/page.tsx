@@ -391,7 +391,7 @@ export default function PublicProfilePage() {
           className="rounded-xl p-4"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
         >
-          <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.70)' }}>
+          <p className="selectable text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.70)' }}>
             <Linkify text={profile.bio} />
           </p>
         </div>
