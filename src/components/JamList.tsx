@@ -16,6 +16,7 @@ import { useJamParticipation } from "@/hooks/useJamParticipation";
 import { useJamInterest } from "@/hooks/useJamInterest";
 import { isOwner } from "@/lib/permissions";
 import { canJoinJam } from "@/lib/jamJoinWindow";
+import { MUSIC_GENRES, genreColor } from "@/lib/musicGenres";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
@@ -213,6 +214,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   const [selectedDate, setSelectedDate] = useState<Date | null>(startOfDay(new Date()));
   const [drumsOnly, setDrumsOnly] = useState(false);
   const [keyboardOnly, setKeyboardOnly] = useState(false);
+  const [genreFilters, setGenreFilters] = useState<string[]>([]);
   const [nearMe, setNearMe] = useState(false);
   const [userPosition, setUserPosition] = useState<LatLng | null>(null);
   const [geoLoading, setGeoLoading] = useState(false);
@@ -329,6 +331,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
       if (selectedDate && !isSameDay(new Date(j.start_time), selectedDate)) return false;
       if (drumsOnly && !j.has_drums) return false;
       if (keyboardOnly && !j.has_keyboard) return false;
+      if (genreFilters.length > 0 && !genreFilters.includes(j.genre ?? "")) return false;
       return true;
     });
     if (!nearMe || !userPosition) return filtered;
@@ -344,7 +347,11 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
       return a.distance - b.distance;
     });
     return withDistance.map((w) => w.jam);
-  }, [jams, selectedDate, drumsOnly, keyboardOnly, nearMe, userPosition, radiusKm]);
+  }, [jams, selectedDate, drumsOnly, keyboardOnly, genreFilters, nearMe, userPosition, radiusKm]);
+
+  const toggleGenreFilter = useCallback((g: string) => {
+    setGenreFilters((prev) => prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]);
+  }, []);
 
   // La jam cliquée sur la carte remonte en tête de liste, sans changer
   // l'ordre des autres.
@@ -389,12 +396,13 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
     if (nearMe && radiusKm !== null) return `Aucune jam à moins de ${radiusKm} km 🎸 — essaie un rayon plus large`;
     if (drumsOnly) return "Aucune jam avec batterie ne correspond 🥁 — essaie de désactiver ce filtre";
     if (keyboardOnly) return "Aucune jam avec clavier ne correspond 🎹 — essaie de désactiver ce filtre";
+    if (genreFilters.length > 0) return "Aucune jam ne correspond à ces styles 🎵 — essaie d'en retirer un";
     if (!selectedDate) return "Aucune jam à venir 🎸";
     const diff = Math.round((startOfDay(selectedDate).getTime() - startOfDay(new Date()).getTime()) / 86400000);
     if (diff === 0) return "Pas de jam aujourd'hui 🎸 — clique sur un autre jour ou crée la tienne !";
     if (diff === 1) return "Pas de jam demain 🎸";
     return "Aucune jam ce jour-là 🎸";
-  }, [selectedDate, nearMe, radiusKm, drumsOnly, keyboardOnly]);
+  }, [selectedDate, nearMe, radiusKm, drumsOnly, keyboardOnly, genreFilters]);
 
   // ✅ Loading skeleton avec ton thème
   if (isLoading) return (
@@ -501,6 +509,26 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
             )}
           </PopoverContent>
         </Popover>
+      </div>
+
+      {/* Filtre par style de musique */}
+      <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
+        {MUSIC_GENRES.map((g) => {
+          const isActive = genreFilters.includes(g);
+          const color = genreColor(g);
+          return (
+            <button
+              key={g}
+              onClick={() => toggleGenreFilter(g)}
+              className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
+              style={isActive
+                ? { background: color, borderColor: color, color: "#0E0B16" }
+                : { background: `${color}1A`, borderColor: `${color}33`, color }}
+            >
+              {g}
+            </button>
+          );
+        })}
       </div>
 
       {filteredJams.length === 0 ? (

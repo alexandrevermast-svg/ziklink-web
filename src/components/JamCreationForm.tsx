@@ -17,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import TimePicker from '@/components/ui/TimePicker';
 import { DEFAULT_INSTRUMENTS } from "@/app/(public)/events/jams/[id]/types";
+import { MUSIC_GENRES } from "@/lib/musicGenres";
 
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
@@ -43,6 +44,7 @@ interface RecurrenceData {
 interface JamFormData {
   title: string; description: string; date: string;
   start_hour: string; end_hour: string; is_open: boolean; has_drums: boolean; has_keyboard: boolean;
+  genre: string;
   location: { lat: number; lng: number; address: string };
 }
 
@@ -83,6 +85,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
   const supabase = createClient();
   const [formData, setFormData] = useState<JamFormData>({
     title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true,
+    genre: "",
     location: { lat: 48.8566, lng: 2.3522, address: "" },
   });
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -111,7 +114,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
     fetchGroups();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -201,7 +204,14 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
           .in("id", (createdJams ?? []).map((j: any) => j.jam_id));
       }
 
-      setFormData({ title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true, location: { lat: 48.8566, lng: 2.3522, address: "" } });
+      // create_jam_sessions n'a pas de paramètre genre — appliqué après coup.
+      if (formData.genre) {
+        await supabase.from("jam_sessions")
+          .update({ genre: formData.genre })
+          .in("id", (createdJams ?? []).map((j: any) => j.jam_id));
+      }
+
+      setFormData({ title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true, genre: "", location: { lat: 48.8566, lng: 2.3522, address: "" } });
       setSelectedLocation(null);
       setSelectedGroupId("");
       setRecurrence({ enabled: false, frequency: 1, days: [], endType: "count", endDate: "", count: 8 });
@@ -240,6 +250,20 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
           placeholder="Décrivez votre jam..."
           className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
         />
+      </div>
+
+      {/* Style de musique */}
+      <div>
+        <label className="text-sm font-medium text-zik-text">Style de musique (facultatif)</label>
+        <select
+          name="genre"
+          value={formData.genre}
+          onChange={handleInputChange}
+          className="zik-input"
+        >
+          <option value="">Aucun</option>
+          {MUSIC_GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
+        </select>
       </div>
 
 <div className="grid grid-cols-1 gap-3">

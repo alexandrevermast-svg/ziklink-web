@@ -592,6 +592,7 @@ export type Database = {
           current_slot_index: number | null
           description: string
           end_at: string | null
+          genre: string | null
           group_id: string | null
           has_drums: boolean
           has_keyboard: boolean
@@ -610,6 +611,7 @@ export type Database = {
           current_slot_index?: number | null
           description: string
           end_at?: string | null
+          genre?: string | null
           group_id?: string | null
           has_drums?: boolean
           has_keyboard?: boolean
@@ -628,6 +630,7 @@ export type Database = {
           current_slot_index?: number | null
           description?: string
           end_at?: string | null
+          genre?: string | null
           group_id?: string | null
           has_drums?: boolean
           has_keyboard?: boolean

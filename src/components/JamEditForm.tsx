@@ -17,6 +17,7 @@ import TimePicker from "@/components/ui/TimePicker";
 import AddressSearchInput from "@/components/AddressSearchInput";
 import moment from 'moment-timezone';
 import { toUtcDateTime, resolveEndDateTime } from '@/lib/eventDateTime';
+import { MUSIC_GENRES } from "@/lib/musicGenres";
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
@@ -27,6 +28,7 @@ interface JamEditFormProps {
   jam: {
     id: string; title: string; description: string; start_time: string;
     end_at: string | null; location: string | null; is_open: boolean; has_drums: boolean; has_keyboard: boolean;
+    genre?: string | null;
     recurrence_id?: string | null;
   };
   onSuccess?: () => void;
@@ -54,6 +56,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
   const [isOpen, setIsOpen] = useState(jam.is_open);
   const [hasDrums, setHasDrums] = useState(jam.has_drums);
   const [hasKeyboard, setHasKeyboard] = useState(jam.has_keyboard);
+  const [genre, setGenre] = useState(jam.genre ?? "");
   const [location, setLocation] = useState<{ lat: number; lng: number; address: string }>(parsedLoc);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(
     { lat: parsedLoc.lat, lng: parsedLoc.lng }
@@ -94,6 +97,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
           is_open: isOpen,
           has_drums: hasDrums,
           has_keyboard: hasKeyboard,
+          genre: genre || null,
         })
         .eq("id", jam.id);
 
@@ -111,6 +115,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
             is_open: isOpen,
             has_drums: hasDrums,
             has_keyboard: hasKeyboard,
+            genre: genre || null,
           })
           .eq("recurrence_id", jam.recurrence_id)
           .neq("id", jam.id);
@@ -150,6 +155,19 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
           rows={3}
           className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50 resize-none"
         />
+      </div>
+
+      {/* Style de musique */}
+      <div>
+        <label className="text-sm font-medium text-zik-text mb-1 block">Style de musique (facultatif)</label>
+        <select
+          value={genre}
+          onChange={(e) => setGenre(e.target.value)}
+          className="zik-input"
+        >
+          <option value="">Aucun</option>
+          {MUSIC_GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
+        </select>
       </div>
 
       {/* Date + Heures */}
@@ -376,7 +394,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
           {applyToSeries && (
             <p className="text-xs text-zik-muted">
               La date et l'heure restent propres à chaque occurrence ; seuls le titre, la description,
-              le lieu, l'ouverture et les options batterie/clavier seront appliqués à toute la série.
+              le lieu, l'ouverture, le style de musique et les options batterie/clavier seront appliqués à toute la série.
             </p>
           )}
         </div>

@@ -3,7 +3,7 @@ import moment from "moment-timezone";
 import HomeFeed from "./HomeFeed";
 import type { JamSession as JamSessionRow, Concert as ConcertRow, Profile } from "@/types";
 
-export type JamSession = Pick<JamSessionRow, "id" | "title" | "description" | "start_time" | "end_at" | "location" | "is_open" | "created_by" | "has_drums" | "has_keyboard">;
+export type JamSession = Pick<JamSessionRow, "id" | "title" | "description" | "start_time" | "end_at" | "location" | "is_open" | "created_by" | "has_drums" | "has_keyboard" | "genre">;
 export type Concert = Pick<ConcertRow, "id" | "title" | "artist" | "start_time" | "end_at" | "location" | "genre" | "is_free" | "price" | "poster_url">;
 export interface ParticipantWithProfile {
   user_id: string;
@@ -22,7 +22,7 @@ export default async function HomePage() {
 
   const { data: jamsData } = await supabase
     .from("jam_sessions")
-    .select("id, title, description, start_time, end_at, location, is_open, created_by, has_drums, has_keyboard")
+    .select("id, title, description, start_time, end_at, location, is_open, created_by, has_drums, has_keyboard, genre")
     .or(`end_at.gte.${now.toISOString()},start_time.gte.${today.toISOString()}`)
     .lt("start_time", dayAfterTomorrow.toISOString())
     .order("start_time", { ascending: true });
