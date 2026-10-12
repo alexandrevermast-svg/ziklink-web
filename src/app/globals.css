@@ -45,9 +45,14 @@ body {
   background-color: var(--zik-bg);
   color: var(--zik-text);
   -webkit-font-smoothing: antialiased;
-  /* Un tap rapide ne doit jamais sélectionner de texte/ouvrir le menu
-     copier-coller — seul un appui prolongé le peut, et uniquement sur le
-     texte explicitement marqué .selectable (descriptions, bios, messages). */
+  /* Sélection native par défaut : un tap rapide ne sélectionne rien, seul un
+     appui prolongé (~1s, comportement natif du navigateur) déclenche la
+     sélection/le menu copier-coller. CSS n'a pas de délai réglable pour ça —
+     c'est le comportement par défaut tant qu'on ne force pas "none". */
+}
+/* Les boutons/liens ne sont pas du texte à sélectionner — seul leur tap
+   doit compter, jamais une sélection accidentelle. */
+button, [role="button"] {
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
