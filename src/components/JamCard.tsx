@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Lock, Unlock, MapPin, Clock, UserPlus, Check, Drum, Piano, LocateFixed, Heart } from "lucide-react";
+import { MapPin, Clock, UserPlus, Check, Drum, Piano, LocateFixed, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ShareButton from "@/components/ShareButton";
 import { MapLink } from "@/components/MapLink";
@@ -58,16 +58,7 @@ export default function JamCard({
         isSelected ? "border-2 border-zik-purple shadow-sm shadow-zik-purple/20" : "border-zik-border hover:border-zik-purple/30"
       }`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-zik-text truncate">{jam.title}</h3>
-        </div>
-        <span className={`shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
-          jam.is_open ? "bg-zik-emerald/10 text-zik-emerald" : "bg-zik-orange/10 text-zik-orange"
-        }`}>
-          {jam.is_open ? <><Unlock className="h-3 w-3" /> Ouverte</> : <><Lock className="h-3 w-3" /> Inscription requise</>}
-        </span>
-      </div>
+      <h3 className="font-semibold text-zik-text truncate">{jam.title}</h3>
 
       <div className="mt-3">
         <div className="flex flex-wrap gap-3 text-sm text-zik-text">
