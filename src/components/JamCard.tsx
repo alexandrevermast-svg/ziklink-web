@@ -52,22 +52,31 @@ export default function JamCard({
   const router = useRouter();
   const address = getAddress(jam.location);
   const mapsUrl = getMapsUrl(jam.location);
+  const accent = jam.genres && jam.genres.length > 0 ? genreColor(jam.genres[0]) : null;
 
   return (
     <div
       onClick={() => router.push(`/events/jams/${jam.id}`)}
-      className={`rounded-lg border p-4 hover:shadow-sm transition-all cursor-pointer active:scale-[0.99] bg-zik-card ${
+      className={`relative overflow-hidden rounded-xl border p-4 hover:bg-zik-card-hover hover:shadow-sm transition-all cursor-pointer active:scale-[0.99] bg-zik-card ${
         isSelected ? "border-2 border-zik-purple shadow-sm shadow-zik-purple/20" : "border-zik-border hover:border-zik-purple/30"
       }`}
     >
+      {accent && <div className="absolute left-0 top-0 bottom-0 w-0.75" style={{ background: accent }} />}
+
       <div className="flex items-center justify-between gap-2">
         <h3 className="font-semibold text-zik-text truncate flex-1 min-w-0">{jam.title}</h3>
         <div className="flex items-center gap-1.5 shrink-0">
-          <span title={jam.has_drums ? "Batterie disponible" : "Pas de batterie"}>
-            <Drum className={`h-4 w-4 ${jam.has_drums ? "text-zik-emerald" : "text-zik-muted/25"}`} />
+          <span title={jam.has_drums ? "Batterie disponible" : "Pas de batterie"}
+            className={`h-6 w-6 rounded-full flex items-center justify-center ${
+              jam.has_drums ? "bg-zik-emerald/15 text-zik-emerald" : "bg-white/5 text-zik-muted/40"
+            }`}>
+            <Drum className="h-3.5 w-3.5" />
           </span>
-          <span title={jam.has_keyboard ? "Clavier disponible" : "Pas de clavier"}>
-            <Piano className={`h-4 w-4 ${jam.has_keyboard ? "text-zik-emerald" : "text-zik-muted/25"}`} />
+          <span title={jam.has_keyboard ? "Clavier disponible" : "Pas de clavier"}
+            className={`h-6 w-6 rounded-full flex items-center justify-center ${
+              jam.has_keyboard ? "bg-zik-emerald/15 text-zik-emerald" : "bg-white/5 text-zik-muted/40"
+            }`}>
+            <Piano className="h-3.5 w-3.5" />
           </span>
         </div>
       </div>
@@ -97,7 +106,7 @@ export default function JamCard({
         <div className="flex flex-wrap gap-1 min-w-0">
           {jam.genres?.map((g) => (
             <span key={g}
-              className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full"
+              className="shrink-0 text-xs font-medium px-2.5 py-0.5 rounded-full"
               style={{ backgroundColor: `${genreColor(g)}1A`, color: genreColor(g) }}
             >
               {g}
