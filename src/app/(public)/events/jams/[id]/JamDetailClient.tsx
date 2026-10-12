@@ -21,7 +21,7 @@ import { isOwner } from "@/lib/permissions";
 import { canJoinJam, joinOpensAt } from "@/lib/jamJoinWindow";
 import type { Profile, Participant, Message, JamSlot, JamInstrument } from "./types";
 import { TRAILING_EMPTY_ROWS, slugifyInstrumentKey } from "./types";
-import { formatDate, formatTime, getAddress } from "./utils";
+import { formatDate, formatTime, getAddress, getMapsUrl } from "./utils";
 import { ParticipantPicker } from "./components/ParticipantPicker";
 import { ProfilePopup } from "./components/ProfilePopup";
 import { JamPoster } from "./components/JamPoster";
@@ -427,6 +427,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
   );
 
   const address = getAddress(jam.location);
+  const mapsUrl = getMapsUrl(jam.location);
   const confirmedParticipants = participants.filter((p) => p.status === "confirmed");
   const pendingParticipants = participants.filter((p) => p.status === "pending");
   const totalSlotsTaken = slots.filter((s) => !!s.user_id).length;
@@ -540,7 +541,14 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
             {address && (
               <div className="flex items-center gap-1 mt-1 min-w-0">
                 <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted" />
-                <span className="truncate min-w-0" title={address}>{address}</span>
+                {mapsUrl ? (
+                  <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
+                    className="truncate min-w-0 hover:text-zik-purple hover:underline" title={address}>
+                    {address}
+                  </a>
+                ) : (
+                  <span className="truncate min-w-0" title={address}>{address}</span>
+                )}
               </div>
             )}
           </div>

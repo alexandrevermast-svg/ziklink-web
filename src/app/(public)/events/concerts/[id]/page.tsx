@@ -31,6 +31,19 @@ function formatTime(d: string) {
   return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 function getAddress(s: string | null) { if (!s) return null; try { return JSON.parse(s)?.address ?? null; } catch { return null; } }
+function getMapsUrl(s: string | null) {
+  if (!s) return null;
+  try {
+    const loc = JSON.parse(s);
+    if (typeof loc?.lat === "number" && typeof loc?.lng === "number") {
+      return `https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`;
+    }
+    if (loc?.address) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.address)}`;
+    }
+  } catch { /* adresse invalide */ }
+  return null;
+}
 
 function Avatar({ profile, size = "md" }: { profile: Profile | null; size?: "sm" | "md" }) {
   const cls = size === "sm" ? "h-6 w-6 text-[9px]" : "h-9 w-9 text-xs";
@@ -172,6 +185,7 @@ export default function ConcertDetailPage() {
   );
 
   const address = getAddress(concert.location);
+  const mapsUrl = getMapsUrl(concert.location);
 
   return (
     <div className="flex flex-col h-full bg-zik-bg">
@@ -274,9 +288,16 @@ export default function ConcertDetailPage() {
               {concert.end_at && ` → ${formatTime(concert.end_at)}`}
             </span>
             {address && (
-              <span className="flex items-center gap-1 truncate max-w-xs">
-                <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-purple" />{address}
-              </span>
+              mapsUrl ? (
+                <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1 truncate max-w-xs hover:text-zik-purple hover:underline">
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-purple" />{address}
+                </a>
+              ) : (
+                <span className="flex items-center gap-1 truncate max-w-xs">
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-purple" />{address}
+                </span>
+              )
             )}
           </div>
           <div className="flex items-center gap-2 mt-3">
