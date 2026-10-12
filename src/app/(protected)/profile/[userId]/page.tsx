@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
   ArrowLeft, MapPin, Music2, MessageCircle,
-  Users, ChevronDown, Check, Loader2, Link2
+  Users, ChevronDown, Check, Loader2, Link2, CalendarDays, ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReportButton from '@/components/ReportButton';
@@ -36,7 +36,20 @@ interface MyGroup {
   name: string;
 }
 
+interface EventItem {
+  id: string;
+  type: 'jam' | 'concert';
+  title: string;
+  start_time: string;
+}
+
 type InviteStatus = 'idle' | 'loading' | 'success' | 'already_member' | 'error';
+
+function formatDate(d: string) {
+  return new Date(d).toLocaleDateString('fr-FR', {
+    day: 'numeric', month: 'short', year: 'numeric'
+  });
+}
 
 export default function PublicProfilePage() {
   const { userId } = useParams<{ userId: string }>();
@@ -46,6 +59,8 @@ export default function PublicProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [myAdminGroups, setMyAdminGroups] = useState<MyGroup[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<EventItem[]>([]);
+  const [pastEvents, setPastEvents] = useState<EventItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDMLoading, setIsDMLoading] = useState(false);
 
@@ -66,6 +81,40 @@ export default function PublicProfilePage() {
         .eq('id', userId)
         .single();
       setProfile(profileData);
+
+      const { data: jamParts } = await supabase
+        .from('jam_participants')
+        .select('jam_sessions(id, title, start_time)')
+        .eq('user_id', userId)
+        .eq('status', 'confirmed');
+      const jamEvents: EventItem[] = (jamParts ?? [])
+        .map((p: any) => p.jam_sessions)
+        .filter(Boolean)
+        .map((j: any) => ({ id: j.id, type: 'jam' as const, title: j.title, start_time: j.start_time }));
+
+      const { data: concertInts } = await supabase
+        .from('concert_interested')
+        .select('concerts(id, title, start_time)')
+        .eq('user_id', userId);
+      const concertEvents: EventItem[] = (concertInts ?? [])
+        .map((c: any) => c.concerts)
+        .filter(Boolean)
+        .map((c: any) => ({ id: c.id, type: 'concert' as const, title: c.title, start_time: c.start_time }));
+
+      const allEvents = [...jamEvents, ...concertEvents];
+      const now = Date.now();
+      setPastEvents(
+        allEvents
+          .filter((e) => new Date(e.start_time).getTime() < now)
+          .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())
+          .slice(0, 2)
+      );
+      setUpcomingEvents(
+        allEvents
+          .filter((e) => new Date(e.start_time).getTime() >= now)
+          .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+          .slice(0, 2)
+      );
 
       // Récupérer les groupes où l'utilisateur courant est admin
       if (user) {
@@ -394,6 +443,80 @@ export default function PublicProfilePage() {
               >
                 <span>{inst!.emoji}</span> {inst!.label}
               </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Prochains événements */}
+      {upcomingEvents.length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold mb-2 flex items-center gap-1.5" style={{ color: '#F1F0F6' }}>
+            <CalendarDays size={15} style={{ color: '#C084FC' }} />
+            Prochains événements
+          </h2>
+          <div className="space-y-2">
+            {upcomingEvents.map((event) => (
+              <button
+                key={`${event.type}-${event.id}`}
+                onClick={() => router.push(event.type === 'jam' ? `/events/jams/${event.id}` : `/events/concerts/${event.id}`)}
+                className="w-full flex items-center justify-between gap-3 p-3 rounded-xl text-left transition-all duration-150"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(192,132,252,0.20)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(192,132,252,0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
+                }}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="text-base shrink-0">{event.type === 'jam' ? '🎸' : '🎤'}</span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate" style={{ color: '#F1F0F6' }}>{event.title}</p>
+                    <p className="text-sm" style={{ color: '#F1F0F6' }}>{formatDate(event.start_time)}</p>
+                  </div>
+                </div>
+                <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.52)' }} className="shrink-0" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Événements passés */}
+      {pastEvents.length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold mb-2 flex items-center gap-1.5" style={{ color: '#F1F0F6' }}>
+            <CalendarDays size={15} style={{ color: 'rgba(255,255,255,0.60)' }} />
+            Événements passés
+          </h2>
+          <div className="space-y-2">
+            {pastEvents.map((event) => (
+              <button
+                key={`${event.type}-${event.id}`}
+                onClick={() => router.push(event.type === 'jam' ? `/events/jams/${event.id}` : `/events/concerts/${event.id}`)}
+                className="w-full flex items-center justify-between gap-3 p-3 rounded-xl text-left transition-all duration-150"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(192,132,252,0.20)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(192,132,252,0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
+                }}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="text-base shrink-0">{event.type === 'jam' ? '🎸' : '🎤'}</span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate" style={{ color: '#F1F0F6' }}>{event.title}</p>
+                    <p className="text-sm" style={{ color: '#F1F0F6' }}>{formatDate(event.start_time)}</p>
+                  </div>
+                </div>
+                <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.52)' }} className="shrink-0" />
+              </button>
             ))}
           </div>
         </div>
