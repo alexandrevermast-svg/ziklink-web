@@ -19,6 +19,7 @@ import Modal from "@/components/Modal";
 import ShareButton from "@/components/ShareButton";
 import { Linkify } from "@/components/Linkify";
 import { MapLink } from "@/components/MapLink";
+import { getAddress, getMapsUrl } from "@/lib/eventLocation";
 import type { Concert } from "@/types";
 import { isOwner } from "@/lib/permissions";
 
@@ -30,20 +31,6 @@ function formatDate(d: string) {
 }
 function formatTime(d: string) {
   return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-}
-function getAddress(s: string | null) { if (!s) return null; try { return JSON.parse(s)?.address ?? null; } catch { return null; } }
-function getMapsUrl(s: string | null) {
-  if (!s) return null;
-  try {
-    const loc = JSON.parse(s);
-    if (typeof loc?.lat === "number" && typeof loc?.lng === "number") {
-      return `https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`;
-    }
-    if (loc?.address) {
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.address)}`;
-    }
-  } catch { /* adresse invalide */ }
-  return null;
 }
 
 function Avatar({ profile, size = "md" }: { profile: Profile | null; size?: "sm" | "md" }) {

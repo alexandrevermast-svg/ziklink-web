@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation";
 import { Lock, Unlock, MapPin, Clock, UserPlus, Check, Drum, Piano, LocateFixed, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ShareButton from "@/components/ShareButton";
+import { MapLink } from "@/components/MapLink";
 import { formatDistanceKm } from "@/lib/geo";
 import { joinOpensAt } from "@/lib/jamJoinWindow";
+import { getAddress, getMapsUrl } from "@/lib/eventLocation";
 
 export interface JamCardData {
   id: string;
@@ -41,10 +43,6 @@ function formatDate(d: string) {
 function formatTime(d: string) {
   return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
-function getAddress(s: string | null) {
-  if (!s) return null;
-  try { return JSON.parse(s)?.address ?? null; } catch { return null; }
-}
 
 export default function JamCard({
   jam, isCreator, isParticipant, isJoining, isInterested, isInterestPending, joinOpen, distanceKm,
@@ -53,6 +51,7 @@ export default function JamCard({
 }: JamCardProps) {
   const router = useRouter();
   const address = getAddress(jam.location);
+  const mapsUrl = getMapsUrl(jam.location);
 
   return (
     <div
@@ -78,9 +77,9 @@ export default function JamCard({
             {jam.end_at && ` → ${formatTime(jam.end_at)}`}
           </span>
           {address && (
-            <span className="flex items-center gap-1 truncate max-w-xs">
+            <MapLink address={address} mapsUrl={mapsUrl} className="flex items-center gap-1 truncate max-w-xs hover:text-zik-purple hover:underline">
               <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted" />{address}
-            </span>
+            </MapLink>
           )}
           {distanceKm !== undefined && (
             <span className="flex items-center gap-1 text-zik-purple font-medium">
