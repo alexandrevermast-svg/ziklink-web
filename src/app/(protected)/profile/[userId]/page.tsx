@@ -5,11 +5,12 @@ import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
   ArrowLeft, MapPin, Music2, MessageCircle,
-  Users, ChevronDown, Check, Loader2
+  Users, ChevronDown, Check, Loader2, Link2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReportButton from '@/components/ReportButton';
 import { Linkify } from '@/components/Linkify';
+import { parseProfileLinks } from '@/lib/profileLinks';
 
 const INSTRUMENTS = [
   { key: 'chant',    label: 'Chant',    emoji: '🎤' },
@@ -27,6 +28,7 @@ interface Profile {
   city: string | null;
   instruments: string[] | null;
   avatar_url: string | null;
+  links: unknown;
 }
 
 interface MyGroup {
@@ -60,7 +62,7 @@ export default function PublicProfilePage() {
 
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('id, username, bio, city, instruments, avatar_url')
+        .select('id, username, bio, city, instruments, avatar_url, links')
         .eq('id', userId)
         .single();
       setProfile(profileData);
@@ -152,6 +154,7 @@ export default function PublicProfilePage() {
   );
 
   const initials = profile.username ? profile.username.slice(0, 2).toUpperCase() : '?';
+  const profileLinks = parseProfileLinks(profile.links);
   const userInstruments = (profile.instruments ?? [])
     .map((key) => INSTRUMENTS.find((i) => i.key === key))
     .filter(Boolean) as typeof INSTRUMENTS;
@@ -342,6 +345,30 @@ export default function PublicProfilePage() {
           <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.70)' }}>
             <Linkify text={profile.bio} />
           </p>
+        </div>
+      )}
+
+      {/* Liens */}
+      {profileLinks.length > 0 && (
+        <div className="flex flex-col gap-2">
+          {profileLinks.map((link, i) => (
+            <a key={i} href={link.url} target="_blank" rel="noopener noreferrer nofollow"
+              className="flex items-center gap-2.5 rounded-xl p-3 transition-colors"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = 'rgba(192,132,252,0.20)';
+                (e.currentTarget as HTMLElement).style.background = 'rgba(192,132,252,0.05)';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';
+                (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
+              }}>
+              <Link2 size={15} style={{ color: '#C084FC' }} className="shrink-0" />
+              <span className="text-sm font-medium truncate" style={{ color: '#F1F0F6' }}>
+                {link.label || link.url}
+              </span>
+            </a>
+          ))}
         </div>
       )}
 

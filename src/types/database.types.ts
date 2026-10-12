@@ -860,6 +860,7 @@ export type Database = {
           instruments: string[] | null
           is_admin: boolean
           is_banned: boolean
+          links: Json
           looking_for_group: boolean
           onboarding_completed: boolean | null
           updated_at: string | null
@@ -876,6 +877,7 @@ export type Database = {
           instruments?: string[] | null
           is_admin?: boolean
           is_banned?: boolean
+          links?: Json
           looking_for_group?: boolean
           onboarding_completed?: boolean | null
           updated_at?: string | null
@@ -892,6 +894,7 @@ export type Database = {
           instruments?: string[] | null
           is_admin?: boolean
           is_banned?: boolean
+          links?: Json
           looking_for_group?: boolean
           onboarding_completed?: boolean | null
           updated_at?: string | null

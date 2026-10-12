@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
   Camera, MapPin, Music2, Save, Loader2,
-  CalendarDays, ChevronRight, Users, Megaphone
+  CalendarDays, ChevronRight, Users, Megaphone, Link2, Plus, X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { GroupAvatar } from '@/app/(protected)/groups/GroupAvatar';
+import { parseProfileLinks, normalizeLinkUrl, MAX_PROFILE_LINKS, type ProfileLink } from '@/lib/profileLinks';
 
 const INSTRUMENTS = [
   { key: 'chant',    label: 'Chant',    emoji: '🎤' },
@@ -27,6 +28,7 @@ interface Profile {
   city: string | null;
   instruments: string[] | null;
   avatar_url: string | null;
+  links: unknown;
 }
 
 interface MyGroup {
@@ -74,6 +76,7 @@ export default function MyProfilePage() {
   const [city, setCity] = useState('');
   const [instruments, setInstruments] = useState<string[]>([]);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [links, setLinks] = useState<ProfileLink[]>([]);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -82,7 +85,7 @@ export default function MyProfilePage() {
 
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('id, username, bio, city, instruments, avatar_url')
+        .select('id, username, bio, city, instruments, avatar_url, links')
         .eq('id', user.id)
         .single();
 
@@ -93,6 +96,7 @@ export default function MyProfilePage() {
         setCity(profileData.city ?? '');
         setInstruments(profileData.instruments ?? []);
         setAvatarUrl(profileData.avatar_url ?? null);
+        setLinks(parseProfileLinks(profileData.links));
       }
 
       const { data: groupMemberships } = await supabase
@@ -153,6 +157,18 @@ export default function MyProfilePage() {
     );
   };
 
+  const updateLink = (index: number, field: keyof ProfileLink, value: string) => {
+    setLinks((prev) => prev.map((l, i) => i === index ? { ...l, [field]: value } : l));
+  };
+
+  const removeLink = (index: number) => {
+    setLinks((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const addLink = () => {
+    setLinks((prev) => prev.length < MAX_PROFILE_LINKS ? [...prev, { label: '', url: '' }] : prev);
+  };
+
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !profile) return;
@@ -172,11 +188,15 @@ export default function MyProfilePage() {
   const handleSave = async () => {
     if (!profile) return;
     setIsSaving(true);
+    const cleanLinks = links
+      .map((l) => ({ label: l.label.trim(), url: normalizeLinkUrl(l.url) }))
+      .filter((l) => l.url);
     await supabase.from('profiles').update({
       username: username.trim() || null,
       bio: bio.trim() || null,
       city: city.trim() || null,
       instruments,
+      links: cleanLinks,
     }).eq('id', profile.id);
     setIsSaving(false);
     setSaved(true);
@@ -302,6 +322,42 @@ export default function MyProfilePage() {
                 </button>
               );
             })}
+          </div>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium mb-2 flex items-center gap-1.5" style={{ color: 'rgba(255,255,255,0.70)' }}>
+            <Link2 size={14} style={{ color: '#C084FC' }} /> Liens ({links.length}/{MAX_PROFILE_LINKS})
+          </label>
+          <div className="space-y-2">
+            {links.map((link, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <input
+                  value={link.label}
+                  onChange={(e) => updateLink(i, 'label', e.target.value)}
+                  placeholder="Instagram, SoundCloud..."
+                  className="zik-input w-28 shrink-0"
+                />
+                <input
+                  value={link.url}
+                  onChange={(e) => updateLink(i, 'url', e.target.value)}
+                  placeholder="https://..."
+                  className="zik-input flex-1 min-w-0"
+                />
+                <button type="button" onClick={() => removeLink(i)}
+                  className="shrink-0 p-2 rounded-lg transition-colors"
+                  style={{ color: 'rgba(255,255,255,0.52)' }}>
+                  <X size={16} />
+                </button>
+              </div>
+            ))}
+            {links.length < MAX_PROFILE_LINKS && (
+              <button type="button" onClick={addLink}
+                className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
+                style={{ color: '#C084FC', background: 'rgba(192,132,252,0.08)' }}>
+                <Plus size={14} /> Ajouter un lien
+              </button>
+            )}
           </div>
         </div>
       </div>
