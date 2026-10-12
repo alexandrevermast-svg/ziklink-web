@@ -35,8 +35,7 @@ export function MapLink({ address, mapsUrl, className, children }: MapLinkProps)
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-1.5 left-0 min-w-[240px] bg-zik-card border border-zik-border rounded-xl shadow-xl p-1.5">
-          <p className="text-xs text-zik-muted px-2 py-1.5 truncate">{address}</p>
+        <div className="absolute z-30 mt-1.5 left-0 min-w-55 bg-zik-card border border-zik-border rounded-xl shadow-xl p-1.5">
           <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
             onClick={() => setOpen(false)}
             className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium text-zik-purple hover:bg-zik-purple/10 transition-colors">
