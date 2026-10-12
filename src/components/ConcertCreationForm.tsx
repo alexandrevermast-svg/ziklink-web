@@ -17,6 +17,7 @@ import TimePicker from "@/components/ui/TimePicker";
 import AddressSearchInput from '@/components/AddressSearchInput';
 import { toUtcDateTime, resolveEndDateTime } from '@/lib/eventDateTime';
 import { MUSIC_GENRES, genreColor } from "@/lib/musicGenres";
+import { getDisplayAddress } from "@/lib/eventLocation";
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
@@ -45,7 +46,7 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
   const [isFree, setIsFree] = useState(true);
   const [price, setPrice] = useState("");
   const [ticketUrl, setTicketUrl] = useState("");
-  const [location, setLocation] = useState({ lat: 48.8566, lng: 2.3522, address: "" });
+  const [location, setLocation] = useState<{ lat: number; lng: number; address: string; name?: string; street?: string; postcode?: string; city?: string }>({ lat: 48.8566, lng: 2.3522, address: "" });
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
@@ -382,9 +383,9 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
   <AddressSearchInput
     value={location.address ?? ''}
     placeholder="Ex: Olympia, Paris"
-    onChange={({ address, lat, lng }) => {
+    onChange={({ address, lat, lng, name, street, postcode, city }) => {
       setSelectedLocation({ lat, lng });
-      setLocation({ lat, lng, address });
+      setLocation({ lat, lng, address, name, street, postcode, city });
     }}
     onClear={() => {
       setLocation({ lat: 48.8566, lng: 2.3522, address: '' });
@@ -407,9 +408,9 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
     <LocationPickerMap
       center={location}
       selectedLocation={selectedLocation}
-      onLocationChange={({ lat, lng, address }) => {
+      onLocationChange={({ lat, lng, address, name, street, postcode, city }) => {
         setSelectedLocation({ lat, lng });
-        setLocation({ lat, lng, address });
+        setLocation({ lat, lng, address, name, street, postcode, city });
       }}
     />
   </div>
@@ -418,7 +419,7 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
     <p className="text-xs mt-2 px-1 flex items-center gap-1.5"
       style={{ color: 'rgba(255,255,255,0.64)' }}>
       <MapPin size={12} style={{ color: '#C084FC' }} />
-      {location.address}
+      {getDisplayAddress(JSON.stringify(location))}
     </p>
   )}
 </div>

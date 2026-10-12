@@ -19,7 +19,7 @@ import Modal from "@/components/Modal";
 import ShareButton from "@/components/ShareButton";
 import { Linkify } from "@/components/Linkify";
 import { MapLink } from "@/components/MapLink";
-import { getAddress, getMapsUrl } from "@/lib/eventLocation";
+import { getDisplayAddress, getMapsUrl } from "@/lib/eventLocation";
 import { genreColor } from "@/lib/musicGenres";
 import type { Concert } from "@/types";
 import { isOwner } from "@/lib/permissions";
@@ -173,7 +173,7 @@ export default function ConcertDetailPage() {
     </div>
   );
 
-  const address = getAddress(concert.location);
+  const address = getDisplayAddress(concert.location);
   const mapsUrl = getMapsUrl(concert.location);
 
   return (

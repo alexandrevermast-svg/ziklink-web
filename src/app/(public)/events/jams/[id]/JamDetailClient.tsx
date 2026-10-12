@@ -22,7 +22,7 @@ import { isOwner } from "@/lib/permissions";
 import { canJoinJam, joinOpensAt } from "@/lib/jamJoinWindow";
 import type { Profile, Participant, Message, JamSlot, JamInstrument } from "./types";
 import { TRAILING_EMPTY_ROWS, slugifyInstrumentKey } from "./types";
-import { formatDate, formatTime, getAddress, getMapsUrl } from "./utils";
+import { formatDate, formatTime, getDisplayAddress, getMapsUrl } from "./utils";
 import { ParticipantPicker } from "./components/ParticipantPicker";
 import { ProfilePopup } from "./components/ProfilePopup";
 import { JamPoster } from "./components/JamPoster";
@@ -427,7 +427,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
     </div>
   );
 
-  const address = getAddress(jam.location);
+  const address = getDisplayAddress(jam.location);
   const mapsUrl = getMapsUrl(jam.location);
   const confirmedParticipants = participants.filter((p) => p.status === "confirmed");
   const pendingParticipants = participants.filter((p) => p.status === "pending");

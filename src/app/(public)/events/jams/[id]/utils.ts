@@ -4,4 +4,4 @@ export function formatDate(d: string) {
 export function formatTime(d: string) {
   return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
-export { getAddress, getMapsUrl } from "@/lib/eventLocation";
+export { getDisplayAddress, getMapsUrl } from "@/lib/eventLocation";
