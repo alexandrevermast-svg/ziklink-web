@@ -140,14 +140,16 @@ export default function EventMap({
         <InvalidateSize />
         <FitBounds markers={markers} />
 
-        {markers.map((m) => (
+        {markers.map((m) => {
+          const skipPopup = m.type === "jam" && !!onMarkerClick;
+          return (
           <Marker
             key={`${m.type}-${m.id}`}
             position={[m.lat, m.lng]}
             icon={m.type === "jam" ? JAM_ICON : CONCERT_ICON}
-            eventHandlers={onMarkerClick ? { click: () => onMarkerClick(m) } : undefined}
+            eventHandlers={skipPopup ? { click: () => onMarkerClick!(m) } : undefined}
           >
-            {!onMarkerClick && (
+            {!skipPopup && (
               <Popup>
                 <div className="text-sm min-w-32 leading-tight">
                   {/* ✅ Badge de type d'événement adapté */}
@@ -191,7 +193,8 @@ export default function EventMap({
               </Popup>
             )}
           </Marker>
-        ))}
+          );
+        })}
       </MapContainer>
     </div>
   );

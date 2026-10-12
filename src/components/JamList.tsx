@@ -219,7 +219,6 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   const [geoError, setGeoError] = useState<string | null>(null);
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
   const [selectedJamId, setSelectedJamId] = useState<string | null>(null);
-  const listRef = useRef<HTMLDivElement>(null);
 
   const fetchParticipants = useCallback(async (jamIds: string[]) => {
     const { data } = await supabase.from("jam_participants")
@@ -297,9 +296,6 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
 
   const handleMarkerClick = useCallback((marker: EventMarker) => {
     setSelectedJamId(marker.id);
-    requestAnimationFrame(() => {
-      listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
   }, []);
 
   const handleToggleNearMe = useCallback((checked: boolean) => {
@@ -510,7 +506,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
       {filteredJams.length === 0 ? (
         <p className="text-zik-muted text-sm text-center py-6">{emptyMessage}</p>
       ) : (
-        <div ref={listRef} className="space-y-3">
+        <div className="space-y-3">
           {displayJams.map((jam) => {
             const participants = participantsMap[jam.id] ?? [];
             const isParticipant = participants.some((p) => p.user_id === currentUserId);

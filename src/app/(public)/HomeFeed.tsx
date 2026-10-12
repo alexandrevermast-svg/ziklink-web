@@ -105,6 +105,7 @@ export default function HomeFeed({
   const { joinJam, leaveJam, pendingJamId: joiningId } = useJamParticipation();
   const { markInterested, unmarkInterested, pendingJamId: interestPendingId } = useJamInterest();
   const [togglingConcertId, setTogglingConcertId] = useState<string | null>(null);
+  const [selectedJamId, setSelectedJamId] = useState<string | null>(null);
 
   const { today, tomorrow, dayAfterTomorrow } = useMemo(() => dayBounds(), []);
 
@@ -220,6 +221,10 @@ export default function HomeFeed({
     setTogglingConcertId(null);
   }, [currentUserId, togglingConcertId, myInterests, supabase, router]);
 
+  const handleMarkerClick = useCallback((marker: EventMarker) => {
+    if (marker.type === "jam") setSelectedJamId(marker.id);
+  }, []);
+
   const filteredJams = useMemo(() =>
     jams.filter((j) => {
       const d = new Date(j.start_time);
@@ -298,6 +303,7 @@ export default function HomeFeed({
       <EventMap
         markers={markers}
         onJoinJam={(jamId) => handleJoinJam(jamId)}
+        onMarkerClick={handleMarkerClick}
         currentUserId={currentUserId}
         emptyMessage="Aucun événement 📍"
         height="h-52"
@@ -380,6 +386,7 @@ export default function HomeFeed({
                 joinOpen={canJoinJam(jam.start_time)}
                 participantCount={participants.length}
                 interestedCount={jamInterestCounts[jam.id] ?? 0}
+                isSelected={jam.id === selectedJamId}
                 onToggleInterest={handleToggleJamInterest}
                 onJoin={handleJoinJam}
                 onLeave={handleLeaveJam}
