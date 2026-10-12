@@ -401,6 +401,7 @@ export type Database = {
           genre: string | null
           id: string
           is_open: boolean
+          links: Json
           name: string
         }
         Insert: {
@@ -412,6 +413,7 @@ export type Database = {
           genre?: string | null
           id?: string
           is_open?: boolean
+          links?: Json
           name: string
         }
         Update: {
@@ -423,6 +425,7 @@ export type Database = {
           genre?: string | null
           id?: string
           is_open?: boolean
+          links?: Json
           name?: string
         }
         Relationships: []

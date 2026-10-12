@@ -8,7 +8,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
   ArrowLeft, MapPin, Users, Crown, UserPlus, Pencil,
-  Camera, Loader2, Mail, Trash2, CalendarDays, ChevronRight
+  Camera, Loader2, Mail, Trash2, CalendarDays, ChevronRight, Link2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,6 +23,7 @@ import { RehearsalTab } from "./components/RehearsalTab";
 import { ChatTab } from "./components/ChatTab";
 import { EditGroupModal } from "./components/EditGroupModal";
 import { DeleteGroupModal } from "./components/DeleteGroupModal";
+import { parseProfileLinks, normalizeLinkUrl, type ProfileLink } from "@/lib/profileLinks";
 
 interface EventItem {
   type: 'jam' | 'concert';
@@ -65,6 +66,7 @@ export default function GroupDetailPage() {
   const [editBio, setEditBio] = useState('');
   const [editCity, setEditCity] = useState('');
   const [editGenre, setEditGenre] = useState('');
+  const [editLinks, setEditLinks] = useState<ProfileLink[]>([]);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
 
@@ -75,6 +77,7 @@ export default function GroupDetailPage() {
 
   const pendingMembers = members.filter((m) => m.status === 'pending');
   const confirmedMembers = members.filter((m) => m.status !== 'pending');
+  const groupLinks = group ? parseProfileLinks(group.links) : [];
 
   const handleAvatarClick = (profile: Profile, e: React.MouseEvent<HTMLDivElement>) => {
     if (profile.id === currentUserId) return;
@@ -94,6 +97,7 @@ export default function GroupDetailPage() {
       setEditBio(groupData.bio ?? '');
       setEditCity(groupData.city ?? '');
       setEditGenre(groupData.genre ?? '');
+      setEditLinks(parseProfileLinks(groupData.links));
     }
 
     const { data: membersData } = await supabase
@@ -239,7 +243,13 @@ export default function GroupDetailPage() {
     e.preventDefault();
     if (!editName.trim()) return;
     setIsSavingEdit(true);
-    await supabase.from('groups').update({ name: editName.trim(), bio: editBio.trim() || null, city: editCity.trim() || null, genre: editGenre || null }).eq('id', id);
+    const cleanLinks = editLinks
+      .map((l) => ({ label: l.label.trim(), url: normalizeLinkUrl(l.url) }))
+      .filter((l) => l.url);
+    await supabase.from('groups').update({
+      name: editName.trim(), bio: editBio.trim() || null, city: editCity.trim() || null,
+      genre: editGenre || null, links: cleanLinks,
+    }).eq('id', id);
     setIsSavingEdit(false);
     setIsEditOpen(false);
     await fetchAll();
@@ -382,6 +392,17 @@ export default function GroupDetailPage() {
             </div>
             {group.bio && (
               <p className="text-sm text-zik-muted mt-2 leading-relaxed">{group.bio}</p>
+            )}
+            {groupLinks.length > 0 && (
+              <div className="flex flex-col gap-1.5 mt-2">
+                {groupLinks.map((link, i) => (
+                  <a key={i} href={link.url} target="_blank" rel="noopener noreferrer nofollow"
+                    className="flex items-center gap-1.5 text-sm text-zik-purple hover:underline w-fit">
+                    <Link2 className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{link.label || link.url}</span>
+                  </a>
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -592,6 +613,8 @@ export default function GroupDetailPage() {
         onCityChange={setEditCity}
         editGenre={editGenre}
         onGenreChange={setEditGenre}
+        editLinks={editLinks}
+        onLinksChange={setEditLinks}
         isSaving={isSavingEdit}
         onSave={handleSaveEdit}
       />
