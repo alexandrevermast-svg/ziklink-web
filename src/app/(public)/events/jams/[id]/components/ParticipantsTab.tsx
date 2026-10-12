@@ -60,6 +60,10 @@ export function ParticipantsTab({
             {confirmedParticipants.map((p) => {
               const isMainOrga = p.user_id === jamCreatedBy;
               const isCoOrga = p.is_organizer && !isMainOrga;
+              // L'organisateur principal peut retirer n'importe qui ; un
+              // co-organisateur ne peut retirer que les participants simples
+              // (ni le créateur, ni un autre co-organisateur).
+              const canRemove = isMainOrganizer || (isOrganizer && !isMainOrga && !isCoOrga);
               return (
                 <div key={p.user_id} className={`flex items-center gap-2.5 p-3 rounded-lg border ${
                   isCoOrga ? "bg-zik-purple/10 border-zik-purple/20" : "bg-zik-card/50 border-zik-border"
@@ -70,23 +74,28 @@ export function ParticipantsTab({
                     {isMainOrga && <p className="text-xs text-zik-indigo flex items-center gap-1"><Crown className="h-3 w-3" /> Organisateur</p>}
                     {isCoOrga && <p className="text-xs text-zik-purple flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> Co-organisateur</p>}
                   </div>
-                  {isMainOrganizer && p.user_id !== currentUserId && (
+                  {isOrganizer && p.user_id !== currentUserId && (isMainOrganizer || canRemove) && (
                     <div className="flex gap-1.5 shrink-0">
-                      <Button size="sm" variant="outline"
-                        title={isCoOrga ? "Révoquer" : "Nommer co-organisateur"}
-                        className={`h-7 w-7 p-0 shrink-0 transition-colors ${
-                          isCoOrga
-                            ? "border-zik-purple/30 text-zik-purple hover:bg-zik-purple/10"
-                            : "border-zik-border text-zik-muted hover:border-zik-purple/30 hover:text-zik-purple hover:bg-zik-purple/10"
-                        }`}
-                        onClick={() => onToggleCoOrganizer(p.user_id, p.is_organizer)}>
-                        <ShieldCheck className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button size="sm" variant="ghost"
-                        className="h-7 w-7 p-0 text-zik-muted hover:text-zik-red hover:bg-zik-red/10 shrink-0"
-                        onClick={() => onReject(p.user_id)}>
-                        <X className="h-3.5 w-3.5" />
-                      </Button>
+                      {isMainOrganizer && (
+                        <Button size="sm" variant="outline"
+                          title={isCoOrga ? "Révoquer" : "Nommer co-organisateur"}
+                          className={`h-7 w-7 p-0 shrink-0 transition-colors ${
+                            isCoOrga
+                              ? "border-zik-purple/30 text-zik-purple hover:bg-zik-purple/10"
+                              : "border-zik-border text-zik-muted hover:border-zik-purple/30 hover:text-zik-purple hover:bg-zik-purple/10"
+                          }`}
+                          onClick={() => onToggleCoOrganizer(p.user_id, p.is_organizer)}>
+                          <ShieldCheck className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {canRemove && (
+                        <Button size="sm" variant="ghost"
+                          title="Retirer de la jam"
+                          className="h-7 w-7 p-0 text-zik-muted hover:text-zik-red hover:bg-zik-red/10 shrink-0"
+                          onClick={() => onReject(p.user_id)}>
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                     </div>
                   )}
                 </div>
