@@ -17,7 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import TimePicker from '@/components/ui/TimePicker';
 import { DEFAULT_INSTRUMENTS } from "@/app/(public)/events/jams/[id]/types";
-import { MUSIC_GENRES } from "@/lib/musicGenres";
+import { MUSIC_GENRES, genreColor } from "@/lib/musicGenres";
 
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
@@ -255,15 +255,25 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
       {/* Style de musique */}
       <div>
         <label className="text-sm font-medium text-zik-text">Style de musique (facultatif)</label>
-        <select
-          name="genre"
-          value={formData.genre}
-          onChange={handleInputChange}
-          className="zik-input"
-        >
-          <option value="">Aucun</option>
-          {MUSIC_GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
-        </select>
+        <div className="flex flex-wrap gap-1.5 mt-1.5">
+          {MUSIC_GENRES.map((g) => {
+            const isActive = formData.genre === g;
+            const color = genreColor(g);
+            return (
+              <button
+                key={g}
+                type="button"
+                onClick={() => setFormData((prev) => ({ ...prev, genre: prev.genre === g ? "" : g }))}
+                className="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
+                style={isActive
+                  ? { background: color, borderColor: color, color: "#0E0B16" }
+                  : { background: `${color}1A`, borderColor: `${color}33`, color }}
+              >
+                {g}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
 <div className="grid grid-cols-1 gap-3">
