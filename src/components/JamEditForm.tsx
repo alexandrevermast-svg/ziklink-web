@@ -17,7 +17,7 @@ import TimePicker from "@/components/ui/TimePicker";
 import AddressSearchInput from "@/components/AddressSearchInput";
 import moment from 'moment-timezone';
 import { toUtcDateTime, resolveEndDateTime } from '@/lib/eventDateTime';
-import { MUSIC_GENRES } from "@/lib/musicGenres";
+import { MUSIC_GENRES, genreColor } from "@/lib/musicGenres";
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
@@ -160,14 +160,25 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
       {/* Style de musique */}
       <div>
         <label className="text-sm font-medium text-zik-text mb-1 block">Style de musique (facultatif)</label>
-        <select
-          value={genre}
-          onChange={(e) => setGenre(e.target.value)}
-          className="zik-input"
-        >
-          <option value="">Aucun</option>
-          {MUSIC_GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
-        </select>
+        <div className="flex flex-wrap gap-1.5">
+          {MUSIC_GENRES.map((g) => {
+            const isActive = genre === g;
+            const color = genreColor(g);
+            return (
+              <button
+                key={g}
+                type="button"
+                onClick={() => setGenre((prev) => prev === g ? "" : g)}
+                className="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
+                style={isActive
+                  ? { background: color, borderColor: color, color: "#0E0B16" }
+                  : { background: `${color}1A`, borderColor: `${color}33`, color }}
+              >
+                {g}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Date + Heures */}
