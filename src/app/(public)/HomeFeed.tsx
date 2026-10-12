@@ -156,7 +156,7 @@ export default function HomeFeed({
 
     const { data: concertsData } = await supabase
       .from("concerts")
-      .select("id, title, artist, start_time, end_at, location, genre, is_free, price, poster_url")
+      .select("id, title, artist, start_time, end_at, location, genres, is_free, price, poster_url")
       .gte("start_time", twoHoursAgo)
       .lt("start_time", dayAfterTomorrow.toISOString())
       .order("start_time", { ascending: true });

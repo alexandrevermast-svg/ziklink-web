@@ -38,7 +38,7 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [artist, setArtist] = useState("");
-  const [genre, setGenre] = useState("");
+  const [genres, setGenres] = useState<string[]>([]);
   const [date, setDate] = useState("");
   const [startHour, setStartHour] = useState("");
   const [endHour, setEndHour] = useState("");
@@ -111,7 +111,7 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
         p_title: title,
         p_description: description || null,
         p_artist: artist || null,
-        p_genre: genre || null,
+        p_genre: null,
         p_start_time: start_time,
         p_end_at: end_at,
         p_location: JSON.stringify(location),
@@ -127,6 +127,12 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
         setIsLoading(false);
         return;
       }
+
+      // create_concert n'a pas de paramètre genres (tableau) — appliqué après coup.
+      if (genres.length > 0) {
+        await supabase.from("concerts").update({ genres }).eq("id", (result as any)[0].id);
+      }
+
       onSuccess?.();
       onClose?.();
     } catch {
@@ -166,16 +172,16 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-zik-text">Genre musical</label>
+          <label className="text-sm font-medium text-zik-text">Genres musicaux</label>
           <div className="flex flex-wrap gap-1.5 mt-1.5">
             {MUSIC_GENRES.map((g) => {
-              const isActive = genre === g;
+              const isActive = genres.includes(g);
               const color = genreColor(g);
               return (
                 <button
                   key={g}
                   type="button"
-                  onClick={() => setGenre((prev) => prev === g ? "" : g)}
+                  onClick={() => setGenres((prev) => prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g])}
                   className="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
                   style={isActive
                     ? { background: color, borderColor: color, color: "#0E0B16" }

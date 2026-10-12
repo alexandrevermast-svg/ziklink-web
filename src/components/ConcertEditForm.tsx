@@ -21,7 +21,7 @@ const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap")
 interface ConcertEditFormProps {
   concert: {
     id: string; title: string; description: string | null;
-    artist: string | null; genre: string | null;
+    artist: string | null; genres: string[] | null;
     start_time: string; end_at: string | null; location: string | null;
     is_free: boolean | null; price: number | null; ticket_url: string | null;
     poster_url: string | null;
@@ -44,7 +44,7 @@ export default function ConcertEditForm({ concert, onSuccess, onClose }: Concert
   const [title, setTitle] = useState(concert.title);
   const [description, setDescription] = useState(concert.description ?? "");
   const [artist, setArtist] = useState(concert.artist ?? "");
-  const [genre, setGenre] = useState(concert.genre ?? "");
+  const [genres, setGenres] = useState<string[]>(concert.genres ?? []);
   const [date, setDate] = useState(startLocal.format('YYYY-MM-DD'));
   const [startHour, setStartHour] = useState(startLocal.format('HH:mm'));
   const [endHour, setEndHour] = useState(endLocal ? endLocal.format('HH:mm') : "");
@@ -97,7 +97,7 @@ export default function ConcertEditForm({ concert, onSuccess, onClose }: Concert
           title,
           description: description || null,
           artist: artist || null,
-          genre: genre || null,
+          genres: genres.length > 0 ? genres : null,
           start_time,
           end_at,
           location: JSON.stringify(location),
@@ -145,16 +145,16 @@ return (
         />
       </div>
       <div>
-        <label className="text-sm font-medium text-zik-text">Genre musical</label>
+        <label className="text-sm font-medium text-zik-text">Genres musicaux</label>
         <div className="flex flex-wrap gap-1.5 mt-1.5">
           {MUSIC_GENRES.map((g) => {
-            const isActive = genre === g;
+            const isActive = genres.includes(g);
             const color = genreColor(g);
             return (
               <button
                 key={g}
                 type="button"
-                onClick={() => setGenre((prev) => prev === g ? "" : g)}
+                onClick={() => setGenres((prev) => prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g])}
                 className="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
                 style={isActive
                   ? { background: color, borderColor: color, color: "#0E0B16" }

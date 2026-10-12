@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Clock, MapPin, Music2, Ticket, Heart } from "lucide-react";
 import ShareButton from "@/components/ShareButton";
+import { genreColor } from "@/lib/musicGenres";
 
 export interface ConcertCardData {
   id: string;
@@ -11,7 +12,7 @@ export interface ConcertCardData {
   start_time: string;
   end_at: string | null;
   location: string | null;
-  genre: string | null;
+  genres: string[] | null;
   is_free: boolean | null;
   price: number | null;
   poster_url?: string | null;
@@ -59,12 +60,20 @@ export default function ConcertCard({ concert, isInterested, interestedCount, is
               <h3 className="font-semibold text-zik-text truncate">{concert.title}</h3>
               {concert.artist && <p className="text-sm text-zik-purple font-medium truncate">{concert.artist}</p>}
             </div>
-            {concert.genre && (
-              <span className="shrink-0 text-[10px] font-medium bg-zik-purple/10 text-zik-purple px-2 py-0.5 rounded-full">
-                {concert.genre}
-              </span>
-            )}
           </div>
+
+          {concert.genres && concert.genres.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {concert.genres.map((g) => (
+                <span key={g}
+                  className="shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full"
+                  style={{ backgroundColor: `${genreColor(g)}1A`, color: genreColor(g) }}
+                >
+                  {g}
+                </span>
+              ))}
+            </div>
+          )}
           <div className="flex flex-wrap gap-2 mt-2 text-sm text-zik-text">
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3 text-zik-muted" />

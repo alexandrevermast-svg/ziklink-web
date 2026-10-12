@@ -57,7 +57,7 @@ export type Database = {
           created_by: string
           description: string | null
           end_at: string | null
-          genre: string | null
+          genres: string[] | null
           group_id: string | null
           id: string
           is_free: boolean | null
@@ -74,7 +74,7 @@ export type Database = {
           created_by: string
           description?: string | null
           end_at?: string | null
-          genre?: string | null
+          genres?: string[] | null
           group_id?: string | null
           id?: string
           is_free?: boolean | null
@@ -91,7 +91,7 @@ export type Database = {
           created_by?: string
           description?: string | null
           end_at?: string | null
-          genre?: string | null
+          genres?: string[] | null
           group_id?: string | null
           id?: string
           is_free?: boolean | null

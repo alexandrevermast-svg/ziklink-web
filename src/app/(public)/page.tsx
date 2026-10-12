@@ -4,7 +4,7 @@ import HomeFeed from "./HomeFeed";
 import type { JamSession as JamSessionRow, Concert as ConcertRow, Profile } from "@/types";
 
 export type JamSession = Pick<JamSessionRow, "id" | "title" | "description" | "start_time" | "end_at" | "location" | "is_open" | "created_by" | "has_drums" | "has_keyboard" | "genres">;
-export type Concert = Pick<ConcertRow, "id" | "title" | "artist" | "start_time" | "end_at" | "location" | "genre" | "is_free" | "price" | "poster_url">;
+export type Concert = Pick<ConcertRow, "id" | "title" | "artist" | "start_time" | "end_at" | "location" | "genres" | "is_free" | "price" | "poster_url">;
 export interface ParticipantWithProfile {
   user_id: string;
   profile: Pick<Profile, "id" | "username" | "avatar_url"> | null;
@@ -43,7 +43,7 @@ export default async function HomePage() {
 
   const { data: concertsData } = await supabase
     .from("concerts")
-    .select("id, title, artist, start_time, end_at, location, genre, is_free, price, poster_url")
+    .select("id, title, artist, start_time, end_at, location, genres, is_free, price, poster_url")
     .gte("start_time", twoHoursAgo)
     .lt("start_time", dayAfterTomorrow.toISOString())
     .order("start_time", { ascending: true });

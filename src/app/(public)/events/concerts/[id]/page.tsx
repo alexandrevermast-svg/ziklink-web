@@ -20,6 +20,7 @@ import ShareButton from "@/components/ShareButton";
 import { Linkify } from "@/components/Linkify";
 import { MapLink } from "@/components/MapLink";
 import { getAddress, getMapsUrl } from "@/lib/eventLocation";
+import { genreColor } from "@/lib/musicGenres";
 import type { Concert } from "@/types";
 import { isOwner } from "@/lib/permissions";
 
@@ -231,17 +232,21 @@ export default function ConcertDetailPage() {
         )}
 
         <div className="px-4 pt-3 pb-3 border-b border-zik-border">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-bold text-zik-text">{concert.title}</h1>
-              {concert.artist && <p className="text-base text-zik-purple font-medium mt-0.5">{concert.artist}</p>}
+          <h1 className="text-xl font-bold text-zik-text">{concert.title}</h1>
+          {concert.artist && <p className="text-base text-zik-purple font-medium mt-0.5">{concert.artist}</p>}
+
+          {concert.genres && concert.genres.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-1.5">
+              {concert.genres.map((g) => (
+                <span key={g}
+                  className="shrink-0 text-xs font-medium px-2.5 py-1 rounded-full"
+                  style={{ backgroundColor: `${genreColor(g)}1A`, color: genreColor(g) }}
+                >
+                  {g}
+                </span>
+              ))}
             </div>
-            {concert.genre && (
-              <span className="shrink-0 text-xs font-medium bg-zik-purple/10 text-zik-purple px-2.5 py-1 rounded-full">
-                {concert.genre}
-              </span>
-            )}
-          </div>
+          )}
           {concert.description && (
             <div className="mt-2">
               <p
