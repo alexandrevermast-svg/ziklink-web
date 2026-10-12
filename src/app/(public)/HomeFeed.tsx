@@ -231,6 +231,18 @@ export default function HomeFeed({
       return d >= selectedDay && d < selectedDayEnd;
     }), [jams, selectedDay, selectedDayEnd]);
 
+  // La jam cliquée sur la carte remonte en tête de liste, sans changer
+  // l'ordre des autres.
+  const displayJams = useMemo(() => {
+    if (!selectedJamId) return filteredJams;
+    const idx = filteredJams.findIndex((j) => j.id === selectedJamId);
+    if (idx <= 0) return filteredJams;
+    const copy = [...filteredJams];
+    const [selected] = copy.splice(idx, 1);
+    copy.unshift(selected);
+    return copy;
+  }, [filteredJams, selectedJamId]);
+
   const filteredConcerts = useMemo(() =>
     concerts.filter((c) => {
       const d = new Date(c.start_time);
@@ -369,7 +381,7 @@ export default function HomeFeed({
       ) : (
         <div className="space-y-3">
           {/* Jams */}
-          {filteredJams.map((jam) => {
+          {displayJams.map((jam) => {
             const participants = participantsMap[jam.id] ?? [];
             const isParticipant = participants.some((p) => p.user_id === currentUserId);
             const isCreator = isOwner(jam, currentUserId);
