@@ -55,7 +55,6 @@ export default function JamCard({
   const [expanded, setExpanded] = useState(false);
   const address = getAddress(jam.location);
   const mapsUrl = getMapsUrl(jam.location);
-  const accent = jam.genres && jam.genres.length > 0 ? genreColor(jam.genres[0]) : null;
   const hasDetails = !!jam.poster_url || !!jam.description?.trim();
   const showDetails = hasDetails && (expanded || !!isSelected);
 
@@ -66,7 +65,6 @@ export default function JamCard({
         isSelected ? "border-white/50 shadow-[0_0_18px_-2px_rgba(255,255,255,0.25)]" : "border-zik-border hover:border-zik-purple/30"
       }`}
     >
-      {accent && <div className="absolute left-0 top-0 bottom-0 w-0.75" style={{ background: accent }} />}
 
       <div className="flex items-center justify-between gap-2">
         <h3 className="font-semibold text-zik-text truncate flex-1 min-w-0">{jam.title}</h3>
