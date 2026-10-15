@@ -91,11 +91,6 @@ export default function JamCard({
             {formatTime(jam.start_time)}
             {jam.end_at && ` → ${formatTime(jam.end_at)}`}
           </span>
-          {address && (
-            <MapLink address={address} mapsUrl={mapsUrl} className="flex items-center gap-1 truncate max-w-xs hover:text-zik-purple hover:underline">
-              <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted" />{address}
-            </MapLink>
-          )}
           {distanceKm !== undefined && (
             <span className="flex items-center gap-1 text-zik-purple font-medium">
               <LocateFixed className="h-3.5 w-3.5" />
@@ -103,6 +98,12 @@ export default function JamCard({
             </span>
           )}
         </div>
+        {address && (
+          <MapLink address={address} mapsUrl={mapsUrl} className="flex items-start gap-1 text-sm text-zik-text mt-1 hover:text-zik-purple hover:underline">
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted mt-0.5" />
+            <span className="line-clamp-2">{address}</span>
+          </MapLink>
+        )}
       </div>
 
       {hasDetails && (

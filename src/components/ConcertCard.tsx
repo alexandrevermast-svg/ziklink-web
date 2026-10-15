@@ -76,12 +76,13 @@ export default function ConcertCard({ concert, isInterested, interestedCount, is
               {formatDate(concert.start_time)} · {formatTime(concert.start_time)}
               {concert.end_at && ` → ${formatTime(concert.end_at)}`}
             </span>
-            {address && (
-              <span className="flex items-center gap-1 truncate max-w-45">
-                <MapPin className="h-3 w-3 shrink-0 text-zik-muted" />{address}
-              </span>
-            )}
           </div>
+          {address && (
+            <div className="flex items-start gap-1 mt-1 text-sm text-zik-text">
+              <MapPin className="h-3 w-3 shrink-0 text-zik-muted mt-0.5" />
+              <span className="line-clamp-2">{address}</span>
+            </div>
+          )}
           <div className="flex items-center justify-between mt-2">
             <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
               concert.is_free ? "bg-zik-emerald/10 text-zik-emerald" : "bg-zik-orange/10 text-zik-orange"
