@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { Clock, MapPin, Music2, Ticket, Heart } from "lucide-react";
 import ShareButton from "@/components/ShareButton";
 import { genreColor } from "@/lib/musicGenres";
-import { getDisplayAddress } from "@/lib/eventLocation";
 
 export interface ConcertCardData {
   id: string;
@@ -33,9 +32,14 @@ function formatDate(d: string) {
 function formatTime(d: string) {
   return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
+function getAddress(s: string | null) {
+  if (!s) return null;
+  try { return JSON.parse(s)?.address ?? null; } catch { return null; }
+}
+
 export default function ConcertCard({ concert, isInterested, interestedCount, isToggling, onToggleInterest }: ConcertCardProps) {
   const router = useRouter();
-  const address = getDisplayAddress(concert.location);
+  const address = getAddress(concert.location);
 
   return (
     <div

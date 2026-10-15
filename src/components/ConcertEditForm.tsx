@@ -12,7 +12,6 @@ import { Ticket, Link as LinkIcon, Music2, Upload, X } from "lucide-react";
 import moment from 'moment-timezone';
 import { toUtcDateTime, resolveEndDateTime } from '@/lib/eventDateTime';
 import { MUSIC_GENRES, genreColor } from "@/lib/musicGenres";
-import { getDisplayAddress } from "@/lib/eventLocation";
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
@@ -52,7 +51,7 @@ export default function ConcertEditForm({ concert, onSuccess, onClose }: Concert
   const [isFree, setIsFree] = useState(concert.is_free);
   const [price, setPrice] = useState(concert.price ? String(concert.price) : "");
   const [ticketUrl, setTicketUrl] = useState(concert.ticket_url ?? "");
-  const [location, setLocation] = useState<{ lat: number; lng: number; address: string; name?: string; street?: string; postcode?: string; city?: string }>(parsedLoc);
+  const [location, setLocation] = useState<{ lat: number; lng: number; address: string }>(parsedLoc);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>({ lat: parsedLoc.lat, lng: parsedLoc.lng });
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(concert.poster_url);
@@ -295,14 +294,14 @@ return (
         <LocationPickerMap
           center={location}
           selectedLocation={selectedLocation}
-          onLocationChange={({ lat, lng, address, name, street, postcode, city }) => {
+          onLocationChange={({ lat, lng, address }) => {
             setSelectedLocation({ lat, lng });
-            setLocation({ lat, lng, address, name, street, postcode, city });
+            setLocation({ lat, lng, address });
           }}
         />
       </div>
       {location.address && (
-        <p className="text-sm text-zik-muted mt-2">📍 {getDisplayAddress(JSON.stringify(location))}</p>
+        <p className="text-sm text-zik-muted mt-2">📍 {location.address}</p>
       )}
     </div>
 

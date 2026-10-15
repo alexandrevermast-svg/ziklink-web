@@ -18,7 +18,6 @@ import { cn } from "@/lib/utils";
 import TimePicker from '@/components/ui/TimePicker';
 import { DEFAULT_INSTRUMENTS } from "@/app/(public)/events/jams/[id]/types";
 import { MUSIC_GENRES, genreColor } from "@/lib/musicGenres";
-import { getDisplayAddress } from "@/lib/eventLocation";
 
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
@@ -46,7 +45,7 @@ interface JamFormData {
   title: string; description: string; date: string;
   start_hour: string; end_hour: string; is_open: boolean; has_drums: boolean; has_keyboard: boolean;
   genres: string[];
-  location: { lat: number; lng: number; address: string; name?: string; street?: string; postcode?: string; city?: string };
+  location: { lat: number; lng: number; address: string };
 }
 
 interface UserGroup { id: string; name: string; avatar_url: string | null; }
@@ -584,11 +583,11 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
   <AddressSearchInput
     value={formData.location.address}
     placeholder="Ex: 10 rue de la Paix, Paris"
-    onChange={({ address, lat, lng, name, street, postcode, city }) => {
+    onChange={({ address, lat, lng }) => {
       setSelectedLocation({ lat, lng });
       setFormData((prev) => ({
         ...prev,
-        location: { lat, lng, address, name, street, postcode, city },
+        location: { lat, lng, address },
       }));
     }}
     onClear={() => {
@@ -617,11 +616,11 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
     <LocationPickerMap
       center={formData.location}
       selectedLocation={selectedLocation}
-      onLocationChange={({ lat, lng, address, name, street, postcode, city }) => {
+      onLocationChange={({ lat, lng, address }) => {
         setSelectedLocation({ lat, lng });
         setFormData((prev) => ({
           ...prev,
-          location: { lat, lng, address, name, street, postcode, city },
+          location: { lat, lng, address },
         }));
       }}
     />
@@ -631,7 +630,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
     <p className="text-xs mt-2 px-1 flex items-center gap-1.5"
       style={{ color: 'rgba(255,255,255,0.64)' }}>
       <MapPin size={12} style={{ color: '#C084FC' }} />
-      {getDisplayAddress(JSON.stringify(formData.location))}
+      {formData.location.address}
     </p>
   )}
 </div>
