@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Clock, UserPlus, Check, Drum, Piano, LocateFixed, Heart } from "lucide-react";
+import { MapPin, Clock, UserPlus, Check, Drum, Piano, LocateFixed, Heart, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ShareButton from "@/components/ShareButton";
 import { MapLink } from "@/components/MapLink";
@@ -21,6 +22,7 @@ export interface JamCardData {
   has_drums: boolean;
   has_keyboard: boolean;
   genres?: string[] | null;
+  poster_url?: string | null;
 }
 
 interface JamCardProps {
@@ -50,13 +52,16 @@ export default function JamCard({
   onToggleInterest, onJoin, onLeave,
 }: JamCardProps) {
   const router = useRouter();
+  const [expanded, setExpanded] = useState(false);
   const address = getAddress(jam.location);
   const mapsUrl = getMapsUrl(jam.location);
   const accent = jam.genres && jam.genres.length > 0 ? genreColor(jam.genres[0]) : null;
+  const hasDetails = !!jam.poster_url || !!jam.description?.trim();
+  const showDetails = hasDetails && (expanded || !!isSelected);
 
   return (
     <div
-      onClick={() => router.push(`/events/jams/${jam.id}`)}
+      onClick={() => (hasDetails ? setExpanded((v) => !v) : router.push(`/events/jams/${jam.id}`))}
       className={`relative overflow-hidden rounded-xl border p-4 hover:bg-zik-card-hover hover:shadow-sm transition-all cursor-pointer active:scale-[0.99] bg-zik-card ${
         isSelected ? "border-2 border-zik-purple shadow-sm shadow-zik-purple/20" : "border-zik-border hover:border-zik-purple/30"
       }`}
@@ -102,6 +107,21 @@ export default function JamCard({
         </div>
       </div>
 
+      {hasDetails && (
+        <div className={`grid overflow-hidden transition-all duration-300 ease-in-out ${
+          showDetails ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"
+        }`}>
+          <div className="min-h-0">
+            {jam.poster_url && (
+              <img src={jam.poster_url} alt="" className="w-full h-36 object-cover rounded-lg mb-2" />
+            )}
+            {jam.description?.trim() && (
+              <p className="text-sm text-zik-muted whitespace-pre-line">{jam.description}</p>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mt-3 gap-2">
         <div className="flex flex-wrap gap-1 min-w-0">
           {jam.genres?.map((g) => (
@@ -114,6 +134,13 @@ export default function JamCard({
           ))}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={(e) => { e.stopPropagation(); router.push(`/events/jams/${jam.id}`); }}
+            title="Voir la jam en détail"
+            className="h-7 w-7 flex items-center justify-center rounded-full text-zik-muted hover:text-zik-purple hover:bg-zik-purple/10 transition-colors"
+          >
+            <ArrowUpRight className="h-4 w-4" />
+          </button>
           <ShareButton url={`/events/jams/${jam.id}`} title={jam.title} text={jam.description ?? undefined} />
           {!isCreator && (
             <button
