@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
@@ -63,8 +63,13 @@ function InvalidateSize() {
 
 function FitBounds({ markers }: { markers: EventMarker[] }) {
   const map = useMap();
+  // Ne cadre qu'une seule fois (au premier affichage des marqueurs) — sinon
+  // sélectionner une jam sur la carte (ou tout autre re-rendu) redéclenchait
+  // ce fitBounds et dézoomait la carte sous l'utilisateur.
+  const hasFit = useRef(false);
   useEffect(() => {
-    if (markers.length === 0) return;
+    if (hasFit.current || markers.length === 0) return;
+    hasFit.current = true;
     if (markers.length === 1) { map.setView([markers[0].lat, markers[0].lng], 13); return; }
     const bounds = L.latLngBounds(markers.map((m) => [m.lat, m.lng]));
     map.fitBounds(bounds, { padding: [40, 40] });
