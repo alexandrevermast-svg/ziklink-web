@@ -6,10 +6,20 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
 
+interface PickedLocation {
+  lat: number;
+  lng: number;
+  address: string;
+  name?: string;
+  street?: string;
+  postcode?: string;
+  city?: string;
+}
+
 interface LocationPickerMapProps {
   center: { lat: number; lng: number };
   selectedLocation: { lat: number; lng: number } | null;
-  onLocationChange: (location: { lat: number; lng: number; address: string }) => void;
+  onLocationChange: (location: PickedLocation) => void;
 }
 
 function MapClickHandler({ onLocationChange }: Pick<LocationPickerMapProps, "onLocationChange">) {
@@ -18,11 +28,16 @@ function MapClickHandler({ onLocationChange }: Pick<LocationPickerMapProps, "onL
       const { lat, lng } = e.latlng;
       try {
         const response = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`
         );
         const data = await response.json();
         const address = data.display_name || "Adresse non trouvée";
-        onLocationChange({ lat, lng, address });
+        const addr = data.address;
+        const name = data.name || undefined;
+        const street = addr ? [addr.house_number, addr.road].filter(Boolean).join(" ") || undefined : undefined;
+        const postcode = addr?.postcode;
+        const city = addr?.city || addr?.town || addr?.village || addr?.municipality;
+        onLocationChange({ lat, lng, address, name, street, postcode, city });
       } catch {
         onLocationChange({ lat, lng, address: "Adresse non trouvée" });
       }

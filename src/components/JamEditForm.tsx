@@ -58,7 +58,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
   const [hasDrums, setHasDrums] = useState(jam.has_drums);
   const [hasKeyboard, setHasKeyboard] = useState(jam.has_keyboard);
   const [genres, setGenres] = useState<string[]>(jam.genres ?? []);
-  const [location, setLocation] = useState<{ lat: number; lng: number; address: string }>(parsedLoc);
+  const [location, setLocation] = useState<{ lat: number; lng: number; address: string; name?: string; street?: string; postcode?: string; city?: string }>(parsedLoc);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(
     { lat: parsedLoc.lat, lng: parsedLoc.lng }
   );
@@ -397,9 +397,9 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
         <AddressSearchInput
           value={location.address}
           placeholder="Rechercher une adresse..."
-          onChange={({ address, lat, lng }) => {
+          onChange={({ address, lat, lng, name, street, postcode, city }) => {
             setSelectedLocation({ lat, lng });
-            setLocation({ lat, lng, address });
+            setLocation({ lat, lng, address, name, street, postcode, city });
           }}
           onClear={() => {
             setLocation({ lat: parsedLoc.lat, lng: parsedLoc.lng, address: '' });
@@ -422,9 +422,9 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
           <LocationPickerMap
             center={location}
             selectedLocation={selectedLocation}
-            onLocationChange={({ lat, lng, address }) => {
+            onLocationChange={({ lat, lng, address, name, street, postcode, city }) => {
               setSelectedLocation({ lat, lng });
-              setLocation({ lat, lng, address });
+              setLocation({ lat, lng, address, name, street, postcode, city });
             }}
           />
         </div>

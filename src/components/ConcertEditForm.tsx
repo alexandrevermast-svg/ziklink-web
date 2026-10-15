@@ -51,7 +51,7 @@ export default function ConcertEditForm({ concert, onSuccess, onClose }: Concert
   const [isFree, setIsFree] = useState(concert.is_free);
   const [price, setPrice] = useState(concert.price ? String(concert.price) : "");
   const [ticketUrl, setTicketUrl] = useState(concert.ticket_url ?? "");
-  const [location, setLocation] = useState<{ lat: number; lng: number; address: string }>(parsedLoc);
+  const [location, setLocation] = useState<{ lat: number; lng: number; address: string; name?: string; street?: string; postcode?: string; city?: string }>(parsedLoc);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>({ lat: parsedLoc.lat, lng: parsedLoc.lng });
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(concert.poster_url);
@@ -294,9 +294,9 @@ return (
         <LocationPickerMap
           center={location}
           selectedLocation={selectedLocation}
-          onLocationChange={({ lat, lng, address }) => {
+          onLocationChange={({ lat, lng, address, name, street, postcode, city }) => {
             setSelectedLocation({ lat, lng });
-            setLocation({ lat, lng, address });
+            setLocation({ lat, lng, address, name, street, postcode, city });
           }}
         />
       </div>

@@ -45,7 +45,7 @@ interface JamFormData {
   title: string; description: string; date: string;
   start_hour: string; end_hour: string; is_open: boolean; has_drums: boolean; has_keyboard: boolean;
   genres: string[];
-  location: { lat: number; lng: number; address: string };
+  location: { lat: number; lng: number; address: string; name?: string; street?: string; postcode?: string; city?: string };
 }
 
 interface UserGroup { id: string; name: string; avatar_url: string | null; }
@@ -640,11 +640,11 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
   <AddressSearchInput
     value={formData.location.address}
     placeholder="Ex: 10 rue de la Paix, Paris"
-    onChange={({ address, lat, lng }) => {
+    onChange={({ address, lat, lng, name, street, postcode, city }) => {
       setSelectedLocation({ lat, lng });
       setFormData((prev) => ({
         ...prev,
-        location: { lat, lng, address },
+        location: { lat, lng, address, name, street, postcode, city },
       }));
     }}
     onClear={() => {
@@ -673,11 +673,11 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
     <LocationPickerMap
       center={formData.location}
       selectedLocation={selectedLocation}
-      onLocationChange={({ lat, lng, address }) => {
+      onLocationChange={({ lat, lng, address, name, street, postcode, city }) => {
         setSelectedLocation({ lat, lng });
         setFormData((prev) => ({
           ...prev,
-          location: { lat, lng, address },
+          location: { lat, lng, address, name, street, postcode, city },
         }));
       }}
     />

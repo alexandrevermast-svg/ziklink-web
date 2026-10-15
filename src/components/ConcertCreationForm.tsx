@@ -45,7 +45,7 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
   const [isFree, setIsFree] = useState(true);
   const [price, setPrice] = useState("");
   const [ticketUrl, setTicketUrl] = useState("");
-  const [location, setLocation] = useState({ lat: 48.8566, lng: 2.3522, address: "" });
+  const [location, setLocation] = useState<{ lat: number; lng: number; address: string; name?: string; street?: string; postcode?: string; city?: string }>({ lat: 48.8566, lng: 2.3522, address: "" });
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
@@ -382,9 +382,9 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
   <AddressSearchInput
     value={location.address ?? ''}
     placeholder="Ex: Olympia, Paris"
-    onChange={({ address, lat, lng }) => {
+    onChange={({ address, lat, lng, name, street, postcode, city }) => {
       setSelectedLocation({ lat, lng });
-      setLocation({ lat, lng, address });
+      setLocation({ lat, lng, address, name, street, postcode, city });
     }}
     onClear={() => {
       setLocation({ lat: 48.8566, lng: 2.3522, address: '' });
@@ -407,9 +407,9 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
     <LocationPickerMap
       center={location}
       selectedLocation={selectedLocation}
-      onLocationChange={({ lat, lng, address }) => {
+      onLocationChange={({ lat, lng, address, name, street, postcode, city }) => {
         setSelectedLocation({ lat, lng });
-        setLocation({ lat, lng, address });
+        setLocation({ lat, lng, address, name, street, postcode, city });
       }}
     />
   </div>

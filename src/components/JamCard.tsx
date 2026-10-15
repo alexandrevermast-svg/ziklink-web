@@ -8,7 +8,7 @@ import ShareButton from "@/components/ShareButton";
 import { MapLink } from "@/components/MapLink";
 import { formatDistanceKm } from "@/lib/geo";
 import { joinOpensAt } from "@/lib/jamJoinWindow";
-import { getAddress, getMapsUrl } from "@/lib/eventLocation";
+import { getDisplayAddress, getMapsUrl } from "@/lib/eventLocation";
 import { genreColor } from "@/lib/musicGenres";
 
 export interface JamCardData {
@@ -53,7 +53,7 @@ export default function JamCard({
 }: JamCardProps) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
-  const address = getAddress(jam.location);
+  const address = getDisplayAddress(jam.location);
   const mapsUrl = getMapsUrl(jam.location);
   const hasDetails = !!jam.poster_url || !!jam.description?.trim();
   const showDetails = hasDetails && (expanded || !!isSelected);

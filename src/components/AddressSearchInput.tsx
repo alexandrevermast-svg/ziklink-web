@@ -7,14 +7,28 @@ import { MapPin, Loader2, X } from 'lucide-react';
 interface NominatimResult {
   place_id: number;
   display_name: string;
+  name: string;
   lat: string;
   lon: string;
+  address?: {
+    house_number?: string;
+    road?: string;
+    postcode?: string;
+    city?: string;
+    town?: string;
+    village?: string;
+    municipality?: string;
+  };
 }
 
 interface AddressResult {
   address: string;
   lat: number;
   lng: number;
+  name?: string;
+  street?: string;
+  postcode?: string;
+  city?: string;
 }
 
 interface AddressSearchInputProps {
@@ -92,7 +106,12 @@ export default function AddressSearchInput({
     setSelected(true);
     setIsOpen(false);
     setResults([]);
-    onChange({ address, lat, lng });
+    const addr = result.address;
+    const name = result.name || undefined;
+    const street = addr ? [addr.house_number, addr.road].filter(Boolean).join(" ") || undefined : undefined;
+    const postcode = addr?.postcode;
+    const city = addr?.city || addr?.town || addr?.village || addr?.municipality;
+    onChange({ address, lat, lng, name, street, postcode, city });
   };
 
   const handleBlur = () => {
