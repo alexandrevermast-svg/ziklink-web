@@ -99,7 +99,7 @@ export default function JamCard({
           )}
         </div>
         {address && (
-          <MapLink address={address} mapsUrl={mapsUrl} className="flex items-start gap-1 text-sm text-zik-text mt-1 hover:text-zik-purple hover:underline">
+          <MapLink address={address} mapsUrl={mapsUrl} className="flex items-start gap-1 text-sm text-zik-text mt-1 text-left hover:text-zik-purple hover:underline">
             <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted mt-0.5" />
             <span className="line-clamp-2">{address}</span>
           </MapLink>
