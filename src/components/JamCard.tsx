@@ -63,7 +63,7 @@ export default function JamCard({
     <div
       onClick={() => (hasDetails ? setExpanded((v) => !v) : router.push(`/events/jams/${jam.id}`))}
       className={`relative overflow-hidden rounded-xl border p-4 hover:bg-zik-card-hover hover:shadow-sm transition-all cursor-pointer active:scale-[0.99] bg-zik-card ${
-        isSelected ? "border-2 border-zik-purple shadow-sm shadow-zik-purple/20" : "border-zik-border hover:border-zik-purple/30"
+        isSelected ? "border-white/50 shadow-[0_0_18px_-2px_rgba(255,255,255,0.25)]" : "border-zik-border hover:border-zik-purple/30"
       }`}
     >
       {accent && <div className="absolute left-0 top-0 bottom-0 w-0.75" style={{ background: accent }} />}
