@@ -65,8 +65,8 @@ export default function JamCard({
         hasDetails ? "cursor-pointer active:scale-[0.99]" : ""
       } ${
         isSelected
-          ? "border-zik-indigo/50 shadow-[0_0_18px_-2px_rgba(129,140,248,0.35)]"
-          : "border-zik-indigo/20 hover:border-zik-indigo/40"
+          ? "border-zik-indigo/60 shadow-[0_0_18px_-2px_rgba(129,140,248,0.35)]"
+          : "border-zik-indigo/35 hover:border-zik-indigo/55"
       }`}
     >
 
