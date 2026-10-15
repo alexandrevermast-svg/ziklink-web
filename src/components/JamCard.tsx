@@ -61,12 +61,8 @@ export default function JamCard({
   return (
     <div
       onClick={() => { if (hasDetails) setExpanded((v) => !v); }}
-      className={`relative overflow-hidden rounded-xl border p-4 hover:bg-zik-card-hover hover:shadow-sm transition-all bg-zik-card ${
+      className={`relative overflow-hidden rounded-xl border border-zik-indigo/35 p-4 hover:bg-zik-card-hover hover:border-zik-indigo/55 hover:shadow-sm transition-all bg-zik-card ${
         hasDetails ? "cursor-pointer active:scale-[0.99]" : ""
-      } ${
-        isSelected
-          ? "border-zik-indigo/60 shadow-[0_0_18px_-2px_rgba(129,140,248,0.35)]"
-          : "border-zik-indigo/35 hover:border-zik-indigo/55"
       }`}
     >
 
