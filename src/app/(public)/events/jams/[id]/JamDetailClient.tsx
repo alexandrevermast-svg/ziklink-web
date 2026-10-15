@@ -8,12 +8,11 @@ import { Button } from '@/components/ui/button';
 import {
   ArrowLeft, Lock, Unlock, MapPin, Clock,
   UserPlus, Check, Crown, ShieldCheck, Pencil,
-  Radio, Trash2, ChevronUp, ChevronDown, Heart, Settings2
+  Radio, Trash2, Heart, Settings2
 } from 'lucide-react';
 import JamEditForm from "@/components/JamEditForm";
 import Modal from "@/components/Modal";
 import ShareButton from "@/components/ShareButton";
-import { Linkify } from "@/components/Linkify";
 import { MapLink } from "@/components/MapLink";
 import type { JamSession } from "@/types";
 import { useJamParticipation } from "@/hooks/useJamParticipation";
@@ -22,10 +21,9 @@ import { isOwner } from "@/lib/permissions";
 import { canJoinJam, joinOpensAt } from "@/lib/jamJoinWindow";
 import type { Profile, Participant, Message, JamSlot, JamInstrument } from "./types";
 import { TRAILING_EMPTY_ROWS, slugifyInstrumentKey } from "./types";
-import { formatDate, formatTime, getAddress, getMapsUrl } from "./utils";
+import { formatTime, getAddress, getMapsUrl } from "./utils";
 import { ParticipantPicker } from "./components/ParticipantPicker";
 import { ProfilePopup } from "./components/ProfilePopup";
-import { JamPoster } from "./components/JamPoster";
 import { ParticipantsTab } from "./components/ParticipantsTab";
 import { SlotsTab } from "./components/SlotsTab";
 import { InstrumentManagerModal } from "./components/InstrumentManagerModal";
@@ -68,8 +66,6 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [pickerCell, setPickerCell] = useState<{ instrument: string; slot_index: number; anchorEl: HTMLElement } | null>(null);
-  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
-
   const { joinJam, leaveJam } = useJamParticipation();
   const { markInterested, unmarkInterested, pendingJamId: interestPendingId } = useJamInterest();
   const [isInterested, setIsInterested] = useState(false);
@@ -371,10 +367,6 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
     router.push('/events');
   };
 
-  const toggleDescription = (jamId: string) => {
-    setExpandedDescriptions((prev) => ({ ...prev, [jamId]: !prev[jamId] }));
-  };
-
   if (isLoading) return (
     <div className="flex flex-col gap-4 p-4">
       <div className="h-8 w-32 bg-zik-card animate-pulse rounded" />
@@ -424,23 +416,15 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
         onRemove={handleRemoveInstrument}
       />
 
-      {/* ── POSTER ──────────────────────────────────────────────────────── */}
-      {jam.poster_url && <JamPoster posterUrl={jam.poster_url} />}
-
       {/* ── HEADER ──────────────────────────────────────────────────────── */}
       <div
         className="px-4 pt-4 pb-3"
-        style={{
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-          marginTop: jam.poster_url ? -48 : 0,
-          position: jam.poster_url ? 'relative' : 'static',
-          zIndex: 2,
-        }}
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
       >
         <div className="flex items-center justify-between mb-3">
           <button onClick={() => router.back()}
             className="flex items-center gap-1.5 text-sm transition-colors"
-            style={{ color: jam.poster_url ? 'rgba(255,255,255,0.80)' : 'rgba(255,255,255,0.67)' }}>
+            style={{ color: 'rgba(255,255,255,0.67)' }}>
             <ArrowLeft className="h-4 w-4" /> Retour
           </button>
           <div className="flex items-center gap-2">
@@ -471,42 +455,21 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           </span>
         </div>
 
-        {jam.description && (
-          <div className="mt-1">
-            <p className={`selectable text-base text-zik-text/80 whitespace-normal transition-all duration-200 ${
-              expandedDescriptions[jam.id] ? '' : 'line-clamp-2'
-            }`}>
-              <Linkify text={jam.description} />
-            </p>
-            {jam.description.length > 100 && (
-              <button onClick={() => toggleDescription(jam.id)}
-                className="text-xs text-zik-purple mt-1 hover:bg-zik-purple/10 rounded-lg px-2 py-1 flex items-center gap-1 transition-colors">
-                {expandedDescriptions[jam.id]
-                  ? <><ChevronUp className="h-3 w-3" /> Voir moins</>
-                  : <><ChevronDown className="h-3 w-3" /> Voir plus</>
-                }
-              </button>
-            )}
+        <div className="mt-2 text-sm text-zik-text">
+          <div className="flex items-center gap-1">
+            <Clock className="h-3.5 w-3.5 text-zik-muted" />
+            {formatTime(jam.start_time)}
+            {jam.end_at && ` → ${formatTime(jam.end_at)}`}
           </div>
-        )}
-
-        {(!jam.description || jam.description.length <= 100 || expandedDescriptions[jam.id]) && (
-          <div className="mt-2 text-sm text-zik-text">
-            <div className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5 text-zik-muted" />
-              {formatDate(jam.start_time)} · {formatTime(jam.start_time)}
-              {jam.end_at && ` → ${formatTime(jam.end_at)}`}
+          {address && (
+            <div className="flex items-start gap-1 mt-1 min-w-0">
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted mt-0.5" />
+              <MapLink address={address} mapsUrl={mapsUrl} className="block w-full min-w-0 text-left whitespace-normal wrap-break-word hover:text-zik-purple hover:underline">
+                {address}
+              </MapLink>
             </div>
-            {address && (
-              <div className="flex items-start gap-1 mt-1 min-w-0">
-                <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted mt-0.5" />
-                <MapLink address={address} mapsUrl={mapsUrl} className="block w-full min-w-0 text-left whitespace-normal wrap-break-word hover:text-zik-purple hover:underline">
-                  {address}
-                </MapLink>
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
 
         {myActiveSlot && (
           <div className="mt-3 flex items-center gap-2 bg-zik-emerald/10 border border-zik-emerald/30 rounded-lg px-3 py-2">
