@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Lock, Unlock, Repeat2, Users, MapPin, CalendarDays, Clock, Drum, Piano } from "lucide-react";
+import { Lock, Unlock, Repeat2, Users, MapPin, CalendarDays, Clock, Drum, Piano, Upload, X } from "lucide-react";
 import AddressSearchInput from '@/components/AddressSearchInput';
 import { toUtcDateTime, resolveEndDateTime } from '@/lib/eventDateTime';
 import { Calendar } from "@/components/ui/calendar";
@@ -89,6 +89,8 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
     location: { lat: 48.8566, lng: 2.3522, address: "" },
   });
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [posterFile, setPosterFile] = useState<File | null>(null);
+  const [posterPreview, setPosterPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recurrence, setRecurrence] = useState<RecurrenceData>({
@@ -117,6 +119,13 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPosterFile(file);
+    setPosterPreview(URL.createObjectURL(file));
   };
 
   const toggleDay = (day: number) => {
@@ -164,6 +173,19 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         occurrencesPayload.push({ start_time: start_time, end_at: end_at });
       }
 
+      let posterUrl: string | null = null;
+      if (posterFile) {
+        const ext = posterFile.name.split(".").pop();
+        const path = `jams/${user.id}/${Date.now()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("avatars")
+          .upload(path, posterFile, { upsert: true });
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+          posterUrl = urlData.publicUrl;
+        }
+      }
+
       // p_group_id accepte NULL côté Postgres, non reflété par le typage généré des Args de fonction.
       const { data: createdJams, error: rpcError } = await supabase.rpc('create_jam_sessions', {
         p_title: formData.title,
@@ -204,14 +226,21 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
           .in("id", (createdJams ?? []).map((j: any) => j.jam_id));
       }
 
-      // create_jam_sessions n'a pas de paramètre genres — appliqué après coup.
+      // create_jam_sessions n'a pas de paramètre genres/poster_url — appliqués après coup.
       if (formData.genres.length > 0) {
         await supabase.from("jam_sessions")
           .update({ genres: formData.genres })
           .in("id", (createdJams ?? []).map((j: any) => j.jam_id));
       }
+      if (posterUrl) {
+        await supabase.from("jam_sessions")
+          .update({ poster_url: posterUrl })
+          .in("id", (createdJams ?? []).map((j: any) => j.jam_id));
+      }
 
       setFormData({ title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true, genres: [], location: { lat: 48.8566, lng: 2.3522, address: "" } });
+      setPosterFile(null);
+      setPosterPreview(null);
       setSelectedLocation(null);
       setSelectedGroupId("");
       setRecurrence({ enabled: false, frequency: 1, days: [], endType: "count", endDate: "", count: 8 });
@@ -569,6 +598,34 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
           onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, has_keyboard: checked }))}
           className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
         />
+      </div>
+
+      {/* Affiche */}
+      <div>
+        <label className="text-sm font-medium text-zik-text mb-2 block">Affiche (optionnel)</label>
+        {posterPreview ? (
+          <div className="relative w-full max-w-xs">
+            <img
+              src={posterPreview}
+              alt="Aperçu affiche"
+              className="rounded-lg w-full object-cover max-h-48 border border-zik-border"
+            />
+            <button
+              type="button"
+              onClick={() => { setPosterFile(null); setPosterPreview(null); }}
+              className="absolute top-2 right-2 bg-zik-card rounded-full p-1 shadow text-zik-muted hover:text-zik-red transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zik-border rounded-lg p-6 cursor-pointer hover:border-zik-purple hover:bg-zik-purple/5 transition-colors">
+            <Upload className="h-6 w-6 text-zik-muted" />
+            <span className="text-sm text-zik-muted">Cliquez pour importer une image</span>
+            <span className="text-xs text-zik-subtle">JPG, PNG — max 5 Mo</span>
+            <input type="file" accept="image/*" className="hidden" onChange={handlePosterChange} />
+          </label>
+        )}
       </div>
 
       {/* Carte */}

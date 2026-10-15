@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Lock, Unlock, CalendarDays, MapPin, Drum, Piano } from "lucide-react";
+import { Lock, Unlock, CalendarDays, MapPin, Drum, Piano, Upload, X } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { fr } from "date-fns/locale";
 import { format } from "date-fns";
@@ -29,6 +29,7 @@ interface JamEditFormProps {
     id: string; title: string; description: string; start_time: string;
     end_at: string | null; location: string | null; is_open: boolean; has_drums: boolean; has_keyboard: boolean;
     genres?: string[] | null;
+    poster_url?: string | null;
     recurrence_id?: string | null;
   };
   onSuccess?: () => void;
@@ -61,6 +62,8 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(
     { lat: parsedLoc.lat, lng: parsedLoc.lng }
   );
+  const [posterFile, setPosterFile] = useState<File | null>(null);
+  const [posterPreview, setPosterPreview] = useState<string | null>(jam.poster_url ?? null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [seriesCount, setSeriesCount] = useState(0);
@@ -72,6 +75,13 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
       .eq("recurrence_id", jam.recurrence_id)
       .then(({ count }) => setSeriesCount(count ?? 0));
   }, [jam.recurrence_id]);
+
+  const handlePosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPosterFile(file);
+    setPosterPreview(URL.createObjectURL(file));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +96,20 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
       const start_time = toUtcDateTime(date, startHour);
       const end_at = endHour ? resolveEndDateTime(date, startHour, endHour) : null;
 
+      let posterUrl = jam.poster_url ?? null;
+      if (posterFile) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const ext = posterFile.name.split(".").pop();
+          const path = `jams/${user.id}/${Date.now()}.${ext}`;
+          const { error: uploadError } = await supabase.storage.from("avatars").upload(path, posterFile, { upsert: true });
+          if (!uploadError) {
+            const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+            posterUrl = urlData.publicUrl;
+          }
+        }
+      }
+
       const { error: updateError } = await supabase
         .from("jam_sessions")
         .update({
@@ -98,6 +122,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
           has_drums: hasDrums,
           has_keyboard: hasKeyboard,
           genres: genres.length > 0 ? genres : null,
+          poster_url: posterUrl,
         })
         .eq("id", jam.id);
 
@@ -116,6 +141,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
             has_drums: hasDrums,
             has_keyboard: hasKeyboard,
             genres: genres.length > 0 ? genres : null,
+            poster_url: posterUrl,
           })
           .eq("recurrence_id", jam.recurrence_id)
           .neq("id", jam.id);
@@ -335,6 +361,34 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
           onCheckedChange={setHasKeyboard}
           className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
         />
+      </div>
+
+      {/* Affiche */}
+      <div>
+        <label className="text-sm font-medium text-zik-text mb-2 block">Affiche (optionnel)</label>
+        {posterPreview ? (
+          <div className="relative w-full max-w-xs">
+            <img
+              src={posterPreview}
+              alt="Aperçu affiche"
+              className="rounded-lg w-full object-cover max-h-48 border border-zik-border"
+            />
+            <button
+              type="button"
+              onClick={() => { setPosterFile(null); setPosterPreview(null); }}
+              className="absolute top-2 right-2 bg-zik-card rounded-full p-1 shadow text-zik-muted hover:text-zik-red transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zik-border rounded-lg p-6 cursor-pointer hover:border-zik-purple hover:bg-zik-purple/5 transition-colors">
+            <Upload className="h-6 w-6 text-zik-muted" />
+            <span className="text-sm text-zik-muted">Cliquez pour importer une image</span>
+            <span className="text-xs text-zik-subtle">JPG, PNG — max 5 Mo</span>
+            <input type="file" accept="image/*" className="hidden" onChange={handlePosterChange} />
+          </label>
+        )}
       </div>
 
       {/* Lieu */}

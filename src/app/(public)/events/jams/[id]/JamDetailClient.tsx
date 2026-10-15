@@ -70,9 +70,6 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
   const [pickerCell, setPickerCell] = useState<{ instrument: string; slot_index: number; anchorEl: HTMLElement } | null>(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
 
-  // ── État upload poster ─────────────────────────────────────────────────
-  const [isUploadingPoster, setIsUploadingPoster] = useState(false);
-
   const { joinJam, leaveJam } = useJamParticipation();
   const { markInterested, unmarkInterested, pendingJamId: interestPendingId } = useJamInterest();
   const [isInterested, setIsInterested] = useState(false);
@@ -167,38 +164,6 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
   }, [conversationId]);
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
-
-  // ── Upload poster ──────────────────────────────────────────────────────
-  const handlePosterUpload = async (file: File) => {
-    if (!jam || !isOrganizer) return;
-    setIsUploadingPoster(true);
-    try {
-      const ext = file.name.split('.').pop();
-      const path = `jams/${jam.id}/poster.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(path, file, { upsert: true });
-
-      if (uploadError) {
-        console.error('Erreur upload:', uploadError);
-        return;
-      }
-
-      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
-      const posterUrl = `${urlData.publicUrl}?t=${Date.now()}`;
-
-      const { error: updateError } = await supabase
-        .from('jam_sessions')
-        .update({ poster_url: posterUrl })
-        .eq('id', jam.id);
-
-      if (!updateError) {
-        setJam((prev) => prev ? { ...prev, poster_url: posterUrl } : prev);
-      }
-    } finally {
-      setIsUploadingPoster(false);
-    }
-  };
 
   const handleSetCurrentSlot = useCallback(async (slotIndex: number) => {
     if (!isOrganizer || !jam) return;
@@ -460,14 +425,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
       />
 
       {/* ── POSTER ──────────────────────────────────────────────────────── */}
-      {(jam.poster_url || isOrganizer) && (
-        <JamPoster
-          posterUrl={jam.poster_url}
-          isOrganizer={isOrganizer}
-          onUpload={handlePosterUpload}
-          isUploading={isUploadingPoster}
-        />
-      )}
+      {jam.poster_url && <JamPoster posterUrl={jam.poster_url} />}
 
       {/* ── HEADER ──────────────────────────────────────────────────────── */}
       <div
