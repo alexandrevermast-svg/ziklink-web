@@ -6,14 +6,13 @@ import { createClient } from '@/lib/supabase/client';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import {
-  ArrowLeft, Lock, Unlock, MapPin, Clock,
+  ArrowLeft, Lock, Unlock, Clock,
   UserPlus, Check, Crown, ShieldCheck, Pencil,
   Radio, Trash2, Heart, Settings2
 } from 'lucide-react';
 import JamEditForm from "@/components/JamEditForm";
 import Modal from "@/components/Modal";
 import ShareButton from "@/components/ShareButton";
-import { MapLink } from "@/components/MapLink";
 import type { JamSession } from "@/types";
 import { useJamParticipation } from "@/hooks/useJamParticipation";
 import { useJamInterest } from "@/hooks/useJamInterest";
@@ -21,7 +20,7 @@ import { isOwner } from "@/lib/permissions";
 import { canJoinJam, joinOpensAt } from "@/lib/jamJoinWindow";
 import type { Profile, Participant, Message, JamSlot, JamInstrument } from "./types";
 import { TRAILING_EMPTY_ROWS, slugifyInstrumentKey } from "./types";
-import { formatTime, getAddress, getMapsUrl } from "./utils";
+import { formatTime } from "./utils";
 import { ParticipantPicker } from "./components/ParticipantPicker";
 import { ProfilePopup } from "./components/ProfilePopup";
 import { ParticipantsTab } from "./components/ParticipantsTab";
@@ -384,8 +383,6 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
     </div>
   );
 
-  const address = getAddress(jam.location);
-  const mapsUrl = getMapsUrl(jam.location);
   const confirmedParticipants = participants.filter((p) => p.status === "confirmed");
   const pendingParticipants = participants.filter((p) => p.status === "pending");
   const totalSlotsTaken = slots.filter((s) => !!s.user_id).length;
@@ -461,14 +458,6 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
             {formatTime(jam.start_time)}
             {jam.end_at && ` → ${formatTime(jam.end_at)}`}
           </div>
-          {address && (
-            <div className="flex items-start gap-1 mt-1 min-w-0">
-              <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted mt-0.5" />
-              <MapLink address={address} mapsUrl={mapsUrl} className="block w-full min-w-0 text-left whitespace-normal wrap-break-word hover:text-zik-purple hover:underline">
-                {address}
-              </MapLink>
-            </div>
-          )}
         </div>
 
         {myActiveSlot && (
