@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Clock, MapPin, Music2, Ticket, Heart } from "lucide-react";
 import ShareButton from "@/components/ShareButton";
 import { genreColor } from "@/lib/musicGenres";
-import { getDisplayAddress } from "@/lib/eventLocation";
+import { getAddressParts } from "@/lib/eventLocation";
 
 export interface ConcertCardData {
   id: string;
@@ -35,7 +35,7 @@ function formatTime(d: string) {
 }
 export default function ConcertCard({ concert, isInterested, interestedCount, isToggling, onToggleInterest }: ConcertCardProps) {
   const router = useRouter();
-  const address = getDisplayAddress(concert.location);
+  const addressParts = getAddressParts(concert.location);
 
   return (
     <div
@@ -77,10 +77,17 @@ export default function ConcertCard({ concert, isInterested, interestedCount, is
               {concert.end_at && ` → ${formatTime(concert.end_at)}`}
             </span>
           </div>
-          {address && (
-            <div className="flex items-start gap-1 mt-1 text-sm text-zik-text">
+          {addressParts && (addressParts.name || addressParts.detail) && (
+            <div className="flex items-start gap-1.5 mt-1">
               <MapPin className="h-3 w-3 shrink-0 text-zik-muted mt-0.5" />
-              <span className="line-clamp-2">{address}</span>
+              <span className="min-w-0 leading-tight">
+                {addressParts.name && <span className="block text-sm text-zik-text">{addressParts.name}</span>}
+                {addressParts.detail && (
+                  <span className={`block line-clamp-2 ${addressParts.name ? "text-xs text-zik-muted mt-0.5" : "text-sm text-zik-text"}`}>
+                    {addressParts.detail}
+                  </span>
+                )}
+              </span>
             </div>
           )}
           <div className="flex items-center justify-between mt-2">

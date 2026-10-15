@@ -8,7 +8,7 @@ import ShareButton from "@/components/ShareButton";
 import { MapLink } from "@/components/MapLink";
 import { formatDistanceKm } from "@/lib/geo";
 import { joinOpensAt } from "@/lib/jamJoinWindow";
-import { getDisplayAddress, getMapsUrl } from "@/lib/eventLocation";
+import { getAddressParts, getMapsUrl } from "@/lib/eventLocation";
 import { genreColor } from "@/lib/musicGenres";
 
 export interface JamCardData {
@@ -53,7 +53,7 @@ export default function JamCard({
 }: JamCardProps) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
-  const address = getDisplayAddress(jam.location);
+  const addressParts = getAddressParts(jam.location);
   const mapsUrl = getMapsUrl(jam.location);
   const hasDetails = !!jam.poster_url || !!jam.description?.trim();
   const showDetails = hasDetails && (expanded || !!isSelected);
@@ -98,10 +98,21 @@ export default function JamCard({
             </span>
           )}
         </div>
-        {address && (
-          <MapLink address={address} mapsUrl={mapsUrl} className="flex items-start gap-1 text-sm text-zik-text mt-1 text-left hover:text-zik-purple hover:underline">
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted mt-0.5" />
-            <span className="line-clamp-2">{address}</span>
+        {addressParts && (addressParts.name || addressParts.detail) && (
+          <MapLink
+            address={[addressParts.name, addressParts.detail].filter(Boolean).join(", ")}
+            mapsUrl={mapsUrl}
+            className="group flex items-start gap-1.5 mt-1 text-left"
+          >
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted mt-0.5 group-hover:text-zik-purple transition-colors" />
+            <span className="min-w-0 leading-tight">
+              {addressParts.name && <span className="block text-sm text-zik-text">{addressParts.name}</span>}
+              {addressParts.detail && (
+                <span className={`block line-clamp-2 ${addressParts.name ? "text-xs text-zik-muted mt-0.5" : "text-sm text-zik-text"}`}>
+                  {addressParts.detail}
+                </span>
+              )}
+            </span>
           </MapLink>
         )}
       </div>

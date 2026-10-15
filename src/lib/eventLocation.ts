@@ -45,3 +45,20 @@ export function getDisplayAddress(s: string | null): string | null {
   }
   return address ?? null;
 }
+
+// Même source que getDisplayAddress, mais le nom du lieu séparé du reste
+// (rue + code postal/ville) pour pouvoir lui donner une mise en forme
+// différente — ex. nom en avant, reste en plus petit en dessous.
+export interface AddressParts { name: string | null; detail: string | null }
+
+export function getAddressParts(s: string | null): AddressParts | null {
+  const loc = parseLocation(s);
+  if (!loc) return null;
+  const { name, street, postcode, city, address } = loc;
+  if (name || street || city) {
+    const cityLine = [postcode, city].filter(Boolean).join(" ");
+    const detail = [street, cityLine].filter(Boolean).join(", ");
+    return { name: name ?? null, detail: detail || null };
+  }
+  return { name: null, detail: address ?? null };
+}
