@@ -46,6 +46,8 @@ function formatTime(d: string) {
   return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
+const DEFAULT_JAM_POSTER = "/images/jam-default-poster.jpg";
+
 export default function JamCard({
   jam, isCreator, isParticipant, isJoining, isInterested, isInterestPending, joinOpen, distanceKm,
   participantCount, interestedCount, isSelected,
@@ -55,15 +57,13 @@ export default function JamCard({
   const [expanded, setExpanded] = useState(false);
   const addressParts = getAddressParts(jam.location);
   const mapsUrl = getMapsUrl(jam.location);
-  const hasDetails = !!jam.poster_url || !!jam.description?.trim();
-  const showDetails = hasDetails && (expanded || !!isSelected);
+  const posterUrl = jam.poster_url || DEFAULT_JAM_POSTER;
+  const showDetails = expanded || !!isSelected;
 
   return (
     <div
-      onClick={() => { if (hasDetails) setExpanded((v) => !v); }}
-      className={`relative overflow-hidden rounded-xl border border-zik-indigo/60 p-4 hover:bg-zik-card-hover hover:border-zik-indigo/80 hover:shadow-sm transition-all bg-zik-card ${
-        hasDetails ? "cursor-pointer active:scale-[0.99]" : ""
-      }`}
+      onClick={() => setExpanded((v) => !v)}
+      className="relative overflow-hidden rounded-xl border border-zik-indigo/60 p-4 hover:bg-zik-card-hover hover:border-zik-indigo/80 hover:shadow-sm transition-all cursor-pointer active:scale-[0.99] bg-zik-card"
     >
 
       <div className="flex items-center justify-between gap-2">
@@ -117,20 +117,16 @@ export default function JamCard({
         )}
       </div>
 
-      {hasDetails && (
-        <div className={`grid overflow-hidden transition-all duration-300 ease-in-out ${
-          showDetails ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"
-        }`}>
-          <div className="min-h-0">
-            {jam.poster_url && (
-              <img src={jam.poster_url} alt="" className="w-full h-36 object-cover rounded-lg mb-2" />
-            )}
-            {jam.description?.trim() && (
-              <p className="text-sm text-zik-muted whitespace-pre-line">{jam.description}</p>
-            )}
-          </div>
+      <div className={`grid overflow-hidden transition-all duration-300 ease-in-out ${
+        showDetails ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"
+      }`}>
+        <div className="min-h-0">
+          <img src={posterUrl} alt="" className="w-full h-36 object-cover rounded-lg mb-2" />
+          {jam.description?.trim() && (
+            <p className="text-sm text-zik-muted whitespace-pre-line">{jam.description}</p>
+          )}
         </div>
-      )}
+      </div>
 
       <div className="flex items-center justify-between mt-3 gap-2">
         <div className="flex flex-wrap gap-1 min-w-0">
