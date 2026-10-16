@@ -1,4 +1,3 @@
-import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Check, X, Crown, ShieldCheck } from "lucide-react";
 import { Avatar } from "./Avatar";
@@ -23,7 +22,7 @@ export function ParticipantsTab({
   onAvatarClick, onAccept, onReject, onToggleCoOrganizer,
 }: ParticipantsTabProps) {
   return (
-    <TabsContent value="participants" className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+    <div className="space-y-4">
       {isOrganizer && pendingParticipants.length > 0 && (
         <div>
           <p className="text-xs font-semibold text-zik-orange uppercase tracking-wide mb-2">
@@ -104,6 +103,6 @@ export function ParticipantsTab({
           </div>
         )}
       </div>
-    </TabsContent>
+    </div>
   );
 }

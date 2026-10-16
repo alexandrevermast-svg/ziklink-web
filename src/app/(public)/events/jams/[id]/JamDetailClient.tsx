@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import {
   ArrowLeft, Lock, Unlock, Clock,
   UserPlus, Check, Crown, ShieldCheck, Pencil,
-  Radio, Trash2, Heart, Settings2
+  Radio, Trash2, Heart, Settings2, Users
 } from 'lucide-react';
 import JamEditForm from "@/components/JamEditForm";
 import Modal from "@/components/Modal";
@@ -48,6 +48,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
   const [slots, setSlots] = useState<JamSlot[]>(initialSlots);
   const [instruments, setInstruments] = useState<JamInstrument[]>(initialInstruments);
   const [isInstrumentManagerOpen, setIsInstrumentManagerOpen] = useState(false);
+  const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(!initialJam);
   const [messageInput, setMessageInput] = useState("");
@@ -503,17 +504,23 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
                 : <><ShieldCheck className="h-3.5 w-3.5 text-zik-grad-to" /><span className="text-zik-grad-to">Co-organisateur</span></>
               }
             </div>
-            <button onClick={() => setIsInstrumentManagerOpen(true)} title="Gérer les instruments"
-              className="flex items-center gap-1 text-xs font-medium text-zik-grad-to hover:underline shrink-0">
-              <Settings2 className="h-3.5 w-3.5" /> Instruments
-            </button>
+            <div className="flex items-center gap-3 shrink-0">
+              <button onClick={() => setIsParticipantsModalOpen(true)} title="Voir les participants"
+                className="flex items-center gap-1 text-xs font-medium text-zik-grad-to hover:underline">
+                <Users className="h-3.5 w-3.5" /> Participants
+              </button>
+              <button onClick={() => setIsInstrumentManagerOpen(true)} title="Gérer les instruments"
+                className="flex items-center gap-1 text-xs font-medium text-zik-grad-to hover:underline">
+                <Settings2 className="h-3.5 w-3.5" /> Instruments
+              </button>
+            </div>
           </div>
         )}
       </div>
 
       {/* ── ONGLETS ─────────────────────────────────────────────────────── */}
       <Tabs defaultValue="slots" className="flex-1 flex flex-col overflow-hidden">
-        <TabsList className="grid grid-cols-3 bg-white/4 backdrop-blur-md p-1 rounded-full border border-white/8 mx-4 mt-3 shrink-0">
+        <TabsList className="grid grid-cols-2 bg-white/4 backdrop-blur-md p-1 rounded-full border border-white/8 mx-4 mt-3 shrink-0">
           <TabsTrigger
             value="slots"
             className="text-gray-400 data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)] rounded-full transition-all"
@@ -522,17 +529,6 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
             {totalSlotsTaken > 0 && (
               <span className="ml-1.5 bg-white/20 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                 {totalSlotsTaken}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger
-            value="participants"
-            className="text-gray-400 data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)] rounded-full transition-all"
-          >
-            Participants
-            {confirmedParticipants.length > 0 && (
-              <span className="ml-1.5 bg-white/20 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
-                {confirmedParticipants.length}
               </span>
             )}
           </TabsTrigger>
@@ -548,19 +544,6 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
             )}
           </TabsTrigger>
         </TabsList>
-
-        <ParticipantsTab
-          isOrganizer={isOrganizer}
-          isMainOrganizer={isMainOrganizer}
-          currentUserId={currentUserId}
-          jamCreatedBy={jam.created_by}
-          pendingParticipants={pendingParticipants}
-          confirmedParticipants={confirmedParticipants}
-          onAvatarClick={handleAvatarClick}
-          onAccept={handleAccept}
-          onReject={handleReject}
-          onToggleCoOrganizer={handleToggleCoOrganizer}
-        />
 
         <SlotsTab
           canInteract={canInteract}
@@ -605,6 +588,21 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           messagesEndRef={messagesEndRef}
         />
       </Tabs>
+
+      <Modal open={isParticipantsModalOpen} onClose={() => setIsParticipantsModalOpen(false)} title="Participants">
+        <ParticipantsTab
+          isOrganizer={isOrganizer}
+          isMainOrganizer={isMainOrganizer}
+          currentUserId={currentUserId}
+          jamCreatedBy={jam.created_by}
+          pendingParticipants={pendingParticipants}
+          confirmedParticipants={confirmedParticipants}
+          onAvatarClick={handleAvatarClick}
+          onAccept={handleAccept}
+          onReject={handleReject}
+          onToggleCoOrganizer={handleToggleCoOrganizer}
+        />
+      </Modal>
 
       <Modal open={isEditOpen} onClose={() => setIsEditOpen(false)} title="Modifier la jam">
         <JamEditForm jam={jam} onSuccess={() => { setIsEditOpen(false); fetchAll(); }} onClose={() => setIsEditOpen(false)} />
