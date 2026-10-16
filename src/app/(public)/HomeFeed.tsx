@@ -292,16 +292,16 @@ export default function HomeFeed({
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="flex items-baseline gap-2">
           <h1 className="text-xl font-bold text-zik-text">
             {dayFilter === "today" ? "Aujourd'hui" : "Demain"}
           </h1>
-          <p className="text-sm text-zik-muted mt-0.5">
+          <span className="text-sm text-zik-muted">
             {totalFiltered === 0
               ? "Aucun événement ce jour"
               : `${filteredJams.length} jam${filteredJams.length > 1 ? "s" : ""} · ${filteredConcerts.length} concert${filteredConcerts.length > 1 ? "s" : ""}`
             }
-          </p>
+          </span>
         </div>
         {!currentUserId && (
           <button onClick={() => router.push("/login")}
