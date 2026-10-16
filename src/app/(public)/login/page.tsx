@@ -77,7 +77,7 @@ function LoginForm() {
 
         {/* Logo / Titre */}
         <div className="text-center mb-2">
-          <h1 className="text-3xl font-bold text-zik-purple tracking-tight">Ziklink 🎸</h1>
+          <h1 className="text-3xl font-bold text-zik-grad-to tracking-tight">Ziklink 🎸</h1>
           <p className="text-sm text-zik-muted mt-1">
             {mode === 'login' ? 'Content de te revoir !' : 'Rejoins la communauté !'}
           </p>
@@ -110,7 +110,7 @@ function LoginForm() {
           <div>
             <label className="block text-sm mb-1 text-zik-text">Email</label>
             <input
-              className="border w-full p-2.5 rounded-xl focus:ring-2 focus:ring-zik-purple/50 focus:border-zik-purple outline-none text-sm bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted"
+              className="border w-full p-2.5 rounded-xl focus:ring-2 focus:ring-zik-grad-to/50 focus:border-zik-grad-to outline-none text-sm bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -123,7 +123,7 @@ function LoginForm() {
           <div>
             <label className="block text-sm mb-1 text-zik-text">Mot de passe</label>
             <input
-              className="border w-full p-2.5 rounded-xl focus:ring-2 focus:ring-zik-purple/50 focus:border-zik-purple outline-none text-sm bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted"
+              className="border w-full p-2.5 rounded-xl focus:ring-2 focus:ring-zik-grad-to/50 focus:border-zik-grad-to outline-none text-sm bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -146,7 +146,7 @@ function LoginForm() {
 
           <button
             type="submit"
-            className="w-full bg-zik-purple text-white py-2.5 rounded-xl hover:bg-zik-indigo disabled:opacity-50 transition-colors font-medium text-sm"
+            className="w-full bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white py-2.5 rounded-xl hover:brightness-110 disabled:opacity-50 transition-all font-medium text-sm"
             disabled={loading}
           >
             {loading

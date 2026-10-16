@@ -7,7 +7,7 @@ export function MemberAvatar({ profile, size = 'md', onClick }: {
 }) {
   const cls = size === 'sm' ? 'h-6 w-6 text-[9px]' : 'h-10 w-10 text-sm';
   const initials = profile?.username?.slice(0, 2).toUpperCase() ?? '?';
-  const interactClass = onClick ? "cursor-pointer hover:ring-2 hover:ring-zik-purple/50 hover:ring-offset-1 transition-all" : "";
+  const interactClass = onClick ? "cursor-pointer hover:ring-2 hover:ring-zik-grad-to/50 hover:ring-offset-1 transition-all" : "";
 
   return profile?.avatar_url ? (
     <img
@@ -19,7 +19,7 @@ export function MemberAvatar({ profile, size = 'md', onClick }: {
   ) : (
     <div
       onClick={onClick}
-      className={`${cls} ${interactClass} rounded-full bg-zik-purple flex items-center justify-center text-white font-semibold shrink-0`}
+      className={`${cls} ${interactClass} rounded-full bg-linear-to-br from-zik-grad-from to-zik-grad-to flex items-center justify-center text-white font-semibold shrink-0`}
     >
       {initials}
     </div>

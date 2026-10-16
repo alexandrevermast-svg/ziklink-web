@@ -168,7 +168,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
         />
       </div>
 
@@ -179,7 +179,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50 resize-none"
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50 resize-none"
         />
       </div>
 
@@ -222,7 +222,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
                   !date && "text-zik-muted"
                 )}
               >
-                <CalendarDays className="h-4 w-4 text-zik-purple shrink-0" />
+                <CalendarDays className="h-4 w-4 text-zik-grad-to shrink-0" />
                 {date
                   ? format(new Date(date), "PPP", { locale: fr })
                   : <span>Sélectionnez une date</span>
@@ -252,13 +252,13 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
                   months: "relative flex flex-col gap-4",
                   month: "flex w-full flex-col gap-4",
                   nav: "absolute inset-x-0 top-0 z-10 flex items-center justify-between px-2",
-                  button_previous: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover",
-                  button_next: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover",
+                  button_previous: "h-8 w-8 p-0 text-zik-grad-to hover:bg-zik-card-hover",
+                  button_next: "h-8 w-8 p-0 text-zik-grad-to hover:bg-zik-card-hover",
                   month_caption: "flex h-8 w-full items-center justify-center px-4 text-zik-text font-medium",
                   weekday: "text-zik-muted text-[0.9rem] font-medium",
                   day: "h-8 w-8 text-[0.9rem] font-medium text-zik-text hover:bg-zik-card-hover rounded-md",
-                  day_selected: "bg-zik-purple text-white hover:bg-zik-purple/90",
-                  day_today: "bg-zik-purple/10 text-zik-text border border-zik-purple/30 rounded-md",
+                  day_selected: "bg-zik-grad-to text-white hover:bg-zik-grad-to/90",
+                  day_today: "bg-zik-grad-to/10 text-zik-text border border-zik-grad-to/30 rounded-md",
                 }}
               />
             </PopoverContent>
@@ -315,14 +315,14 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
         <Switch
           checked={isOpen}
           onCheckedChange={setIsOpen}
-          className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+          className="data-[state=checked]:bg-zik-grad-to data-[state=unchecked]:bg-zik-card-hover"
         />
       </div>
 
       {/* Batterie */}
       <div className="flex items-center justify-between rounded-lg border border-zik-border p-4 bg-zik-card/50">
         <div className="flex items-center gap-3">
-          <Drum className={`h-5 w-5 ${hasDrums ? "text-zik-purple" : "text-zik-muted"}`} />
+          <Drum className={`h-5 w-5 ${hasDrums ? "text-zik-grad-to" : "text-zik-muted"}`} />
           <div>
             <p className="text-sm font-medium text-zik-text">
               {hasDrums ? "Batterie disponible" : "Sans batterie"}
@@ -337,14 +337,14 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
         <Switch
           checked={hasDrums}
           onCheckedChange={setHasDrums}
-          className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+          className="data-[state=checked]:bg-zik-grad-to data-[state=unchecked]:bg-zik-card-hover"
         />
       </div>
 
       {/* Clavier */}
       <div className="flex items-center justify-between rounded-lg border border-zik-border p-4 bg-zik-card/50">
         <div className="flex items-center gap-3">
-          <Piano className={`h-5 w-5 ${hasKeyboard ? "text-zik-purple" : "text-zik-muted"}`} />
+          <Piano className={`h-5 w-5 ${hasKeyboard ? "text-zik-grad-to" : "text-zik-muted"}`} />
           <div>
             <p className="text-sm font-medium text-zik-text">
               {hasKeyboard ? "Clavier disponible" : "Sans clavier"}
@@ -359,7 +359,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
         <Switch
           checked={hasKeyboard}
           onCheckedChange={setHasKeyboard}
-          className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+          className="data-[state=checked]:bg-zik-grad-to data-[state=unchecked]:bg-zik-card-hover"
         />
       </div>
 
@@ -382,7 +382,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
             </button>
           </div>
         ) : (
-          <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zik-border rounded-lg p-6 cursor-pointer hover:border-zik-purple hover:bg-zik-purple/5 transition-colors">
+          <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zik-border rounded-lg p-6 cursor-pointer hover:border-zik-grad-to hover:bg-zik-grad-to/5 transition-colors">
             <Upload className="h-6 w-6 text-zik-muted" />
             <span className="text-sm text-zik-muted">Cliquez pour importer une image</span>
             <span className="text-xs text-zik-subtle">JPG, PNG — max 5 Mo</span>
@@ -447,13 +447,13 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
           <label className="flex items-center gap-2 text-sm text-zik-text cursor-pointer">
             <input type="radio" name="edit-scope" checked={!applyToSeries}
               onChange={() => setApplyToSeries(false)}
-              className="accent-zik-purple" />
+              className="accent-zik-grad-to" />
             Cette jam uniquement
           </label>
           <label className="flex items-center gap-2 text-sm text-zik-text cursor-pointer">
             <input type="radio" name="edit-scope" checked={applyToSeries}
               onChange={() => setApplyToSeries(true)}
-              className="accent-zik-purple" />
+              className="accent-zik-grad-to" />
             Toutes les jams de cette série ({seriesCount})
           </label>
           {applyToSeries && (
@@ -489,7 +489,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
         <Button
           type="submit"
           disabled={isLoading}
-          className="bg-zik-purple hover:bg-zik-indigo text-white disabled:opacity-50"
+          className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white disabled:opacity-50"
         >
           {isLoading ? "Enregistrement..." : "Enregistrer les modifications"}
         </Button>

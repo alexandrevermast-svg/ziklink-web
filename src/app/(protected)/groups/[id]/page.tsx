@@ -337,7 +337,7 @@ export default function GroupDetailPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-xs flex items-center gap-1.5 border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
+                  className="text-xs flex items-center gap-1.5 border-zik-border text-zik-text hover:border-zik-grad-to hover:text-zik-grad-to"
                   onClick={() => setIsEditOpen(true)}
                 >
                   <Pencil className="h-3.5 w-3.5" /> Modifier
@@ -376,7 +376,7 @@ export default function GroupDetailPage() {
             <h1 className="text-2xl font-bold text-zik-text truncate">{group.name}</h1>
             <div className="flex flex-wrap gap-2 mt-1">
               {group.genre && (
-                <span className="text-xs bg-zik-purple/10 text-zik-purple font-medium px-2.5 py-0.5 rounded-full">
+                <span className="text-xs bg-zik-grad-to/10 text-zik-grad-to font-medium px-2.5 py-0.5 rounded-full">
                   {group.genre}
                 </span>
               )}
@@ -397,7 +397,7 @@ export default function GroupDetailPage() {
               <div className="flex flex-col gap-1.5 mt-2">
                 {groupLinks.map((link, i) => (
                   <a key={i} href={link.url} target="_blank" rel="noopener noreferrer nofollow"
-                    className="flex items-center gap-1.5 text-sm text-zik-purple hover:underline w-fit">
+                    className="flex items-center gap-1.5 text-sm text-zik-grad-to hover:underline w-fit">
                     <Link2 className="h-3.5 w-3.5 shrink-0" />
                     <span className="truncate">{link.label || link.url}</span>
                   </a>
@@ -412,7 +412,7 @@ export default function GroupDetailPage() {
             <>
               <Button
                 size="sm"
-                className="bg-zik-purple hover:bg-zik-indigo text-xs"
+                className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-xs"
                 onClick={handleJoin}
                 disabled={isJoining}
               >
@@ -472,7 +472,7 @@ export default function GroupDetailPage() {
               <button
                 key={`${event.type}-${event.id}`}
                 onClick={() => router.push(event.type === 'jam' ? `/events/jams/${event.id}` : `/events/concerts/${event.id}`)}
-                className="w-full flex items-center gap-2.5 p-3 rounded-xl border border-zik-border bg-zik-card/50 hover:border-zik-purple/30 transition-colors text-left"
+                className="w-full flex items-center gap-2.5 p-3 rounded-xl border border-zik-border bg-zik-card/50 hover:border-zik-grad-to/30 transition-colors text-left"
               >
                 <span className="text-base shrink-0">{event.type === 'jam' ? '🎸' : '🎤'}</span>
                 <div className="min-w-0 flex-1">
@@ -497,7 +497,7 @@ export default function GroupDetailPage() {
               <button
                 key={`${event.type}-${event.id}`}
                 onClick={() => router.push(event.type === 'jam' ? `/events/jams/${event.id}` : `/events/concerts/${event.id}`)}
-                className="w-full flex items-center gap-2.5 p-3 rounded-xl border border-zik-border bg-zik-card/50 hover:border-zik-purple/30 transition-colors text-left"
+                className="w-full flex items-center gap-2.5 p-3 rounded-xl border border-zik-border bg-zik-card/50 hover:border-zik-grad-to/30 transition-colors text-left"
               >
                 <span className="text-base shrink-0">{event.type === 'jam' ? '🎸' : '🎤'}</span>
                 <div className="min-w-0 flex-1">
@@ -520,10 +520,10 @@ export default function GroupDetailPage() {
               <button
                 key={ad.id}
                 onClick={() => router.push(`/ads/${ad.id}`)}
-                className="w-full flex items-center justify-between gap-2 p-3 rounded-xl border border-zik-border bg-zik-card/50 hover:border-zik-purple/30 transition-colors text-left"
+                className="w-full flex items-center justify-between gap-2 p-3 rounded-xl border border-zik-border bg-zik-card/50 hover:border-zik-grad-to/30 transition-colors text-left"
               >
                 <span className="text-sm font-medium text-zik-text truncate">{ad.title}</span>
-                <span className="text-xs text-zik-purple shrink-0 bg-zik-purple/10 px-2 py-0.5 rounded-full">Recrute</span>
+                <span className="text-xs text-zik-grad-to shrink-0 bg-zik-grad-to/10 px-2 py-0.5 rounded-full">Recrute</span>
               </button>
             ))}
           </div>
@@ -535,7 +535,7 @@ export default function GroupDetailPage() {
         <TabsList className="grid grid-cols-3 bg-zik-card/50 p-1 rounded-xl border border-zik-border mx-4 mt-3 shrink-0">
           <TabsTrigger
             value="members"
-            className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+            className="text-zik-muted data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
           >
             Membres
             {confirmedMembers.length > 0 && (
@@ -546,13 +546,13 @@ export default function GroupDetailPage() {
           </TabsTrigger>
           <TabsTrigger
             value="repetition"
-            className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+            className="text-zik-muted data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
           >
             Répétition
           </TabsTrigger>
           <TabsTrigger
             value="chat"
-            className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+            className="text-zik-muted data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
           >
             Chat
             {messages.length > 0 && (

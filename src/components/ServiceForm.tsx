@@ -101,8 +101,8 @@ export default function ServiceForm({ service, defaultKind = "offre", onSuccess,
             onClick={() => setKind("offre")}
             className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
               kind === "offre"
-                ? "border-zik-purple/40 bg-zik-purple/10 text-zik-purple"
-                : "border-zik-border text-zik-muted hover:border-zik-purple/30"
+                ? "border-zik-grad-to/40 bg-zik-grad-to/10 text-zik-grad-to"
+                : "border-zik-border text-zik-muted hover:border-zik-grad-to/30"
             }`}
           >
             <Megaphone className="h-4 w-4" /> J&apos;offre
@@ -112,8 +112,8 @@ export default function ServiceForm({ service, defaultKind = "offre", onSuccess,
             onClick={() => setKind("demande")}
             className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
               kind === "demande"
-                ? "border-zik-purple/40 bg-zik-purple/10 text-zik-purple"
-                : "border-zik-border text-zik-muted hover:border-zik-purple/30"
+                ? "border-zik-grad-to/40 bg-zik-grad-to/10 text-zik-grad-to"
+                : "border-zik-border text-zik-muted hover:border-zik-grad-to/30"
             }`}
           >
             <Search className="h-4 w-4" /> Je cherche
@@ -131,8 +131,8 @@ export default function ServiceForm({ service, defaultKind = "offre", onSuccess,
             onClick={() => setType("cours")}
             className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
               type === "cours"
-                ? "border-zik-purple/40 bg-zik-purple/10 text-zik-purple"
-                : "border-zik-border text-zik-muted hover:border-zik-purple/30"
+                ? "border-zik-grad-to/40 bg-zik-grad-to/10 text-zik-grad-to"
+                : "border-zik-border text-zik-muted hover:border-zik-grad-to/30"
             }`}
           >
             <GraduationCap className="h-4 w-4" /> Cours
@@ -142,8 +142,8 @@ export default function ServiceForm({ service, defaultKind = "offre", onSuccess,
             onClick={() => setType("prestation")}
             className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
               type === "prestation"
-                ? "border-zik-purple/40 bg-zik-purple/10 text-zik-purple"
-                : "border-zik-border text-zik-muted hover:border-zik-purple/30"
+                ? "border-zik-grad-to/40 bg-zik-grad-to/10 text-zik-grad-to"
+                : "border-zik-border text-zik-muted hover:border-zik-grad-to/30"
             }`}
           >
             <Mic2 className="h-4 w-4" /> Prestation
@@ -160,7 +160,7 @@ export default function ServiceForm({ service, defaultKind = "offre", onSuccess,
           onChange={(e) => setTitle(e.target.value)}
           placeholder={type === "cours" ? "Ex: Cours de guitare électrique tous niveaux" : "Ex: Groupe de reprises pour mariages et événements"}
           required
-          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
         />
       </div>
 
@@ -170,7 +170,7 @@ export default function ServiceForm({ service, defaultKind = "offre", onSuccess,
           value={instrument}
           onChange={(e) => setInstrument(e.target.value)}
           placeholder="Ex: Guitare"
-          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50 mt-0.5"
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50 mt-0.5"
         />
       </div>
 
@@ -190,7 +190,7 @@ export default function ServiceForm({ service, defaultKind = "offre", onSuccess,
           value={priceInfo}
           onChange={(e) => setPriceInfo(e.target.value)}
           placeholder="Ex: 30€/h, Sur devis..."
-          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50 mt-0.5"
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50 mt-0.5"
         />
       </div>
 
@@ -201,7 +201,7 @@ export default function ServiceForm({ service, defaultKind = "offre", onSuccess,
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Décrivez votre offre..."
           rows={4}
-          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
         />
       </div>
 
@@ -223,7 +223,7 @@ export default function ServiceForm({ service, defaultKind = "offre", onSuccess,
             </button>
           </div>
         ) : (
-          <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zik-border rounded-lg p-6 cursor-pointer hover:border-zik-purple hover:bg-zik-purple/5 transition-colors">
+          <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zik-border rounded-lg p-6 cursor-pointer hover:border-zik-grad-to hover:bg-zik-grad-to/5 transition-colors">
             <Upload className="h-6 w-6 text-zik-muted" />
             <span className="text-sm text-zik-muted">Cliquez pour importer une image</span>
             <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
@@ -245,7 +245,7 @@ export default function ServiceForm({ service, defaultKind = "offre", onSuccess,
         </Button>
         <Button
           type="submit"
-          className="bg-zik-purple hover:bg-zik-indigo text-white disabled:opacity-50"
+          className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white disabled:opacity-50"
           disabled={isLoading}
         >
           {isLoading ? "Enregistrement..." : isEdit ? "Enregistrer les modifications" : "Publier l'annonce"}

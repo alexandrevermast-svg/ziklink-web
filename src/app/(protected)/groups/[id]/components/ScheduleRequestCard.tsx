@@ -213,7 +213,7 @@ export function ScheduleRequestCard({
     <div className="rounded-xl border border-zik-border bg-zik-card/50 p-3">
       <div className="flex items-start justify-between gap-2 mb-1">
         <p className="text-sm text-zik-text font-medium flex items-center gap-1.5">
-          <CalendarRange className="h-3.5 w-3.5 text-zik-purple shrink-0" />
+          <CalendarRange className="h-3.5 w-3.5 text-zik-grad-to shrink-0" />
           Semaine du {days[0].toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} au {days[6].toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
         </p>
         {canManage && (
@@ -238,13 +238,13 @@ export function ScheduleRequestCard({
           <div className="flex gap-2 mb-3">
             <button type="button" disabled={!showEditor} onClick={() => handleModeChange("disponibilite")}
               className={`flex-1 text-xs font-medium py-2 rounded-lg border transition-colors disabled:opacity-50 ${
-                myMode === "disponibilite" ? "bg-zik-purple/10 border-zik-purple/40 text-zik-purple" : "border-zik-border text-zik-muted"
+                myMode === "disponibilite" ? "bg-zik-grad-to/10 border-zik-grad-to/40 text-zik-grad-to" : "border-zik-border text-zik-muted"
               }`}>
               ✅ Je remplis mes dispos
             </button>
             <button type="button" disabled={!showEditor} onClick={() => handleModeChange("indisponibilite")}
               className={`flex-1 text-xs font-medium py-2 rounded-lg border transition-colors disabled:opacity-50 ${
-                myMode === "indisponibilite" ? "bg-zik-purple/10 border-zik-purple/40 text-zik-purple" : "border-zik-border text-zik-muted"
+                myMode === "indisponibilite" ? "bg-zik-grad-to/10 border-zik-grad-to/40 text-zik-grad-to" : "border-zik-border text-zik-muted"
               }`}>
               🚫 Je remplis mes indispos
             </button>
@@ -260,7 +260,7 @@ export function ScheduleRequestCard({
                 type="checkbox"
                 checked={isOfficePatternChecked}
                 onChange={(e) => handleToggleOfficePattern(e.target.checked)}
-                className="h-3.5 w-3.5 rounded border-zik-border accent-zik-purple"
+                className="h-3.5 w-3.5 rounded border-zik-border accent-zik-grad-to"
               />
               🏢 Indispo en semaine, matin + après-midi (Lun-Ven)
             </label>
@@ -297,10 +297,10 @@ export function ScheduleRequestCard({
                             disabled={!showEditor}
                             className={`h-8 w-8 rounded-md flex items-center justify-center text-[11px] font-semibold border transition-colors disabled:cursor-default ${
                               mine
-                                ? "bg-zik-purple/20 border-zik-purple text-zik-purple"
+                                ? "bg-zik-grad-to/20 border-zik-grad-to text-zik-grad-to"
                                 : isBest
                                   ? "border-zik-emerald/40 bg-zik-emerald/10 text-zik-emerald"
-                                  : `border-zik-border text-zik-muted ${showEditor ? "hover:border-zik-purple/30" : ""}`
+                                  : `border-zik-border text-zik-muted ${showEditor ? "hover:border-zik-grad-to/30" : ""}`
                             }`}
                           >
                             {count > 0 ? count : ""}
@@ -316,7 +316,7 @@ export function ScheduleRequestCard({
 
           {showEditor ? (
             <Button
-              size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo w-full mt-3"
+              size="sm" className="text-xs bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 w-full mt-3"
               disabled={isSubmitting}
               onClick={handleValidate}
             >
@@ -328,7 +328,7 @@ export function ScheduleRequestCard({
                 <CheckCircle2 className="h-3.5 w-3.5" /> Dispo envoyée
               </span>
               <button type="button" onClick={() => setForceEdit(true)}
-                className="flex items-center gap-1 text-xs font-medium text-zik-purple hover:underline shrink-0">
+                className="flex items-center gap-1 text-xs font-medium text-zik-grad-to hover:underline shrink-0">
                 <Pencil className="h-3 w-3" /> Modifier
               </button>
             </div>
@@ -337,7 +337,7 @@ export function ScheduleRequestCard({
           {canManage && (
             <div className="border-t border-zik-border pt-3 mt-4 space-y-2">
               <p className="text-xs font-medium text-zik-text flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-zik-purple" /> Planifier une répétition
+                <Sparkles className="h-3.5 w-3.5 text-zik-grad-to" /> Planifier une répétition
               </p>
               <select
                 value={selectedCellKey}
@@ -362,7 +362,7 @@ export function ScheduleRequestCard({
                     className="zik-input text-sm"
                   />
                   <Button
-                    size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo w-full"
+                    size="sm" className="text-xs bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 w-full"
                     disabled={isPlanning || !planDate || !planHour}
                     onClick={handlePlanRehearsal}
                   >

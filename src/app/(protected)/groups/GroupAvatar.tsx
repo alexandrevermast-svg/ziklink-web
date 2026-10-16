@@ -8,7 +8,7 @@ export function GroupAvatar({ group, size = 'md' }: { group: Pick<Group, 'name' 
   return group.avatar_url ? (
     <img src={group.avatar_url} alt={group.name} className={`${cls} rounded-2xl object-cover shrink-0`} />
   ) : (
-    <div className={`${cls} rounded-2xl bg-linear-to-br from-zik-purple to-zik-indigo flex items-center justify-center text-white font-bold shrink-0`}>
+    <div className={`${cls} rounded-2xl bg-linear-to-br from-zik-grad-to to-zik-indigo flex items-center justify-center text-white font-bold shrink-0`}>
       {initials}
     </div>
   );

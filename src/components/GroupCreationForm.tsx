@@ -86,7 +86,7 @@ export default function GroupCreationForm({ onSuccess, onClose }: GroupCreationF
             <img src={avatarPreview} alt="preview" className="h-20 w-20 rounded-2xl object-cover border-2 border-zik-border" />
           ) : (
             // ✅ Dégradé adapté à ton thème
-            <div className="h-20 w-20 rounded-2xl bg-linear-to-br from-zik-purple to-zik-indigo flex items-center justify-center text-white text-2xl font-bold">
+            <div className="h-20 w-20 rounded-2xl bg-linear-to-br from-zik-grad-to to-zik-indigo flex items-center justify-center text-white text-2xl font-bold">
               {name ? name.slice(0, 2).toUpperCase() : '🎸'}
             </div>
           )}
@@ -110,7 +110,7 @@ export default function GroupCreationForm({ onSuccess, onClose }: GroupCreationF
           onChange={(e) => setName(e.target.value)}
           placeholder="Ex: Les Vieux Fourneaux"
           required
-          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
         />
       </div>
 
@@ -123,7 +123,7 @@ export default function GroupCreationForm({ onSuccess, onClose }: GroupCreationF
           placeholder="Parlez de votre groupe, de votre style..."
           rows={3}
           maxLength={280}
-          className="w-full border-zik-border rounded-lg px-3 py-2 text-sm resize-none outline-none bg-zik-card text-zik-text placeholder:text-zik-muted focus:ring-2 focus:ring-zik-purple transition-all"
+          className="w-full border-zik-border rounded-lg px-3 py-2 text-sm resize-none outline-none bg-zik-card text-zik-text placeholder:text-zik-muted focus:ring-2 focus:ring-zik-grad-to transition-all"
         />
         {/* ✅ Compteur adapté */}
         <p className="text-xs text-zik-muted text-right mt-0.5">{bio.length}/280</p>
@@ -133,23 +133,23 @@ export default function GroupCreationForm({ onSuccess, onClose }: GroupCreationF
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="text-sm font-medium text-zik-text mb-1 flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5 text-zik-purple" /> Ville
+            <MapPin className="h-3.5 w-3.5 text-zik-grad-to" /> Ville
           </label>
           <Input
             value={city}
             onChange={(e) => setCity(e.target.value)}
             placeholder="Ex: Paris"
-            className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+            className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
           />
         </div>
         <div>
           <label className="text-sm font-medium text-zik-text mb-1 flex items-center gap-1.5">
-            <Music2 className="h-3.5 w-3.5 text-zik-purple" /> Genre
+            <Music2 className="h-3.5 w-3.5 text-zik-grad-to" /> Genre
           </label>
           <select
             value={genre}
             onChange={(e) => setGenre(e.target.value)}
-            className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple mt-0.5"
+            className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-grad-to mt-0.5"
           >
             <option value="">Sélectionner...</option>
             {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
@@ -173,7 +173,7 @@ export default function GroupCreationForm({ onSuccess, onClose }: GroupCreationF
         </Button>
         <Button
           type="submit"
-          className="bg-zik-purple hover:bg-zik-indigo text-white disabled:opacity-50"
+          className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white disabled:opacity-50"
           disabled={isLoading}
         >
           {isLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Création...</> : 'Créer le groupe'}

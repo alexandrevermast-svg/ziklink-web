@@ -55,7 +55,7 @@ export function ParticipantPicker({ instrument, slot_index, participants, slots,
               {p.profile?.avatar_url ? (
                 <img src={p.profile.avatar_url} alt="" className="h-6 w-6 rounded-full object-cover shrink-0" />
               ) : (
-                <div className="h-6 w-6 rounded-full bg-zik-purple flex items-center justify-center text-white text-[9px] font-semibold shrink-0">
+                <div className="h-6 w-6 rounded-full bg-linear-to-br from-zik-grad-from to-zik-grad-to flex items-center justify-center text-white text-[9px] font-semibold shrink-0">
                   {p.profile?.username?.slice(0, 2).toUpperCase() ?? "?"}
                 </div>
               )}
@@ -73,12 +73,12 @@ export function ParticipantPicker({ instrument, slot_index, participants, slots,
             onChange={(e) => setGuestName(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddGuest(); } }}
             placeholder="Pseudo..."
-            className="flex-1 min-w-0 text-xs bg-zik-bg border border-zik-border rounded-md px-2 py-1.5 text-zik-text placeholder:text-zik-muted outline-none focus:ring-1 focus:ring-zik-purple"
+            className="flex-1 min-w-0 text-xs bg-zik-bg border border-zik-border rounded-md px-2 py-1.5 text-zik-text placeholder:text-zik-muted outline-none focus:ring-1 focus:ring-zik-grad-to"
           />
           <button
             onClick={handleAddGuest}
             disabled={!guestName.trim()}
-            className="shrink-0 flex items-center justify-center h-7 w-7 rounded-md bg-zik-purple/10 text-zik-purple hover:bg-zik-purple/20 disabled:opacity-40 transition-colors"
+            className="shrink-0 flex items-center justify-center h-7 w-7 rounded-md bg-zik-grad-to/10 text-zik-grad-to hover:bg-zik-grad-to/20 disabled:opacity-40 transition-colors"
           >
             <UserPlus className="h-3.5 w-3.5" />
           </button>

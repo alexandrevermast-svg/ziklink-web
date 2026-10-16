@@ -32,14 +32,14 @@ export default function LegalPage() {
           coordonnées complètes de l&apos;éditeur sont tenues à la disposition des autorités
           compétentes qui en feraient la demande et ne sont pas publiées sur le site.
         </p>
-        <p>Contact : <a href={`mailto:${CONTACT_EMAIL}`} className="text-zik-purple hover:underline">{CONTACT_EMAIL}</a></p>
+        <p>Contact : <a href={`mailto:${CONTACT_EMAIL}`} className="text-zik-grad-to hover:underline">{CONTACT_EMAIL}</a></p>
         <p>Directeur de la publication : Alexandre Vermast.</p>
       </Section>
 
       <Section title="Hébergement">
         <p>
           Le site est hébergé par Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789,
-          États-Unis — <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="text-zik-purple hover:underline">vercel.com</a>.
+          États-Unis — <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="text-zik-grad-to hover:underline">vercel.com</a>.
         </p>
       </Section>
 
@@ -48,7 +48,7 @@ export default function LegalPage() {
           {SITE_NAME} utilise Supabase (Supabase Inc.) comme base de données et système
           d&apos;authentification. Les données que vous nous confiez sont hébergées et traitées
           par Supabase pour le compte de {SITE_NAME} — voir leur{" "}
-          <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" className="text-zik-purple hover:underline">
+          <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" className="text-zik-grad-to hover:underline">
             politique de confidentialité
           </a>.
         </p>
@@ -74,7 +74,7 @@ export default function LegalPage() {
           Conformément au RGPD, vous disposez d&apos;un droit d&apos;accès, de rectification,
           d&apos;effacement, de portabilité et d&apos;opposition sur vos données. Pour exercer ces
           droits, écrivez à{" "}
-          <a href={`mailto:${CONTACT_EMAIL}`} className="text-zik-purple hover:underline">{CONTACT_EMAIL}</a>.
+          <a href={`mailto:${CONTACT_EMAIL}`} className="text-zik-grad-to hover:underline">{CONTACT_EMAIL}</a>.
         </p>
       </Section>
 
@@ -89,7 +89,7 @@ export default function LegalPage() {
       <Section title="Contact">
         <p>
           Pour toute question, signalement de bug, ou demande relative à vos données :{" "}
-          <a href={`mailto:${CONTACT_EMAIL}`} className="text-zik-purple hover:underline">{CONTACT_EMAIL}</a>.
+          <a href={`mailto:${CONTACT_EMAIL}`} className="text-zik-grad-to hover:underline">{CONTACT_EMAIL}</a>.
         </p>
       </Section>
     </div>

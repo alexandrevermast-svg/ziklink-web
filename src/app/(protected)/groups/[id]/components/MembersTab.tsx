@@ -76,7 +76,7 @@ export function MembersTab({
             key={m.user_id}
             className={`flex items-center gap-3 p-3 rounded-xl border ${
               isAdminMember
-                ? 'bg-zik-purple/10 border-zik-purple/20'
+                ? 'bg-zik-grad-to/10 border-zik-grad-to/20'
                 : 'bg-zik-card/50 border-zik-border'
             }`}
           >
@@ -95,7 +95,7 @@ export function MembersTab({
                   </span>
                 )}
                 {isAdminMember && !isCreator && (
-                  <span className="flex items-center gap-0.5 text-xs text-zik-purple">
+                  <span className="flex items-center gap-0.5 text-xs text-zik-grad-to">
                     <ShieldCheck className="h-3 w-3" /> Admin
                   </span>
                 )}
@@ -105,7 +105,7 @@ export function MembersTab({
               {m.user_id !== currentUserId && (
                 <button
                   onClick={() => onOpenDM(m.user_id)}
-                  className="h-7 w-7 flex items-center justify-center rounded-full text-zik-muted hover:text-zik-purple hover:bg-zik-purple/10 transition-colors"
+                  className="h-7 w-7 flex items-center justify-center rounded-full text-zik-muted hover:text-zik-grad-to hover:bg-zik-grad-to/10 transition-colors"
                 >
                   <MessageCircle className="h-3.5 w-3.5" />
                 </button>
@@ -116,8 +116,8 @@ export function MembersTab({
                     onClick={() => onToggleAdmin(m.user_id, m.role)}
                     className={`h-7 w-7 flex items-center justify-center rounded-full transition-colors ${
                       isAdminMember
-                        ? 'text-zik-purple hover:bg-zik-purple/10'
-                        : 'text-zik-muted hover:text-zik-purple hover:bg-zik-purple/10'
+                        ? 'text-zik-grad-to hover:bg-zik-grad-to/10'
+                        : 'text-zik-muted hover:text-zik-grad-to hover:bg-zik-grad-to/10'
                     }`}
                   >
                     <ShieldCheck className="h-3.5 w-3.5" />

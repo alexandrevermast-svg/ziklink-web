@@ -207,7 +207,7 @@ export default function AdminModerationPage() {
             onClick={() => setFilter(f)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
               filter === f
-                ? 'bg-zik-purple text-white'
+                ? 'bg-zik-grad-to text-white'
                 : 'bg-zik-card text-zik-muted hover:bg-zik-card-hover'
             }`}
           >
@@ -255,7 +255,7 @@ export default function AdminModerationPage() {
                     report.target_type === 'user' ? 'bg-zik-indigo/10 text-zik-indigo' :
                     report.target_type === 'jam' ? 'bg-zik-emerald/10 text-zik-emerald' :
                     report.target_type === 'concert' ? 'bg-zik-red/10 text-zik-red' :
-                    report.target_type === 'message' ? 'bg-zik-purple/10 text-zik-purple' :
+                    report.target_type === 'message' ? 'bg-zik-grad-to/10 text-zik-grad-to' :
                     'bg-zik-card-hover text-zik-muted'
                   }`}>
                     {TARGET_ICONS[report.target_type]}
@@ -334,7 +334,7 @@ export default function AdminModerationPage() {
                           onChange={(e) => setAdminNote((prev) => ({ ...prev, [report.id]: e.target.value }))}
                           placeholder="Ex: contenu supprimé, avertissement envoyé..."
                           rows={2}
-                          className="w-full bg-zik-card border border-zik-border text-zik-text placeholder:text-zik-muted rounded-lg px-3 py-2 text-xs resize-none outline-none focus:ring-2 focus:ring-zik-purple/30"
+                          className="w-full bg-zik-card border border-zik-border text-zik-text placeholder:text-zik-muted rounded-lg px-3 py-2 text-xs resize-none outline-none focus:ring-2 focus:ring-zik-grad-to/30"
                         />
                       </div>
                     ) : null}

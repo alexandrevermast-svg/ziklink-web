@@ -30,7 +30,7 @@ function ProgressBar({ step }: { step: number }) {
         <div
           key={i}
           className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-            i < step ? 'bg-zik-purple' : i === step ? 'bg-zik-purple/50' : 'bg-zik-card/30'
+            i < step ? 'bg-zik-grad-to' : i === step ? 'bg-zik-grad-to/50' : 'bg-zik-card/30'
           }`}
         />
       ))}
@@ -60,7 +60,7 @@ function StepUsername({
           placeholder="Ex: guitare_hero42"
           maxLength={30}
           autoFocus
-          className={`bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50 ${
+          className={`bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50 ${
             error ? 'border-zik-red/50 focus:ring-zik-red/50' : ''
           }`}
         />
@@ -95,13 +95,13 @@ function StepInstruments({
               onClick={() => onToggle(inst.key)}
               className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all active:scale-[0.97] ${
                 active
-                  ? 'border-zik-purple bg-zik-purple/10 text-zik-purple'
-                  : 'border-zik-border bg-zik-card text-zik-muted hover:border-zik-purple/50 hover:bg-zik-card-hover'
+                  ? 'border-zik-grad-to bg-zik-grad-to/10 text-zik-grad-to'
+                  : 'border-zik-border bg-zik-card text-zik-muted hover:border-zik-grad-to/50 hover:bg-zik-card-hover'
               }`}
             >
               <span className="text-2xl shrink-0">{inst.emoji}</span>
               <span className="font-semibold text-sm">{inst.label}</span>
-              {active && <Check className="h-4 w-4 ml-auto shrink-0 text-zik-purple" />}
+              {active && <Check className="h-4 w-4 ml-auto shrink-0 text-zik-grad-to" />}
             </button>
           );
         })}
@@ -133,14 +133,14 @@ function StepLocation({
       <div className="space-y-4">
         <div>
           <label className="text-sm font-medium text-zik-text mb-1.5 flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5 text-zik-purple" /> Ville
+            <MapPin className="h-3.5 w-3.5 text-zik-grad-to" /> Ville
           </label>
           <Input
             value={city}
             onChange={(e) => onCityChange(e.target.value)}
             placeholder="Ex: Paris, Lyon, Marseille..."
             autoFocus
-            className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+            className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
           />
         </div>
         <div>
@@ -153,7 +153,7 @@ function StepLocation({
             placeholder="Ex: Guitariste depuis 10 ans, fan de blues et de rock..."
             rows={3}
             maxLength={280}
-            className="w-full border-zik-border rounded-xl px-3 py-2.5 text-sm resize-none outline-none bg-zik-card text-zik-text placeholder:text-zik-muted focus:ring-2 focus:ring-zik-purple/50 transition-all"
+            className="w-full border-zik-border rounded-xl px-3 py-2.5 text-sm resize-none outline-none bg-zik-card text-zik-text placeholder:text-zik-muted focus:ring-2 focus:ring-zik-grad-to/50 transition-all"
           />
           <p className="text-xs text-zik-muted text-right mt-0.5">{bio.length}/280</p>
         </div>
@@ -192,7 +192,7 @@ function StepPhoto({
               className="h-28 w-28 rounded-full object-cover border-4 border-zik-bg shadow-lg"
             />
           ) : (
-            <div className="h-28 w-28 rounded-full bg-linear-to-br from-zik-purple to-zik-indigo flex items-center justify-center text-white text-3xl font-bold border-4 border-zik-bg shadow-lg">
+            <div className="h-28 w-28 rounded-full bg-linear-to-br from-zik-grad-to to-zik-indigo flex items-center justify-center text-white text-3xl font-bold border-4 border-zik-bg shadow-lg">
               {initials}
             </div>
           )}
@@ -215,7 +215,7 @@ function StepPhoto({
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="text-sm font-medium text-zik-purple hover:text-zik-indigo transition-colors"
+          className="text-sm font-medium text-zik-grad-to hover:text-zik-indigo transition-colors"
         >
           {avatarPreview ? 'Changer la photo' : 'Choisir une photo'}
         </button>
@@ -229,7 +229,7 @@ function StepSuccess({ username }: { username: string }) {
   return (
     <div className="flex flex-col items-center gap-6 text-center py-4">
       <div className="relative">
-        <div className="h-20 w-20 rounded-full bg-linear-to-br from-zik-emerald to-zik-purple flex items-center justify-center shadow-lg">
+        <div className="h-20 w-20 rounded-full bg-linear-to-br from-zik-emerald to-zik-grad-to flex items-center justify-center shadow-lg">
           <Sparkles className="h-10 w-10 text-white" />
         </div>
       </div>
@@ -429,7 +429,7 @@ function OnboardingForm() {
                 <Button
                   onClick={handleFinish}
                   disabled={isSaving}
-                  className="bg-zik-purple hover:bg-zik-indigo px-6"
+                  className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 px-6"
                 >
                   {isSaving
                     ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Création...</>
@@ -439,7 +439,7 @@ function OnboardingForm() {
               ) : (
                 <Button
                   onClick={handleNext}
-                  className="bg-zik-purple hover:bg-zik-indigo px-6"
+                  className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 px-6"
                 >
                   Suivant <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
@@ -464,7 +464,7 @@ function OnboardingForm() {
             <StepSuccess username={username} />
             <Button
               onClick={handleGoToApp}
-              className="w-full bg-zik-purple hover:bg-zik-indigo text-base py-3 h-auto"
+              className="w-full bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-base py-3 h-auto"
             >
               Découvrir Ziklink 🎸
             </Button>

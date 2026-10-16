@@ -140,7 +140,7 @@ function InstrumentPresetDropdown({ value, onChange }: { value: string; onChange
             <button key={p.label} type="button"
               onClick={() => { onChange(p.label); setOpen(false); }}
               className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-zik-card-hover transition-colors ${
-                value === p.label ? "text-zik-purple" : "text-zik-text"
+                value === p.label ? "text-zik-grad-to" : "text-zik-text"
               }`}>
               <span className="w-5 shrink-0 flex items-center justify-center"><PresetIcon label={p.label} emoji={p.emoji} /></span>
               <span className="truncate">{p.label}</span>
@@ -150,7 +150,7 @@ function InstrumentPresetDropdown({ value, onChange }: { value: string; onChange
           <button type="button"
             onClick={() => { onChange(OTHER_VALUE); setOpen(false); }}
             className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-zik-card-hover transition-colors ${
-              isOther ? "text-zik-purple" : "text-zik-text"
+              isOther ? "text-zik-grad-to" : "text-zik-text"
             }`}>
             <span className="w-5 shrink-0 flex items-center justify-center"><Pencil className="h-4 w-4" /></span>
             <span className="truncate">Autre…</span>
@@ -222,7 +222,7 @@ export function InstrumentManagerModal({ open, onClose, instruments, onAdd, onUp
           </div>
         )}
 
-        <Button size="sm" className="w-full bg-zik-purple hover:bg-zik-indigo"
+        <Button size="sm" className="w-full bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0"
           disabled={!newLabel.trim() || isAdding} onClick={handleAdd}>
           {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="h-4 w-4 mr-1" /> Ajouter</>}
         </Button>

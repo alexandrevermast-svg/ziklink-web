@@ -141,7 +141,7 @@ export default function ServiceList({ kind }: ServiceListProps) {
             key={key}
             onClick={() => setTypeFilter(key)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-              typeFilter === key ? "bg-zik-purple text-white" : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
+              typeFilter === key ? "bg-zik-grad-to text-white" : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
             }`}
           >
             {label}
@@ -153,7 +153,7 @@ export default function ServiceList({ kind }: ServiceListProps) {
             <button
               onClick={() => { if (!nearMe) handleToggleNearMe(true); }}
               className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                nearMe ? "border-zik-purple/40 bg-zik-purple/10 text-zik-purple" : "border-transparent bg-zik-card text-zik-muted hover:bg-zik-card-hover"
+                nearMe ? "border-zik-grad-to/40 bg-zik-grad-to/10 text-zik-grad-to" : "border-transparent bg-zik-card text-zik-muted hover:bg-zik-card-hover"
               }`}
             >
               <LocateFixed className="h-3.5 w-3.5 shrink-0" />
@@ -186,7 +186,7 @@ export default function ServiceList({ kind }: ServiceListProps) {
                         key={label}
                         onClick={() => setRadiusKm(key)}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                          isActive ? "bg-zik-purple text-white" : "bg-zik-card-hover text-zik-muted hover:bg-zik-border"
+                          isActive ? "bg-zik-grad-to text-white" : "bg-zik-card-hover text-zik-muted hover:bg-zik-border"
                         }`}
                       >
                         {label}
@@ -221,14 +221,14 @@ export default function ServiceList({ kind }: ServiceListProps) {
                   {service.photo_url ? (
                     <img src={service.photo_url} alt={service.title} className="w-24 shrink-0 object-cover self-stretch" />
                   ) : (
-                    <div className="w-24 shrink-0 bg-linear-to-br from-zik-purple/20 to-zik-indigo/20 flex items-center justify-center">
-                      <Music2 className="h-8 w-8 text-zik-purple" />
+                    <div className="w-24 shrink-0 bg-linear-to-br from-zik-grad-to/20 to-zik-indigo/20 flex items-center justify-center">
+                      <Music2 className="h-8 w-8 text-zik-grad-to" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0 p-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <span className="flex items-center gap-1 text-[10px] font-medium text-zik-purple mb-1">
+                        <span className="flex items-center gap-1 text-[10px] font-medium text-zik-grad-to mb-1">
                           <Icon className="h-3 w-3" /> {config.label}
                         </span>
                         <h3 className="font-semibold text-zik-text truncate">{service.title}</h3>
@@ -252,7 +252,7 @@ export default function ServiceList({ kind }: ServiceListProps) {
                         <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{service.city}</span>
                       )}
                       {distanceById[service.id] !== undefined && (
-                        <span className="flex items-center gap-1 text-zik-purple font-medium">
+                        <span className="flex items-center gap-1 text-zik-grad-to font-medium">
                           <LocateFixed className="h-3 w-3" />{formatDistanceKm(distanceById[service.id])}
                         </span>
                       )}
@@ -263,7 +263,7 @@ export default function ServiceList({ kind }: ServiceListProps) {
                       {isOwner ? (
                         <>
                           <Button size="sm" variant="outline"
-                            className="text-xs border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
+                            className="text-xs border-zik-border text-zik-text hover:border-zik-grad-to hover:text-zik-grad-to"
                             onClick={() => setEditingService(service)}>
                             <Pencil className="h-3.5 w-3.5 mr-1" /> Modifier
                           </Button>
@@ -274,7 +274,7 @@ export default function ServiceList({ kind }: ServiceListProps) {
                           </Button>
                         </>
                       ) : (
-                        <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo"
+                        <Button size="sm" className="text-xs bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0"
                           onClick={() => handleContact(service.created_by)}
                           disabled={contactingId === service.created_by}>
                           <MessageCircle className="h-3.5 w-3.5 mr-1" />

@@ -49,12 +49,12 @@ function ChipFilterPopover({
       <PopoverTrigger asChild>
         <button
           className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-            selected.length > 0 ? "border-zik-purple/40 bg-zik-purple/10 text-zik-purple" : "border-zik-border bg-zik-card text-zik-muted hover:border-zik-purple/30"
+            selected.length > 0 ? "border-zik-grad-to/40 bg-zik-grad-to/10 text-zik-grad-to" : "border-zik-border bg-zik-card text-zik-muted hover:border-zik-grad-to/30"
           }`}
         >
           {label}
           {selected.length > 0 && (
-            <span className="text-[10px] font-bold bg-zik-purple text-white rounded-full h-4 w-4 flex items-center justify-center">
+            <span className="text-[10px] font-bold bg-zik-grad-to text-white rounded-full h-4 w-4 flex items-center justify-center">
               {selected.length}
             </span>
           )}
@@ -71,8 +71,8 @@ function ChipFilterPopover({
                 onClick={() => onToggle(opt.key)}
                 className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                   isSelected
-                    ? "bg-zik-purple text-white border-zik-purple"
-                    : "bg-zik-card-hover text-zik-muted border-zik-border hover:border-zik-purple hover:text-zik-purple"
+                    ? "bg-zik-grad-to text-white border-zik-grad-to"
+                    : "bg-zik-card-hover text-zik-muted border-zik-border hover:border-zik-grad-to hover:text-zik-grad-to"
                 }`}
               >
                 {opt.emoji && <span>{opt.emoji}</span>} {opt.label}
@@ -217,7 +217,7 @@ export default function PeopleSearchTab() {
           <h1 className="text-base font-semibold text-zik-text">Petites annonces</h1>
           <p className="text-xs text-zik-muted mt-0.5">Musiciens qui cherchent un groupe, groupes qui cherchent un musicien</p>
         </div>
-        <Button size="sm" className="bg-zik-purple hover:bg-zik-indigo text-white" onClick={handleAddClick}>
+        <Button size="sm" className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white" onClick={handleAddClick}>
           <Plus className="mr-1.5 h-4 w-4" /> Publier
         </Button>
       </div>
@@ -233,7 +233,7 @@ export default function PeopleSearchTab() {
               key={key}
               onClick={() => setModeFilter(key)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                modeFilter === key ? "bg-zik-purple text-white" : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
+                modeFilter === key ? "bg-zik-grad-to text-white" : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
               }`}
             >
               {label}
@@ -244,7 +244,7 @@ export default function PeopleSearchTab() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple"
+          className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-grad-to"
         >
           <option value="">Tout statut</option>
           {Object.entries(STATUS_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
@@ -279,7 +279,7 @@ export default function PeopleSearchTab() {
               <button
                 onClick={() => { if (!nearMe) handleToggleNearMe(true); }}
                 className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                  nearMe ? "border-zik-purple/40 bg-zik-purple/10 text-zik-purple" : "border-zik-border bg-zik-card text-zik-muted hover:border-zik-purple/30"
+                  nearMe ? "border-zik-grad-to/40 bg-zik-grad-to/10 text-zik-grad-to" : "border-zik-border bg-zik-card text-zik-muted hover:border-zik-grad-to/30"
                 }`}
               >
                 <LocateFixed className="h-4 w-4 shrink-0" />
@@ -312,7 +312,7 @@ export default function PeopleSearchTab() {
                           key={label}
                           onClick={() => setRadiusKm(key)}
                           className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                            isActive ? "bg-zik-purple text-white" : "bg-zik-card-hover text-zik-muted hover:bg-zik-border"
+                            isActive ? "bg-zik-grad-to text-white" : "bg-zik-card-hover text-zik-muted hover:bg-zik-border"
                           }`}
                         >
                           {label}
@@ -350,7 +350,7 @@ export default function PeopleSearchTab() {
               <div
                 key={ad.id}
                 onClick={() => router.push(`/ads/${ad.id}`)}
-                className="rounded-lg border border-zik-border overflow-hidden bg-zik-card hover:border-zik-purple/30 hover:shadow-sm transition-all cursor-pointer active:scale-[0.99]"
+                className="rounded-lg border border-zik-border overflow-hidden bg-zik-card hover:border-zik-grad-to/30 hover:shadow-sm transition-all cursor-pointer active:scale-[0.99]"
               >
                 <div className="flex">
                   {ad.photo_url && (
@@ -383,19 +383,19 @@ export default function PeopleSearchTab() {
                       {instrument && <span>{instrument.emoji} {instrument.label}</span>}
                       {ad.city && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{ad.city}</span>}
                       {distanceById[ad.id] !== undefined && (
-                        <span className="flex items-center gap-1 text-zik-purple font-medium">
+                        <span className="flex items-center gap-1 text-zik-grad-to font-medium">
                           <LocateFixed className="h-3 w-3" />
                           {formatDistanceKm(distanceById[ad.id])}
                         </span>
                       )}
-                      <span className="text-zik-purple">{STATUS_LABELS[ad.status] ?? ad.status}</span>
+                      <span className="text-zik-grad-to">{STATUS_LABELS[ad.status] ?? ad.status}</span>
                     </div>
 
                     <div className="flex items-center justify-end gap-2 mt-2">
                       {isOwner ? (
                         <>
                           <Button size="sm" variant="outline"
-                            className="text-xs border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
+                            className="text-xs border-zik-border text-zik-text hover:border-zik-grad-to hover:text-zik-grad-to"
                             onClick={(e) => { e.stopPropagation(); setEditingAd(ad); }}>
                             <Pencil className="h-3.5 w-3.5 mr-1" /> Modifier
                           </Button>
@@ -406,7 +406,7 @@ export default function PeopleSearchTab() {
                           </Button>
                         </>
                       ) : (
-                        <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo"
+                        <Button size="sm" className="text-xs bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0"
                           onClick={(e) => { e.stopPropagation(); handleContact(ad.created_by); }}
                           disabled={contactingId === ad.created_by}>
                           <MessageCircle className="h-3.5 w-3.5 mr-1" />

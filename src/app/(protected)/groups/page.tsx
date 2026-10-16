@@ -51,13 +51,13 @@ export default function GroupsPage() {
       <TabsList className="grid w-full grid-cols-2 bg-zik-card/50 p-1 rounded-xl border border-zik-border mx-4 mt-4" style={{ width: 'calc(100% - 2rem)' }}>
         <TabsTrigger
           value="groupes"
-          className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+          className="text-zik-muted data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
         >
           <Users className="mr-2 h-4 w-4" /> Groupes
         </TabsTrigger>
         <TabsTrigger
           value="recherche"
-          className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+          className="text-zik-muted data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
         >
           Recherche
         </TabsTrigger>
@@ -79,7 +79,7 @@ export default function GroupsPage() {
               </div>
               <Button
                 size="sm"
-                className="bg-zik-purple hover:bg-zik-indigo"
+                className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0"
                 onClick={() => setIsModalOpen(true)}
               >
                 <Plus className="h-4 w-4 mr-1.5" /> Créer
@@ -93,7 +93,7 @@ export default function GroupsPage() {
                   Aucun groupe pour l'instant.<br />Sois le premier à en créer un !
                 </p>
                 <Button
-                  className="bg-zik-purple hover:bg-zik-indigo mt-2"
+                  className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 mt-2"
                   onClick={() => setIsModalOpen(true)}
                 >
                   <Plus className="h-4 w-4 mr-1.5" /> Créer un groupe
@@ -105,14 +105,14 @@ export default function GroupsPage() {
                   <button
                     key={group.id}
                     onClick={() => router.push(`/groups/${group.id}`)}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl border border-zik-border bg-zik-card hover:border-zik-purple/30 hover:shadow-sm transition-all text-left active:scale-[0.99]"
+                    className="w-full flex items-center gap-3 p-3 rounded-xl border border-zik-border bg-zik-card hover:border-zik-grad-to/30 hover:shadow-sm transition-all text-left active:scale-[0.99]"
                   >
                     <GroupAvatar group={group} />
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-zik-text truncate">{group.name}</p>
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         {group.genre && (
-                          <span className="text-xs bg-zik-purple/10 text-zik-purple font-medium px-2 py-0.5 rounded-full">
+                          <span className="text-xs bg-zik-grad-to/10 text-zik-grad-to font-medium px-2 py-0.5 rounded-full">
                             {group.genre}
                           </span>
                         )}

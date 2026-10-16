@@ -46,11 +46,11 @@ export function ProfilePopup({ profile, anchorRef, onClose, onMessage, onViewPro
         onClick={() => { onViewProfile(profile.id); onClose(); }}
         className="w-full flex items-center gap-2 text-xs text-zik-text font-medium hover:bg-zik-card-hover rounded-lg px-2 py-1.5 transition-colors mb-1"
       >
-        <Users className="h-3.5 w-3.5 text-zik-purple" /> Voir le profil
+        <Users className="h-3.5 w-3.5 text-zik-grad-to" /> Voir le profil
       </button>
       <button
         onClick={() => { onMessage(profile.id); onClose(); }}
-        className="w-full flex items-center gap-2 text-xs text-zik-purple font-medium hover:bg-zik-purple/10 rounded-lg px-2 py-1.5 transition-colors"
+        className="w-full flex items-center gap-2 text-xs text-zik-grad-to font-medium hover:bg-zik-grad-to/10 rounded-lg px-2 py-1.5 transition-colors"
       >
         <MessageCircle className="h-3.5 w-3.5" /> Envoyer un message
       </button>

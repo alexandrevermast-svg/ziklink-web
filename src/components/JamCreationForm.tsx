@@ -265,7 +265,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
           onChange={handleInputChange}
           placeholder="Ex: Jam à La Boîte Noire"
           required
-          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
         />
       </div>
 
@@ -277,7 +277,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
           value={formData.description}
           onChange={handleInputChange}
           placeholder="Décrivez votre jam..."
-          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
         />
       </div>
 
@@ -323,7 +323,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
             !formData.date && "text-zik-muted"
           )}
         >
-          <CalendarDays className="h-4 w-4 text-zik-purple shrink-0" />
+          <CalendarDays className="h-4 w-4 text-zik-grad-to shrink-0" />
           {formData.date
             ? format(new Date(formData.date), "PPP", { locale: fr })
             : <span>Sélectionnez une date</span>
@@ -353,13 +353,13 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
             months: "relative flex flex-col gap-4",
             month: "flex w-full flex-col gap-4",
             nav: "absolute inset-x-0 top-0 z-10 flex items-center justify-between px-2",
-            button_previous: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover",
-            button_next: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover",
+            button_previous: "h-8 w-8 p-0 text-zik-grad-to hover:bg-zik-card-hover",
+            button_next: "h-8 w-8 p-0 text-zik-grad-to hover:bg-zik-card-hover",
             month_caption: "flex h-8 w-full items-center justify-center px-4 text-zik-text font-medium",
             weekday: "text-zik-muted text-[0.9rem] font-medium",
             day: "h-8 w-8 text-[0.9rem] font-medium text-zik-text hover:bg-zik-card-hover rounded-md",
-            day_selected: "bg-zik-purple text-white hover:bg-zik-purple/90",
-            day_today: "bg-zik-purple/10 text-zik-text border border-zik-purple/30 rounded-md",
+            day_selected: "bg-zik-grad-to text-white hover:bg-zik-grad-to/90",
+            day_today: "bg-zik-grad-to/10 text-zik-text border border-zik-grad-to/30 rounded-md",
           }}
         />
       </PopoverContent>
@@ -386,12 +386,12 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
       {userGroups.length > 0 && (
         <div>
           <label className="text-sm font-medium text-zik-text mb-1 flex items-center gap-1.5">
-            <Users className="h-3.5 w-3.5 text-zik-purple" /> Organiser au nom d'un groupe <span className="text-zik-muted font-normal">(optionnel)</span>
+            <Users className="h-3.5 w-3.5 text-zik-grad-to" /> Organiser au nom d'un groupe <span className="text-zik-muted font-normal">(optionnel)</span>
           </label>
           <select
             value={selectedGroupId}
             onChange={(e) => setSelectedGroupId(e.target.value)}
-            className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple"
+            className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-grad-to"
           >
             <option value="">Aucun groupe — jam personnelle</option>
             {userGroups.map((g) => (
@@ -405,7 +405,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
       <div className="rounded-lg border border-zik-border overflow-hidden bg-zik-card/50">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            <Repeat2 className={`h-5 w-5 ${recurrence.enabled ? "text-zik-purple" : "text-zik-muted"}`} />
+            <Repeat2 className={`h-5 w-5 ${recurrence.enabled ? "text-zik-grad-to" : "text-zik-muted"}`} />
             <div>
               <p className="text-sm font-medium text-zik-text">Jam récurrente</p>
               <p className="text-xs text-zik-muted">Se répète selon un calendrier</p>
@@ -414,7 +414,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
           <Switch
             checked={recurrence.enabled}
             onCheckedChange={(checked) => setRecurrence((prev) => ({ ...prev, enabled: checked }))}
-            className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+            className="data-[state=checked]:bg-zik-grad-to data-[state=unchecked]:bg-zik-card-hover"
           />
         </div>
         {recurrence.enabled && (
@@ -425,7 +425,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
               <select
                 value={recurrence.frequency}
                 onChange={(e) => setRecurrence((prev) => ({ ...prev, frequency: Number(e.target.value) }))}
-                className="border-zik-border rounded-md text-sm px-2 py-1.5 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple"
+                className="border-zik-border rounded-md text-sm px-2 py-1.5 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-grad-to"
               >
                 {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
@@ -444,8 +444,8 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
                     onClick={() => toggleDay(day.value)}
                     className={`h-8 w-8 rounded-full text-xs font-semibold transition-colors ${
                       recurrence.days.includes(day.value)
-                        ? "bg-zik-purple text-white"
-                        : "bg-zik-card border border-zik-border text-zik-muted hover:border-zik-purple hover:text-zik-purple"
+                        ? "bg-zik-grad-to text-white"
+                        : "bg-zik-card border border-zik-border text-zik-muted hover:border-zik-grad-to hover:text-zik-grad-to"
                     }`}
                   >
                     {day.label}
@@ -464,7 +464,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
                     value="count"
                     checked={recurrence.endType === "count"}
                     onChange={() => setRecurrence((prev) => ({ ...prev, endType: "count" }))}
-                    className="accent-zik-purple"
+                    className="accent-zik-grad-to"
                   />
                   Après
                 </label>
@@ -476,7 +476,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
                       max={52}
                       value={recurrence.count}
                       onChange={(e) => setRecurrence((prev) => ({ ...prev, count: Math.max(1, Number(e.target.value)) }))}
-                      className="w-16 border-zik-border rounded-md text-sm px-2 py-1 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple"
+                      className="w-16 border-zik-border rounded-md text-sm px-2 py-1 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-grad-to"
                     />
                     <span className="text-sm text-zik-text">occurrence{recurrence.count > 1 ? "s" : ""}</span>
                   </div>
@@ -489,7 +489,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
                     value="date"
                     checked={recurrence.endType === "date"}
                     onChange={() => setRecurrence((prev) => ({ ...prev, endType: "date" }))}
-                    className="accent-zik-purple"
+                    className="accent-zik-grad-to"
                   />
                   Jusqu'au
                 </label>
@@ -507,15 +507,15 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
 
             {/* Aperçu des occurrences */}
             {occurrences.length > 0 && (
-              <div className="bg-zik-purple/10 rounded-lg p-3">
-                <p className="text-xs font-medium text-zik-purple mb-2">
+              <div className="bg-zik-grad-to/10 rounded-lg p-3">
+                <p className="text-xs font-medium text-zik-grad-to mb-2">
                   {occurrences.length} jam{occurrences.length > 1 ? "s" : ""} seront créées :
                 </p>
                 <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
                   {occurrences.map((d, i) => (
                     <span
                       key={i}
-                      className="text-xs bg-zik-card border border-zik-purple/20 text-zik-purple px-2 py-0.5 rounded-full"
+                      className="text-xs bg-zik-card border border-zik-grad-to/20 text-zik-grad-to px-2 py-0.5 rounded-full"
                     >
                       {formatDateShort(d)}
                     </span>
@@ -552,14 +552,14 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         <Switch
           checked={formData.is_open}
           onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, is_open: checked }))}
-          className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+          className="data-[state=checked]:bg-zik-grad-to data-[state=unchecked]:bg-zik-card-hover"
         />
       </div>
 
       {/* Batterie */}
       <div className="flex items-center justify-between rounded-lg border border-zik-border p-4 bg-zik-card/50">
         <div className="flex items-center gap-3">
-          <Drum className={`h-5 w-5 ${formData.has_drums ? "text-zik-purple" : "text-zik-muted"}`} />
+          <Drum className={`h-5 w-5 ${formData.has_drums ? "text-zik-grad-to" : "text-zik-muted"}`} />
           <div>
             <p className="text-sm font-medium text-zik-text">
               {formData.has_drums ? "Batterie disponible" : "Sans batterie"}
@@ -574,14 +574,14 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         <Switch
           checked={formData.has_drums}
           onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, has_drums: checked }))}
-          className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+          className="data-[state=checked]:bg-zik-grad-to data-[state=unchecked]:bg-zik-card-hover"
         />
       </div>
 
       {/* Clavier */}
       <div className="flex items-center justify-between rounded-lg border border-zik-border p-4 bg-zik-card/50">
         <div className="flex items-center gap-3">
-          <Piano className={`h-5 w-5 ${formData.has_keyboard ? "text-zik-purple" : "text-zik-muted"}`} />
+          <Piano className={`h-5 w-5 ${formData.has_keyboard ? "text-zik-grad-to" : "text-zik-muted"}`} />
           <div>
             <p className="text-sm font-medium text-zik-text">
               {formData.has_keyboard ? "Clavier disponible" : "Sans clavier"}
@@ -596,7 +596,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         <Switch
           checked={formData.has_keyboard}
           onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, has_keyboard: checked }))}
-          className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+          className="data-[state=checked]:bg-zik-grad-to data-[state=unchecked]:bg-zik-card-hover"
         />
       </div>
 
@@ -619,7 +619,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
             </button>
           </div>
         ) : (
-          <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zik-border rounded-lg p-6 cursor-pointer hover:border-zik-purple hover:bg-zik-purple/5 transition-colors">
+          <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zik-border rounded-lg p-6 cursor-pointer hover:border-zik-grad-to hover:bg-zik-grad-to/5 transition-colors">
             <Upload className="h-6 w-6 text-zik-muted" />
             <span className="text-sm text-zik-muted">Cliquez pour importer une image</span>
             <span className="text-xs text-zik-subtle">JPG, PNG — max 5 Mo</span>
@@ -708,7 +708,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         </Button>
         <Button
           type="submit"
-          className="bg-zik-purple hover:bg-zik-indigo text-white disabled:opacity-50"
+          className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white disabled:opacity-50"
           disabled={isLoading}
         >
           {isLoading ? (

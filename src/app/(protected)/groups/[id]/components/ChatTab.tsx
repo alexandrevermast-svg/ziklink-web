@@ -76,7 +76,7 @@ export function ChatTab({
                     )}
                     <div className={`selectable px-3 py-2 rounded-2xl text-sm ${
                       isMe
-                        ? 'bg-zik-purple text-white rounded-tr-sm'
+                        ? 'bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white rounded-tr-sm'
                         : 'bg-zik-card/80 text-zik-text rounded-tl-sm border border-zik-border'
                     }`}>
                       {msg.content}
@@ -95,13 +95,13 @@ export function ChatTab({
               value={messageInput}
               onChange={(e) => onMessageInputChange(e.target.value)}
               placeholder="Envoyer un message..."
-              className="flex-1 text-sm bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+              className="flex-1 text-sm bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
               disabled={isSending}
             />
             <Button
               type="submit"
               size="sm"
-              className="bg-zik-purple hover:bg-zik-indigo shrink-0 disabled:opacity-50"
+              className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 shrink-0 disabled:opacity-50"
               disabled={!messageInput.trim() || isSending}
             >
               <Send className="h-4 w-4" />

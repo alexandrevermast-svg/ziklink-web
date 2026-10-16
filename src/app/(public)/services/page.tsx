@@ -37,7 +37,7 @@ export default function ServicesPage() {
           <h1 className="text-base font-semibold text-zik-text">Services</h1>
           <p className="text-xs text-zik-muted mt-0.5">Cours de musique et prestations entre musiciens</p>
         </div>
-        <Button size="sm" className="bg-zik-purple hover:bg-zik-indigo text-white" onClick={handleAddClick}>
+        <Button size="sm" className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white" onClick={handleAddClick}>
           <Plus className="mr-1.5 h-4 w-4" /> Ajouter
         </Button>
       </div>
@@ -46,14 +46,14 @@ export default function ServicesPage() {
         <TabsList className="grid w-full grid-cols-2 bg-zik-card/50 p-1 rounded-xl border border-zik-border">
           <TabsTrigger
             value="offre"
-            className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+            className="text-zik-muted data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
           >
             <Megaphone className="mr-2 h-4 w-4" />
             Offre
           </TabsTrigger>
           <TabsTrigger
             value="demande"
-            className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+            className="text-zik-muted data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
           >
             <Search className="mr-2 h-4 w-4" />
             Demande

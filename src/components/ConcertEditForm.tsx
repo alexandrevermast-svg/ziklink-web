@@ -129,19 +129,19 @@ return (
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         required
-        className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+        className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
       />
     </div>
 
     <div className="grid grid-cols-2 gap-3">
       <div>
         <label className="text-sm font-medium text-zik-text flex items-center gap-1.5">
-          <Music2 className="h-3.5 w-3.5 text-zik-purple" /> Artiste / Groupe
+          <Music2 className="h-3.5 w-3.5 text-zik-grad-to" /> Artiste / Groupe
         </label>
         <Input
           value={artist}
           onChange={(e) => setArtist(e.target.value)}
-          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50 mt-0.5"
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50 mt-0.5"
         />
       </div>
       <div>
@@ -174,7 +174,7 @@ return (
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         rows={3}
-        className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+        className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
       />
     </div>
 
@@ -188,7 +188,7 @@ return (
           value={date}
           onChange={(e) => setDate(e.target.value)}
           required
-          className="bg-zik-card border-zik-border text-zik-text scheme-dark focus:ring-zik-purple/50"
+          className="bg-zik-card border-zik-border text-zik-text scheme-dark focus:ring-zik-grad-to/50"
         />
       </div>
       <TimePicker
@@ -222,7 +222,7 @@ return (
         <Switch
           checked={!isFree}
           onCheckedChange={(checked) => setIsFree(!checked)}
-          className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+          className="data-[state=checked]:bg-zik-grad-to data-[state=unchecked]:bg-zik-card-hover"
         />
       </div>
       {!isFree && (
@@ -236,7 +236,7 @@ return (
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               placeholder="Ex: 15"
-              className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+              className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
             />
           </div>
           <div>
@@ -248,7 +248,7 @@ return (
               onChange={(e) => setTicketUrl(e.target.value)}
               placeholder="https://..."
               type="url"
-              className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+              className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
             />
           </div>
         </div>
@@ -274,7 +274,7 @@ return (
           </button>
         </div>
       ) : (
-        <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zik-border rounded-lg p-6 cursor-pointer hover:border-zik-purple hover:bg-zik-purple/5 transition-colors">
+        <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zik-border rounded-lg p-6 cursor-pointer hover:border-zik-grad-to hover:bg-zik-grad-to/5 transition-colors">
           <Upload className="h-6 w-6 text-zik-muted" />
           <span className="text-sm text-zik-muted">Cliquez pour importer une image</span>
           <input type="file" accept="image/*" className="hidden" onChange={handlePosterChange} />
@@ -321,7 +321,7 @@ return (
       </Button>
       <Button
         type="submit"
-        className="bg-zik-purple hover:bg-zik-indigo text-white disabled:opacity-50"
+        className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white disabled:opacity-50"
         disabled={isLoading}
       >
         {isLoading ? "Enregistrement..." : "Enregistrer les modifications"}

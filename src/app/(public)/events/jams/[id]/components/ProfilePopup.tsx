@@ -23,7 +23,7 @@ export function ProfilePopup({ profile, anchorRef, onClose, onMessage, onViewPro
     <div ref={popupRef} className="fixed z-99998 bg-zik-card rounded-xl shadow-xl border border-zik-border p-3 min-w-45"
       style={{ top: (rect?.bottom ?? 0) + 6, left: Math.min(rect?.left ?? 0, window.innerWidth - 200) }}>
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-zik-border">
-        <div className="h-8 w-8 rounded-full bg-zik-purple flex items-center justify-center text-white text-xs font-semibold shrink-0">
+        <div className="h-8 w-8 rounded-full bg-linear-to-br from-zik-grad-from to-zik-grad-to flex items-center justify-center text-white text-xs font-semibold shrink-0">
           {profile.username?.slice(0, 2).toUpperCase() ?? "?"}
         </div>
         <span className="text-sm font-semibold text-zik-text truncate">{profile.username ?? "Inconnu"}</span>
@@ -33,7 +33,7 @@ export function ProfilePopup({ profile, anchorRef, onClose, onMessage, onViewPro
         <User className="h-3.5 w-3.5 text-zik-muted" /> Voir le profil
       </button>
       <button onClick={() => { onMessage(profile.id); onClose(); }}
-        className="w-full flex items-center gap-2 text-xs text-zik-purple font-medium hover:bg-zik-purple/10 rounded-lg px-2 py-1.5 transition-colors">
+        className="w-full flex items-center gap-2 text-xs text-zik-grad-to font-medium hover:bg-zik-grad-to/10 rounded-lg px-2 py-1.5 transition-colors">
         <MessageCircle className="h-3.5 w-3.5" /> Envoyer un message
       </button>
     </div>,

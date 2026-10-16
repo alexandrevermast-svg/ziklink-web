@@ -66,13 +66,13 @@ export function ParticipantsTab({
               const canRemove = isMainOrganizer || (isOrganizer && !isMainOrga && !isCoOrga);
               return (
                 <div key={p.user_id} className={`flex items-center gap-2.5 p-3 rounded-lg border ${
-                  isCoOrga ? "bg-zik-purple/10 border-zik-purple/20" : "bg-zik-card/50 border-zik-border"
+                  isCoOrga ? "bg-zik-grad-to/10 border-zik-grad-to/20" : "bg-zik-card/50 border-zik-border"
                 }`}>
                   <Avatar profile={p.profile} onClick={p.profile && p.user_id !== currentUserId ? (e) => onAvatarClick(p.profile!, e) : undefined} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-zik-text truncate">{p.profile?.username ?? "Inconnu"}</p>
                     {isMainOrga && <p className="text-xs text-zik-indigo flex items-center gap-1"><Crown className="h-3 w-3" /> Organisateur</p>}
-                    {isCoOrga && <p className="text-xs text-zik-purple flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> Co-organisateur</p>}
+                    {isCoOrga && <p className="text-xs text-zik-grad-to flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> Co-organisateur</p>}
                   </div>
                   {isOrganizer && p.user_id !== currentUserId && (isMainOrganizer || canRemove) && (
                     <div className="flex gap-1.5 shrink-0">
@@ -81,8 +81,8 @@ export function ParticipantsTab({
                           title={isCoOrga ? "Révoquer" : "Nommer co-organisateur"}
                           className={`h-7 w-7 p-0 shrink-0 transition-colors ${
                             isCoOrga
-                              ? "border-zik-purple/30 text-zik-purple hover:bg-zik-purple/10"
-                              : "border-zik-border text-zik-muted hover:border-zik-purple/30 hover:text-zik-purple hover:bg-zik-purple/10"
+                              ? "border-zik-grad-to/30 text-zik-grad-to hover:bg-zik-grad-to/10"
+                              : "border-zik-border text-zik-muted hover:border-zik-grad-to/30 hover:text-zik-grad-to hover:bg-zik-grad-to/10"
                           }`}
                           onClick={() => onToggleCoOrganizer(p.user_id, p.is_organizer)}>
                           <ShieldCheck className="h-3.5 w-3.5" />

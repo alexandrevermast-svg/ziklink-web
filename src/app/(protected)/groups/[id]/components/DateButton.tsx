@@ -13,13 +13,13 @@ const CALENDAR_CLASSNAMES = {
   months: "relative flex flex-col gap-4",
   month: "flex w-full flex-col gap-4",
   nav: "absolute inset-x-0 top-0 z-10 flex items-center justify-between px-2",
-  button_previous: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover",
-  button_next: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover",
+  button_previous: "h-8 w-8 p-0 text-zik-grad-to hover:bg-zik-card-hover",
+  button_next: "h-8 w-8 p-0 text-zik-grad-to hover:bg-zik-card-hover",
   month_caption: "flex h-8 w-full items-center justify-center px-4 text-zik-text font-medium",
   weekday: "text-zik-muted text-[0.9rem] font-medium",
   day: "h-8 w-8 text-[0.9rem] font-medium text-zik-text hover:bg-zik-card-hover rounded-md",
-  day_selected: "bg-zik-purple text-white hover:bg-zik-purple/90",
-  day_today: "bg-zik-purple/10 text-zik-text border border-zik-purple/30 rounded-md",
+  day_selected: "bg-zik-grad-to text-white hover:bg-zik-grad-to/90",
+  day_today: "bg-zik-grad-to/10 text-zik-text border border-zik-grad-to/30 rounded-md",
 };
 
 export function parseDateStr(s: string) {
@@ -45,7 +45,7 @@ export function DateButton({ value, onChange, placeholder }: { value: string; on
             !value && "text-zik-muted"
           )}
         >
-          <CalendarDays className="h-4 w-4 text-zik-purple shrink-0" />
+          <CalendarDays className="h-4 w-4 text-zik-grad-to shrink-0" />
           {value ? format(parseDateStr(value), "PPP", { locale: fr }) : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>

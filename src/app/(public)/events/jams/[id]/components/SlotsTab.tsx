@@ -67,7 +67,7 @@ export function SlotsTab({
 
       {pastCount > 0 && (
         <button onClick={() => setShowPast((s) => !s)}
-          className="flex items-center gap-1.5 text-sm font-medium text-zik-muted hover:text-zik-purple transition-colors mb-1">
+          className="flex items-center gap-1.5 text-sm font-medium text-zik-muted hover:text-zik-grad-to transition-colors mb-1">
           {showPast ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
           {showPast ? "Masquer" : "Afficher"} les {pastCount} passage{pastCount > 1 ? "s" : ""} déjà effectué{pastCount > 1 ? "s" : ""}
         </button>
@@ -136,13 +136,13 @@ export function SlotsTab({
                       if (e.key === "Escape") onCancelEditSong();
                     }}
                     placeholder="Ex: Wonderwall"
-                    className="min-w-0 w-32 text-lg font-semibold border border-zik-purple/30 rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-zik-purple/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
+                    className="min-w-0 w-32 text-lg font-semibold border border-zik-grad-to/30 rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-zik-grad-to/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
                   />
                 ) : infoSlot?.song ? (
                   <button
                     onClick={(e) => canEditInfo ? onStartEditSong(infoSlot, e) : undefined}
                     className={`flex items-center gap-1.5 text-lg font-semibold min-w-0 truncate ${
-                      canEditInfo ? "cursor-pointer hover:text-zik-purple" : ""
+                      canEditInfo ? "cursor-pointer hover:text-zik-grad-to" : ""
                     } ${isCurrentSlot ? "text-zik-emerald" : isLastSlot ? "text-zik-orange" : isTrailing ? "text-zik-muted" : "text-zik-text"}`}>
                     <Music className="h-4 w-4 shrink-0" />
                     <span className="truncate">{infoSlot.song}</span>
@@ -169,7 +169,7 @@ export function SlotsTab({
                   {!infoSlot.song && !isEditingSong && canEditInfo && (
                     <button
                       onClick={(e) => onStartEditSong(infoSlot, e)}
-                      className="text-base text-zik-muted hover:text-zik-purple shrink-0 cursor-pointer">
+                      className="text-base text-zik-muted hover:text-zik-grad-to shrink-0 cursor-pointer">
                       + Morceau
                     </button>
                   )}
@@ -187,13 +187,13 @@ export function SlotsTab({
                         if (e.key === "Escape") onCancelEditScale();
                       }}
                       placeholder="Ex: La mineur"
-                      className="min-w-0 w-20 text-base border border-zik-purple/30 rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-zik-purple/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
+                      className="min-w-0 w-20 text-base border border-zik-grad-to/30 rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-zik-grad-to/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
                     />
                   ) : (
                     <button
                       onClick={(e) => canEditInfo ? onStartEditScale(infoSlot, e) : undefined}
                       className={`text-base min-w-0 shrink-0 max-w-20 truncate ${
-                        canEditInfo ? "cursor-pointer hover:text-zik-purple" : ""
+                        canEditInfo ? "cursor-pointer hover:text-zik-grad-to" : ""
                       }`}>
                       {infoSlot.scale ? (
                         <span className="truncate text-zik-text">{infoSlot.scale}</span>
@@ -226,7 +226,7 @@ export function SlotsTab({
         isMe && isCurrentSlot
           ? "bg-zik-emerald/10 text-zik-emerald border border-zik-emerald/30"
           : isMe
-            ? "bg-zik-purple/10 text-zik-purple border border-zik-purple/30"
+            ? "bg-zik-grad-to/10 text-zik-grad-to border border-zik-grad-to/30"
             : "bg-zik-card text-zik-text border border-zik-border"
       }`}>
         <Avatar
@@ -248,8 +248,8 @@ export function SlotsTab({
                         title={isOrganizer ? "Assigner" : "Rejoindre"}
                         className={`flex items-center justify-center gap-1 flex-1 py-0.5 rounded-full text-sm font-medium border border-dashed transition-colors ${
                           isClaiming || isPickerOpen
-                            ? "border-zik-purple/50 bg-zik-purple/10 text-zik-purple"
-                            : "border-zik-border text-zik-muted hover:border-zik-purple/50 hover:text-zik-purple"
+                            ? "border-zik-grad-to/50 bg-zik-grad-to/10 text-zik-grad-to"
+                            : "border-zik-border text-zik-muted hover:border-zik-grad-to/50 hover:text-zik-grad-to"
                         }`}>
                         {isClaiming ? (
                           <span className="animate-pulse">...</span>

@@ -152,8 +152,8 @@ export default function AdForm({ ad, onSuccess, onClose }: AdFormProps) {
             onClick={() => setMode("musicien")}
             className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
               mode === "musicien"
-                ? "border-zik-purple/40 bg-zik-purple/10 text-zik-purple"
-                : "border-zik-border text-zik-muted hover:border-zik-purple/30"
+                ? "border-zik-grad-to/40 bg-zik-grad-to/10 text-zik-grad-to"
+                : "border-zik-border text-zik-muted hover:border-zik-grad-to/30"
             }`}
           >
             <User className="h-4 w-4" /> Musiciens
@@ -163,8 +163,8 @@ export default function AdForm({ ad, onSuccess, onClose }: AdFormProps) {
             onClick={() => setMode("groupe")}
             className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
               mode === "groupe"
-                ? "border-zik-purple/40 bg-zik-purple/10 text-zik-purple"
-                : "border-zik-border text-zik-muted hover:border-zik-purple/30"
+                ? "border-zik-grad-to/40 bg-zik-grad-to/10 text-zik-grad-to"
+                : "border-zik-border text-zik-muted hover:border-zik-grad-to/30"
             }`}
           >
             <Users className="h-4 w-4" /> Groupes
@@ -175,12 +175,12 @@ export default function AdForm({ ad, onSuccess, onClose }: AdFormProps) {
       {mode === "groupe" && myGroups.length > 0 && (
         <div>
           <label className="text-sm font-medium text-zik-text mb-1 flex items-center gap-1.5">
-            <Users className="h-3.5 w-3.5 text-zik-purple" /> Publier au nom d&apos;un groupe <span className="text-zik-muted font-normal">(optionnel)</span>
+            <Users className="h-3.5 w-3.5 text-zik-grad-to" /> Publier au nom d&apos;un groupe <span className="text-zik-muted font-normal">(optionnel)</span>
           </label>
           <select
             value={groupId}
             onChange={(e) => setGroupId(e.target.value)}
-            className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple"
+            className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-grad-to"
           >
             <option value="">Aucun — en mon nom</option>
             {myGroups.map((g) => (
@@ -199,7 +199,7 @@ export default function AdForm({ ad, onSuccess, onClose }: AdFormProps) {
           onChange={(e) => setTitle(e.target.value)}
           placeholder={mode === "musicien" ? "Ex: Cherche un groupe, guitariste dispo pour reprises..." : "Ex: Cherche batteur pour groupe rock"}
           required
-          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
         />
       </div>
 
@@ -208,7 +208,7 @@ export default function AdForm({ ad, onSuccess, onClose }: AdFormProps) {
         <select
           value={instrument}
           onChange={(e) => setInstrument(e.target.value)}
-          className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple mt-0.5"
+          className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-grad-to mt-0.5"
         >
           <option value="">Sélectionner...</option>
           {INSTRUMENTS.map((i) => <option key={i.key} value={i.key}>{i.emoji} {i.label}</option>)}
@@ -235,8 +235,8 @@ export default function AdForm({ ad, onSuccess, onClose }: AdFormProps) {
               onClick={() => setStatus(s.key)}
               className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                 status === s.key
-                  ? "bg-zik-purple text-white border-zik-purple"
-                  : "bg-zik-card text-zik-muted border-zik-border hover:border-zik-purple hover:text-zik-purple"
+                  ? "bg-zik-grad-to text-white border-zik-grad-to"
+                  : "bg-zik-card text-zik-muted border-zik-border hover:border-zik-grad-to hover:text-zik-grad-to"
               }`}
             >
               {s.label}
@@ -257,8 +257,8 @@ export default function AdForm({ ad, onSuccess, onClose }: AdFormProps) {
                 onClick={() => toggleGenre(g)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
                   isSelected
-                    ? "bg-zik-purple text-white border-zik-purple"
-                    : "bg-zik-card text-zik-muted border-zik-border hover:border-zik-purple hover:text-zik-purple"
+                    ? "bg-zik-grad-to text-white border-zik-grad-to"
+                    : "bg-zik-card text-zik-muted border-zik-border hover:border-zik-grad-to hover:text-zik-grad-to"
                 }`}
               >
                 {g}
@@ -286,7 +286,7 @@ export default function AdForm({ ad, onSuccess, onClose }: AdFormProps) {
             </button>
           </div>
         ) : (
-          <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zik-border rounded-lg p-6 cursor-pointer hover:border-zik-purple hover:bg-zik-purple/5 transition-colors">
+          <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zik-border rounded-lg p-6 cursor-pointer hover:border-zik-grad-to hover:bg-zik-grad-to/5 transition-colors">
             <Upload className="h-6 w-6 text-zik-muted" />
             <span className="text-sm text-zik-muted">Cliquez pour importer une image</span>
             <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
@@ -303,7 +303,7 @@ export default function AdForm({ ad, onSuccess, onClose }: AdFormProps) {
           onChange={(e) => setVideoUrl(e.target.value)}
           placeholder="https://www.youtube.com/watch?v=..."
           type="url"
-          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50 mt-0.5"
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50 mt-0.5"
         />
       </div>
 
@@ -314,7 +314,7 @@ export default function AdForm({ ad, onSuccess, onClose }: AdFormProps) {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Décrivez votre recherche ou votre profil..."
           rows={4}
-          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
         />
       </div>
 
@@ -332,7 +332,7 @@ export default function AdForm({ ad, onSuccess, onClose }: AdFormProps) {
         </Button>
         <Button
           type="submit"
-          className="bg-zik-purple hover:bg-zik-indigo text-white disabled:opacity-50"
+          className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white disabled:opacity-50"
           disabled={isLoading}
         >
           {isLoading ? "Enregistrement..." : isEdit ? "Enregistrer les modifications" : "Publier l'annonce"}

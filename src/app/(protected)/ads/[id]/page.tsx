@@ -136,7 +136,7 @@ export default function AdDetailPage() {
             {ad.profile.avatar_url ? (
               <img src={ad.profile.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" />
             ) : (
-              <div className="h-7 w-7 rounded-full bg-zik-purple flex items-center justify-center text-white text-xs font-semibold">
+              <div className="h-7 w-7 rounded-full bg-linear-to-br from-zik-grad-from to-zik-grad-to flex items-center justify-center text-white text-xs font-semibold">
                 {ad.profile.username.slice(0, 2).toUpperCase()}
               </div>
             )}
@@ -148,14 +148,14 @@ export default function AdDetailPage() {
       <div className="flex flex-wrap gap-3 text-sm text-zik-muted">
         {instrument && <span>{instrument.emoji} {instrument.label}</span>}
         {ad.city && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{ad.city}</span>}
-        <span className="text-zik-purple font-medium">{STATUS_LABELS[ad.status] ?? ad.status}</span>
+        <span className="text-zik-grad-to font-medium">{STATUS_LABELS[ad.status] ?? ad.status}</span>
         <span>Publiée le {formatDate(ad.created_at)}</span>
       </div>
 
       {ad.genres.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {ad.genres.map((g) => (
-            <span key={g} className="text-xs bg-zik-purple/10 text-zik-purple px-2.5 py-1 rounded-full">{g}</span>
+            <span key={g} className="text-xs bg-zik-grad-to/10 text-zik-grad-to px-2.5 py-1 rounded-full">{g}</span>
           ))}
         </div>
       )}
@@ -190,7 +190,7 @@ export default function AdDetailPage() {
       <div className="flex gap-2 justify-end pt-2">
         {isOwner ? (
           <>
-            <Button variant="outline" className="border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple" onClick={() => setIsEditOpen(true)}>
+            <Button variant="outline" className="border-zik-border text-zik-text hover:border-zik-grad-to hover:text-zik-grad-to" onClick={() => setIsEditOpen(true)}>
               <Pencil className="h-4 w-4 mr-1.5" /> Modifier
             </Button>
             <Button variant="outline" className="border-zik-red/30 text-zik-red hover:bg-zik-red/10" onClick={handleDelete} disabled={isDeleting}>
@@ -198,7 +198,7 @@ export default function AdDetailPage() {
             </Button>
           </>
         ) : (
-          <Button className="bg-zik-purple hover:bg-zik-indigo" onClick={handleContact} disabled={isContacting}>
+          <Button className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0" onClick={handleContact} disabled={isContacting}>
             <MessageCircle className="h-4 w-4 mr-1.5" />
             {isContacting ? "..." : "Contacter"}
           </Button>

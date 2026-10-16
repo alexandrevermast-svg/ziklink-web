@@ -154,7 +154,7 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Ex: Soirée Jazz au Sunset"
           required
-          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
         />
       </div>
 
@@ -162,13 +162,13 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="text-sm font-medium text-zik-text flex items-center gap-1.5">
-            <Music2 className="h-3.5 w-3.5 text-zik-purple" /> Artiste / Groupe
+            <Music2 className="h-3.5 w-3.5 text-zik-grad-to" /> Artiste / Groupe
           </label>
           <Input
             value={artist}
             onChange={(e) => setArtist(e.target.value)}
             placeholder="Ex: The Rolling Stones"
-            className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50 mt-0.5"
+            className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50 mt-0.5"
           />
         </div>
         <div>
@@ -203,7 +203,7 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Décrivez le concert..."
           rows={3}
-          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+          className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
         />
       </div>
 
@@ -251,13 +251,13 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
           months: "relative flex flex-col gap-4",
           month: "flex w-full flex-col gap-4",
           nav: "absolute inset-x-0 top-0 z-10 flex items-center justify-between px-2",
-          button_previous: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover",
-          button_next: "h-8 w-8 p-0 text-zik-purple hover:bg-zik-card-hover",
+          button_previous: "h-8 w-8 p-0 text-zik-grad-to hover:bg-zik-card-hover",
+          button_next: "h-8 w-8 p-0 text-zik-grad-to hover:bg-zik-card-hover",
           month_caption: "flex h-8 w-full items-center justify-center px-4 text-zik-text font-medium",
           weekday: "text-zik-muted text-[0.9rem] font-medium",
           day: "h-8 w-8 text-[0.9rem] font-medium text-zik-text hover:bg-zik-card-hover rounded-md",
-          day_selected: "bg-zik-purple text-white hover:bg-zik-purple/90",
-          day_today: "bg-zik-purple/10 text-zik-text border border-zik-purple/30 rounded-md",
+          day_selected: "bg-zik-grad-to text-white hover:bg-zik-grad-to/90",
+          day_today: "bg-zik-grad-to/10 text-zik-text border border-zik-grad-to/30 rounded-md",
         }}
       />
     </PopoverContent>
@@ -283,12 +283,12 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
       {userGroups.length > 0 && (
         <div>
           <label className="text-sm font-medium text-zik-text mb-1 flex items-center gap-1.5">
-            <Users className="h-3.5 w-3.5 text-zik-purple" /> Organiser au nom d'un groupe <span className="text-zik-muted font-normal">(optionnel)</span>
+            <Users className="h-3.5 w-3.5 text-zik-grad-to" /> Organiser au nom d'un groupe <span className="text-zik-muted font-normal">(optionnel)</span>
           </label>
           <select
             value={selectedGroupId}
             onChange={(e) => setSelectedGroupId(e.target.value)}
-            className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-purple"
+            className="w-full border-zik-border rounded-md text-sm px-3 py-2 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-grad-to"
           >
             <option value="">Aucun groupe — concert personnel</option>
             {userGroups.map((g) => (
@@ -311,7 +311,7 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
           <Switch
             checked={!isFree}
             onCheckedChange={(checked) => setIsFree(!checked)}
-            className="data-[state=checked]:bg-zik-purple data-[state=unchecked]:bg-zik-card-hover"
+            className="data-[state=checked]:bg-zik-grad-to data-[state=unchecked]:bg-zik-card-hover"
           />
         </div>
         {!isFree && (
@@ -325,7 +325,7 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="Ex: 15"
-                className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+                className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
               />
             </div>
             <div>
@@ -337,7 +337,7 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
                 onChange={(e) => setTicketUrl(e.target.value)}
                 placeholder="https://..."
                 type="url"
-                className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+                className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
               />
             </div>
           </div>
@@ -363,7 +363,7 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
             </button>
           </div>
         ) : (
-          <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zik-border rounded-lg p-6 cursor-pointer hover:border-zik-purple hover:bg-zik-purple/5 transition-colors">
+          <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zik-border rounded-lg p-6 cursor-pointer hover:border-zik-grad-to hover:bg-zik-grad-to/5 transition-colors">
             <Upload className="h-6 w-6 text-zik-muted" />
             <span className="text-sm text-zik-muted">Cliquez pour importer une image</span>
             <span className="text-xs text-zik-subtle">JPG, PNG — max 5 Mo</span>
@@ -443,7 +443,7 @@ export default function ConcertCreationForm({ onSuccess, onClose }: ConcertCreat
         </Button>
         <Button
           type="submit"
-          className="bg-zik-purple hover:bg-zik-indigo text-white disabled:opacity-50"
+          className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white disabled:opacity-50"
           disabled={isLoading}
         >
           {isLoading ? "Création..." : "Créer le concert"}
