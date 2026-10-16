@@ -45,7 +45,7 @@ function formatDayLabelLong(d: Date) {
   return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
 }
 
-const VISIBLE_DAYS = 2;
+const VISIBLE_DAYS = 3;
 
 function DayFilter({ selectedDate, onChange, availableDates, trailing }: {
   selectedDate: Date | null; onChange: (d: Date | null) => void; availableDates: Date[]; trailing?: React.ReactNode;
@@ -80,7 +80,7 @@ function DayFilter({ selectedDate, onChange, availableDates, trailing }: {
           <button
             key={day.toISOString()}
             onClick={() => onChange(isSelected ? null : day)}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors relative text-center ${
+            className={`flex-1 min-w-16 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors relative text-center ${
               isSelected
                 ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
                 : hasEvent
