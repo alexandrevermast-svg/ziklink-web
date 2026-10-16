@@ -22,7 +22,7 @@ export function Linkify({ text, className }: { text: string; className?: string 
     const href = url.startsWith("http") ? url : `https://${url}`;
     nodes.push(
       <a key={key++} href={href} target="_blank" rel="noopener noreferrer nofollow"
-        className={className ?? "text-zik-purple hover:underline break-all"}>
+        className={className ?? "text-zik-grad-to hover:underline break-all"}>
         {url}
       </a>
     );

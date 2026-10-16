@@ -40,7 +40,7 @@ export default function ShareButton({ url, title, text, variant = "icon", classN
     return (
       <button
         onClick={handleShare}
-        className={className ?? "flex items-center gap-1.5 text-xs text-zik-muted hover:text-zik-purple transition-colors"}
+        className={className ?? "flex items-center gap-1.5 text-xs text-zik-muted hover:text-zik-grad-to transition-colors"}
       >
         {copied ? <><Check className="h-3.5 w-3.5" /> Lien copié</> : <><Share2 className="h-3.5 w-3.5" /> Partager</>}
       </button>
@@ -51,7 +51,7 @@ export default function ShareButton({ url, title, text, variant = "icon", classN
     <button
       onClick={handleShare}
       title={copied ? "Lien copié" : "Partager"}
-      className={className ?? "h-7 w-7 flex items-center justify-center rounded-full text-zik-muted hover:text-zik-purple hover:bg-zik-purple/10 transition-colors"}
+      className={className ?? "h-7 w-7 flex items-center justify-center rounded-full text-zik-muted hover:text-zik-grad-to hover:bg-zik-grad-to/10 transition-colors"}
     >
       {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
     </button>

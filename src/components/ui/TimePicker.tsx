@@ -58,7 +58,7 @@ export default function TimePicker({
     <div>
       {label && (
         <label className="text-sm font-medium text-zik-text flex items-center gap-1.5 mb-1">
-          <Clock className="h-4 w-4 text-zik-purple" />
+          <Clock className="h-4 w-4 text-zik-grad-to" />
           {label}
           {required && <span className="text-zik-red">*</span>}
           {optional && <span className="text-zik-muted font-normal">(opt.)</span>}
@@ -74,7 +74,7 @@ export default function TimePicker({
               !value && 'text-zik-muted'
             )}
           >
-            <Clock className="h-4 w-4 text-zik-purple shrink-0" />
+            <Clock className="h-4 w-4 text-zik-grad-to shrink-0" />
             {value ? value : <span>--:--</span>}
           </Button>
         </PopoverTrigger>
@@ -89,7 +89,7 @@ export default function TimePicker({
                   onClick={() => selectHour(hour)}
                   className={cn(
                     'w-full text-center text-sm py-1.5 transition-colors',
-                    h === hour ? 'bg-zik-purple text-white hover:bg-zik-purple/90' : 'text-zik-text hover:bg-zik-card-hover'
+                    h === hour ? 'bg-zik-grad-to text-white hover:bg-zik-grad-to/90' : 'text-zik-text hover:bg-zik-card-hover'
                   )}
                 >
                   {hour}
@@ -106,7 +106,7 @@ export default function TimePicker({
                   disabled={!h}
                   className={cn(
                     'w-full text-center text-sm py-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed',
-                    h && m === min ? 'bg-zik-purple text-white hover:bg-zik-purple/90' : 'text-zik-text hover:bg-zik-card-hover'
+                    h && m === min ? 'bg-zik-grad-to text-white hover:bg-zik-grad-to/90' : 'text-zik-text hover:bg-zik-card-hover'
                   )}
                 >
                   {min}
