@@ -53,7 +53,7 @@ export default function ConcertCard({ concert, isInterested, interestedCount, is
         <div className="flex-1 min-w-0 p-3">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h3 className="font-semibold text-zik-text truncate">{concert.title}</h3>
+              <h3 className="text-lg font-semibold text-[#FFC857] truncate">{concert.title}</h3>
               {concert.artist && <p className="text-sm text-zik-purple font-medium truncate">{concert.artist}</p>}
             </div>
           </div>

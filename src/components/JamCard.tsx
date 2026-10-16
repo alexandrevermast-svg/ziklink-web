@@ -71,7 +71,7 @@ export default function JamCard({
     >
 
       <div className="flex items-center justify-between gap-2">
-        <h3 className="font-semibold text-zik-text truncate flex-1 min-w-0">{jam.title}</h3>
+        <h3 className="text-lg font-semibold text-[#FFC857] truncate flex-1 min-w-0">{jam.title}</h3>
         <div className="flex items-center gap-1.5 shrink-0">
           <span title={jam.has_drums ? "Batterie disponible" : "Pas de batterie"}
             className={`h-6 w-6 rounded-full flex items-center justify-center ${
