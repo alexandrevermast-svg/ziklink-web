@@ -270,9 +270,11 @@ textarea.zik-input {
   color: #C084FC !important;
 }
 .leaflet-popup-content-wrapper {
-  background: #1A1628 !important;
+  background: rgba(26,22,40,0.85) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.08) !important;
-  border-radius: 12px !important;
+  border-radius: 16px !important;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
   color: #F1F0F6 !important;
 }
@@ -284,16 +286,33 @@ textarea.zik-input {
   margin: 0 !important;
 }
 .leaflet-popup-tip {
-  background: #1A1628 !important;
+  background: rgba(26,22,40,0.85) !important;
 }
 .leaflet-popup-close-button {
   color: #F1F0F6 !important;
 }
 .leaflet-popup-close-button:hover {
-  color: #C084FC !important;
+  color: #A855F7 !important;
 }
 .leaflet-tile {
   filter: brightness(2) contrast(1) saturate(1.2) !important;
+}
+
+/* Attribution OSM/CARTO — toujours visible (requis par leurs CGU), mais
+   discrète : petite pastille vitrée plutôt que le bandeau blanc par défaut. */
+.leaflet-control-attribution {
+  background: rgba(14,11,22,0.55) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: rgba(255,255,255,0.45) !important;
+  font-size: 9px !important;
+  line-height: 1.4 !important;
+  padding: 1px 6px !important;
+  border-radius: 8px 0 0 0 !important;
+  border: none !important;
+}
+.leaflet-control-attribution a {
+  color: rgba(255,255,255,0.6) !important;
 }
 
 /* globals.css — à ajouter */

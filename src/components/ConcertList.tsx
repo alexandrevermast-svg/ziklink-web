@@ -55,17 +55,19 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
 
   return (
     <div className="flex items-center gap-1.5 w-full">
-      {/* ✅ Bouton "Tout" */}
+      {/* Bouton "Tout" */}
       <button
         onClick={() => onChange(null)}
-        className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-          selectedDate === null ? "bg-zik-purple text-white" : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
+        className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+          selectedDate === null
+            ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
+            : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
         }`}
       >
         Tout
       </button>
 
-      {/* ✅ Boutons des jours visibles */}
+      {/* Boutons des jours visibles */}
       {visibleDays.map((day) => {
         const hasEvent = availableDates.some((d) => isSameDay(d, day));
         const isSelected = selectedDate !== null && isSameDay(selectedDate, day);
@@ -73,30 +75,30 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
           <button
             key={day.toISOString()}
             onClick={() => onChange(isSelected ? null : day)}
-            className={`flex-1 min-w-0 py-1.5 rounded-full text-xs font-medium transition-colors relative text-center ${
+            className={`flex-1 min-w-0 py-1.5 rounded-full text-xs font-medium border transition-colors relative text-center ${
               isSelected
-                ? "bg-zik-purple text-white"
+                ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
                 : hasEvent
-                ? "bg-zik-indigo/10 text-zik-purple border border-zik-purple/20 hover:bg-zik-indigo/20"
-                : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
+                ? "bg-white/6 border-zik-red/25 text-zik-red hover:bg-white/10"
+                : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
             }`}
           >
             <span className="truncate block px-1">{formatDayLabel(day)}</span>
             {hasEvent && !isSelected && (
-              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-zik-red rounded-full border border-white" />
+              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-zik-red rounded-full border border-zik-bg" />
             )}
           </button>
         );
       })}
 
-      {/* ✅ Bouton dropdown */}
+      {/* Bouton dropdown */}
       <div className="relative shrink-0" ref={dropdownRef}>
         <button
           onClick={() => setDropdownOpen((v) => !v)}
-          className={`flex items-center gap-0.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors ${
+          className={`flex items-center gap-0.5 px-2.5 py-1.5 rounded-full text-xs font-medium border transition-colors ${
             selectedIsInMore
-              ? "bg-zik-purple text-white"
-              : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
+              ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
+              : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
           }`}
         >
           {selectedIsInMore ? formatDayLabel(selectedDate!) : "···"}
@@ -104,7 +106,7 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
         </button>
 
         {dropdownOpen && (
-          <div className="absolute right-0 top-full mt-1 z-50 bg-zik-card rounded-xl shadow-lg border border-zik-border py-1 min-w-40 max-h-64 overflow-y-auto">
+          <div className="absolute right-0 top-full mt-1 z-50 bg-zik-card/90 backdrop-blur-md rounded-xl shadow-lg border border-white/8 py-1 min-w-40 max-h-64 overflow-y-auto">
             {moreDays.map((day) => {
               const hasEvent = availableDates.some((d) => isSameDay(d, day));
               const isSelected = selectedDate !== null && isSameDay(selectedDate, day);
@@ -112,8 +114,8 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
                 <button
                   key={day.toISOString()}
                   onClick={() => { onChange(isSelected ? null : day); setDropdownOpen(false); }}
-                  className={`w-full text-left px-4 py-2 text-xs flex items-center justify-between gap-2 hover:bg-zik-card-hover transition-colors ${
-                    isSelected ? "text-zik-purple font-semibold bg-zik-indigo/10" : "text-zik-muted"
+                  className={`w-full text-left px-4 py-2 text-xs flex items-center justify-between gap-2 hover:bg-white/6 transition-colors ${
+                    isSelected ? "text-zik-grad-to font-semibold bg-white/6" : "text-gray-400"
                   }`}
                 >
                   <span>{formatDayLabelLong(day)}</span>
@@ -225,7 +227,7 @@ const { data: concertsData } = await supabase
       <DayFilter selectedDate={selectedDate} onChange={setSelectedDate} availableDates={availableDates} />
       {filtered.length === 0 ? (
         
-        <p className="text-zik-muted text-sm text-center py-6">Aucun concert à venir 🎤</p>
+        <p className="text-gray-400 text-sm text-center py-6">Aucun concert à venir 🎤</p>
       ) : (
         <div className="space-y-3">
           {filtered.map((concert) => (

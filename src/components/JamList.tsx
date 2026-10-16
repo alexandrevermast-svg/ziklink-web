@@ -72,17 +72,19 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
 
   return (
     <div className="flex items-center gap-1.5 w-full">
-      {/* ✅ Bouton "Tout" */}
+      {/* Bouton "Tout" */}
       <button
         onClick={() => onChange(null)}
-        className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-          selectedDate === null ? "bg-zik-purple text-white" : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
+        className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+          selectedDate === null
+            ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
+            : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
         }`}
       >
         Tout
       </button>
 
-      {/* ✅ Boutons des jours visibles */}
+      {/* Boutons des jours visibles */}
       {visibleDays.map((day) => {
         const hasEvent = availableDates.some((d) => isSameDay(d, day));
         const isSelected = selectedDate !== null && isSameDay(selectedDate, day);
@@ -90,30 +92,30 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
           <button
             key={day.toISOString()}
             onClick={() => onChange(isSelected ? null : day)}
-            className={`flex-1 min-w-0 py-1.5 rounded-full text-xs font-medium transition-colors relative text-center ${
+            className={`flex-1 min-w-0 py-1.5 rounded-full text-xs font-medium border transition-colors relative text-center ${
               isSelected
-                ? "bg-zik-purple text-white"
+                ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
                 : hasEvent
-                ? "bg-zik-indigo/10 text-zik-purple border border-zik-purple/20 hover:bg-zik-indigo/20"
-                : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
+                ? "bg-white/6 border-zik-grad-to/25 text-zik-grad-to hover:bg-white/10"
+                : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
             }`}
           >
             <span className="truncate block px-1">{formatDayLabel(day)}</span>
             {hasEvent && !isSelected && (
-              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-zik-purple rounded-full border border-zik-bg" />
+              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-zik-grad-to rounded-full border border-zik-bg" />
             )}
           </button>
         );
       })}
 
-      {/* ✅ Bouton dropdown */}
+      {/* Bouton dropdown */}
       <div className="relative shrink-0" ref={dropdownRef}>
         <button
           onClick={() => setDropdownOpen((v) => !v)}
-          className={`flex items-center gap-0.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors ${
+          className={`flex items-center gap-0.5 px-2.5 py-1.5 rounded-full text-xs font-medium border transition-colors ${
             selectedIsInMore
-              ? "bg-zik-purple text-white"
-              : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
+              ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
+              : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
           }`}
         >
           {selectedIsInMore ? formatDayLabel(selectedDate!) : "···"}
@@ -121,7 +123,7 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
         </button>
 
         {dropdownOpen && (
-          <div className="absolute right-0 top-full mt-1 z-50 bg-zik-card rounded-xl shadow-lg border border-zik-border py-1 min-w-40 max-h-64 overflow-y-auto">
+          <div className="absolute right-0 top-full mt-1 z-50 bg-zik-card/90 backdrop-blur-md rounded-xl shadow-lg border border-white/8 py-1 min-w-40 max-h-64 overflow-y-auto">
             {moreDays.map((day) => {
               const hasEvent = availableDates.some((d) => isSameDay(d, day));
               const isSelected = selectedDate !== null && isSameDay(selectedDate, day);
@@ -129,12 +131,12 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
                 <button
                   key={day.toISOString()}
                   onClick={() => { onChange(isSelected ? null : day); setDropdownOpen(false); }}
-                  className={`w-full text-left px-4 py-2 text-xs flex items-center justify-between gap-2 hover:bg-zik-card-hover transition-colors ${
-                    isSelected ? "text-zik-purple font-semibold bg-zik-indigo/10" : "text-zik-muted"
+                  className={`w-full text-left px-4 py-2 text-xs flex items-center justify-between gap-2 hover:bg-white/6 transition-colors ${
+                    isSelected ? "text-zik-grad-to font-semibold bg-white/6" : "text-gray-400"
                   }`}
                 >
                   <span>{formatDayLabelLong(day)}</span>
-                  {hasEvent && <span className="h-2 w-2 rounded-full bg-zik-purple shrink-0" />}
+                  {hasEvent && <span className="h-2 w-2 rounded-full bg-zik-grad-to shrink-0" />}
                 </button>
               );
             })}
@@ -420,8 +422,10 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
       <div className="flex items-center gap-1.5 flex-wrap">
         <button
           onClick={() => setDrumsOnly((v) => !v)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-            drumsOnly ? "bg-zik-purple text-white" : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+            drumsOnly
+              ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
+              : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
           }`}
         >
           <Drum className="h-3.5 w-3.5 shrink-0" /> Batterie
@@ -429,8 +433,10 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
 
         <button
           onClick={() => setKeyboardOnly((v) => !v)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-            keyboardOnly ? "bg-zik-purple text-white" : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+            keyboardOnly
+              ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
+              : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
           }`}
         >
           <Piano className="h-3.5 w-3.5 shrink-0" /> Clavier
@@ -440,8 +446,10 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
           <PopoverTrigger asChild>
             <button
               onClick={() => { if (!nearMe) handleToggleNearMe(true); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                nearMe ? "bg-zik-purple text-white" : "bg-zik-card text-zik-muted hover:bg-zik-card-hover"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                nearMe
+                  ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
+                  : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
               }`}
             >
               <LocateFixed className="h-3.5 w-3.5 shrink-0" />
@@ -453,11 +461,11 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
               {nearMe && <ChevronDown className="h-3 w-3 shrink-0" />}
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-64 bg-zik-card border-zik-border p-4 space-y-3" align="start">
+          <PopoverContent className="w-64 bg-zik-card/90 backdrop-blur-md border-white/8 p-4 space-y-3" align="start">
             {geoError && <p className="text-xs text-zik-red">{geoError}</p>}
             {nearMe && userPosition && (
               <div>
-                <p className="text-xs text-zik-muted mb-1.5">Rayon</p>
+                <p className="text-xs text-gray-400 mb-1.5">Rayon</p>
                 <div className="flex flex-wrap gap-1.5">
                   {([
                     { key: null, label: "Tout" },
@@ -471,8 +479,10 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
                       <button
                         key={label}
                         onClick={() => setRadiusKm(key)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                          isActive ? "bg-zik-purple text-white" : "bg-zik-card-hover text-zik-muted hover:bg-zik-border"
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                          isActive
+                            ? "bg-white/10 border-zik-grad-to/70 text-white"
+                            : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
                         }`}
                       >
                         {label}
@@ -482,7 +492,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
                 </div>
                 <button
                   onClick={() => handleToggleNearMe(false)}
-                  className="mt-3 text-xs text-zik-muted hover:text-zik-red transition-colors"
+                  className="mt-3 text-xs text-gray-400 hover:text-zik-red transition-colors"
                 >
                   Désactiver la localisation
                 </button>
@@ -493,7 +503,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
       </div>
 
       {filteredJams.length === 0 ? (
-        <p className="text-zik-muted text-sm text-center py-6">{emptyMessage}</p>
+        <p className="text-gray-400 text-sm text-center py-6">{emptyMessage}</p>
       ) : (
         <div className="space-y-3">
           {displayJams.map((jam) => {

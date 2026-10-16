@@ -30,15 +30,15 @@ interface EventMapProps {
   height?: string;
 }
 
-function createDotIcon(color: string) {
+function createDotIcon(background: string, glow: string) {
   return L.divIcon({
     className: "",
     html: `<div style="
       width: 14px; height: 14px;
-      background: ${color};
+      background: ${background};
       border: 2.5px solid var(--zik-bg);
       border-radius: 50%;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5), 0 0 10px 2px ${glow};
     "></div>`,
     iconSize: [14, 14],
     iconAnchor: [7, 7],
@@ -46,9 +46,9 @@ function createDotIcon(color: string) {
   });
 }
 
-// ✅ Couleurs adaptées à ton thème
-const JAM_ICON     = createDotIcon("var(--zik-purple)");
-const CONCERT_ICON = createDotIcon("var(--zik-red)");
+// ✅ Couleurs adaptées à ton thème — jam en dégradé violet avec halo, concert reste rouge
+const JAM_ICON     = createDotIcon("linear-gradient(135deg, #7C3AED, #A855F7)", "rgba(168,85,247,0.55)");
+const CONCERT_ICON = createDotIcon("var(--zik-red)", "rgba(248,113,113,0.5)");
 
 function InvalidateSize() {
   const map = useMap();
@@ -99,7 +99,7 @@ export default function EventMap({
   if (markers.length === 0) {
     return (
       // ✅ Fond et texte adaptés à ton thème
-      <div className={`${height} flex flex-col items-center justify-center gap-2 bg-zik-card rounded-xl text-sm text-zik-muted`}>
+      <div className={`${height} flex flex-col items-center justify-center gap-2 bg-white/4 backdrop-blur-md border border-white/8 rounded-2xl text-sm text-gray-400`}>
         <span>{emptyMessage}</span>
       </div>
     );
@@ -109,21 +109,21 @@ export default function EventMap({
     // ✅ Bordure et ombre adaptées
     // Bordure légèrement plus visible sur la carte
 <div
-  style={{ isolation: "isolate", borderColor: 'rgba(192,132,252,0.15)' }}
-  className={`${height} rounded-xl overflow-hidden border shadow-lg relative`}
+  style={{ isolation: "isolate", borderColor: 'rgba(255,255,255,0.08)' }}
+  className={`${height} rounded-2xl overflow-hidden border shadow-lg relative`}
 >
       {(hasJam || hasConcert) && (
-        // ✅ Fond et texte de la légende adaptés
-        <div className="absolute bottom-2 left-2 z-1000 flex items-center gap-2 bg-zik-card/90 backdrop-blur-sm rounded-full px-2.5 py-1 shadow text-[11px] font-medium text-zik-text pointer-events-none">
+        <div className="absolute bottom-2 left-2 z-1000 flex items-center gap-2 bg-white/6 backdrop-blur-md border border-white/8 rounded-full px-2.5 py-1 shadow text-[11px] font-medium text-white pointer-events-none">
           {hasJam && (
             <span className="flex items-center gap-1">
-              {/* ✅ Couleur de la légende adaptée */}
-              <span className="inline-block w-2.5 h-2.5 rounded-full bg-zik-purple border border-zik-bg shadow-sm" /> Jam
+              <span
+                className="inline-block w-2.5 h-2.5 rounded-full border border-zik-bg shadow-sm"
+                style={{ background: "linear-gradient(135deg, #7C3AED, #A855F7)" }}
+              /> Jam
             </span>
           )}
           {hasConcert && (
             <span className="flex items-center gap-1">
-              {/* ✅ Couleur de la légende adaptée */}
               <span className="inline-block w-2.5 h-2.5 rounded-full bg-zik-red border border-zik-bg shadow-sm" /> Concert
             </span>
           )}
@@ -134,7 +134,7 @@ export default function EventMap({
         center={[markers[0].lat, markers[0].lng]}
         zoom={12}
         style={{ height: "100%", width: "100%" }}
-        zoomControl={true}
+        zoomControl={false}
       >
         <TileLayer
   url={`https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png?key=${process.env.NEXT_PUBLIC_CARTO_API_KEY}`}
@@ -157,22 +157,19 @@ export default function EventMap({
             {!skipPopup && (
               <Popup>
                 <div className="text-sm min-w-32 leading-tight">
-                  {/* ✅ Badge de type d'événement adapté */}
                   <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                    m.type === "jam" ? "bg-zik-purple/20 text-zik-purple" : "bg-zik-red/20 text-zik-red"
+                    m.type === "jam" ? "bg-zik-grad-to/20 text-zik-grad-to" : "bg-zik-red/20 text-zik-red"
                   }`}>
                     {m.type === "jam" ? "🎸 Jam" : "🎤 Concert"}
                   </span>
 
-                  {/* ✅ Titre adapté */}
-                  <p className="font-semibold text-zik-text">{m.title}</p>
+                  <p className="font-semibold text-white">{m.title}</p>
 
                   {m.type === "concert" && m.artist && (
-                    <p className="text-zik-purple text-xs font-medium">{m.artist}</p>
+                    <p className="text-zik-grad-to text-xs font-medium">{m.artist}</p>
                   )}
 
-                  {/* ✅ Date et heure adaptées */}
-                  <p className="text-zik-text text-xs mb-1">
+                  <p className="text-gray-400 text-xs mb-1">
                     {formatDay(m.start_time)} · {formatTime(m.start_time)}
                   </p>
 
@@ -181,14 +178,14 @@ export default function EventMap({
                       ? <span className="text-xs text-zik-emerald font-medium">✓ Inscrit</span>
                       : <button
                           onClick={() => onJoinJam?.(m.id)}
-                          className="text-xs bg-zik-purple text-white px-3 py-0.5 rounded-full hover:bg-zik-indigo transition-colors"
+                          className="text-xs bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white px-3 py-0.5 rounded-full hover:brightness-110 transition-all"
                         >
                           Rejoindre
                         </button>
                   )}
 
                   {m.type === "jam" && m.isCreator && (
-                    <span className="text-xs text-zik-muted italic">Organisateur</span>
+                    <span className="text-xs text-gray-400 italic">Organisateur</span>
                   )}
 
                   {m.type === "concert" && m.isInterested && (
