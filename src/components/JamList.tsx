@@ -45,7 +45,7 @@ function formatDayLabelLong(d: Date) {
   return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
 }
 
-const VISIBLE_DAYS = 4;
+const VISIBLE_DAYS = 2;
 
 function DayFilter({ selectedDate, onChange, availableDates, trailing }: {
   selectedDate: Date | null; onChange: (d: Date | null) => void; availableDates: Date[]; trailing?: React.ReactNode;
@@ -71,7 +71,7 @@ function DayFilter({ selectedDate, onChange, availableDates, trailing }: {
   const selectedIsInMore = selectedDate !== null && moreDays.some((d) => isSameDay(d, selectedDate));
 
   return (
-    <div className="flex items-center gap-1.5 w-full overflow-x-auto pb-0.5">
+    <div className="flex items-center gap-1.5 w-full flex-wrap">
       {/* Boutons des jours visibles */}
       {visibleDays.map((day) => {
         const hasEvent = availableDates.some((d) => isSameDay(d, day));
@@ -479,24 +479,26 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
           <>
             <button
               onClick={() => setDrumsOnly((v) => !v)}
-              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+              title="Avec batterie"
+              className={`shrink-0 h-8 w-8 flex items-center justify-center rounded-full border transition-colors ${
                 drumsOnly
                   ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
                   : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
               }`}
             >
-              <Drum className="h-3.5 w-3.5 shrink-0" /> Batterie
+              <Drum className="h-3.5 w-3.5" />
             </button>
 
             <button
               onClick={() => setKeyboardOnly((v) => !v)}
-              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+              title="Avec clavier"
+              className={`shrink-0 h-8 w-8 flex items-center justify-center rounded-full border transition-colors ${
                 keyboardOnly
                   ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
                   : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
               }`}
             >
-              <Piano className="h-3.5 w-3.5 shrink-0" /> Clavier
+              <Piano className="h-3.5 w-3.5" />
             </button>
           </>
         }
