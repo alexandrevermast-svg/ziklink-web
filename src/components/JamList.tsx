@@ -47,8 +47,8 @@ function formatDayLabelLong(d: Date) {
 
 const VISIBLE_DAYS = 4;
 
-function DayFilter({ selectedDate, onChange, availableDates }: {
-  selectedDate: Date | null; onChange: (d: Date | null) => void; availableDates: Date[];
+function DayFilter({ selectedDate, onChange, availableDates, trailing }: {
+  selectedDate: Date | null; onChange: (d: Date | null) => void; availableDates: Date[]; trailing?: React.ReactNode;
 }) {
   const today = startOfDay(new Date());
   const allDays = Array.from({ length: 30 }, (_, i) => addDays(today, i));
@@ -71,19 +71,7 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
   const selectedIsInMore = selectedDate !== null && moreDays.some((d) => isSameDay(d, selectedDate));
 
   return (
-    <div className="flex items-center gap-1.5 w-full">
-      {/* Bouton "Tout" */}
-      <button
-        onClick={() => onChange(null)}
-        className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-          selectedDate === null
-            ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
-            : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
-        }`}
-      >
-        Tout
-      </button>
-
+    <div className="flex items-center gap-1.5 w-full overflow-x-auto pb-0.5">
       {/* Boutons des jours visibles */}
       {visibleDays.map((day) => {
         const hasEvent = availableDates.some((d) => isSameDay(d, day));
@@ -92,7 +80,7 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
           <button
             key={day.toISOString()}
             onClick={() => onChange(isSelected ? null : day)}
-            className={`flex-1 min-w-0 py-1.5 rounded-full text-xs font-medium border transition-colors relative text-center ${
+            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors relative text-center ${
               isSelected
                 ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
                 : hasEvent
@@ -100,7 +88,7 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
                 : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
             }`}
           >
-            <span className="truncate block px-1">{formatDayLabel(day)}</span>
+            <span className="truncate block">{formatDayLabel(day)}</span>
             {hasEvent && !isSelected && (
               <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-zik-grad-to rounded-full border border-zik-bg" />
             )}
@@ -143,6 +131,8 @@ function DayFilter({ selectedDate, onChange, availableDates }: {
           </div>
         )}
       </div>
+
+      {trailing}
     </div>
   );
 }
@@ -409,98 +399,108 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
 
   return (
     <div className="space-y-4">
-      <EventMap
-        markers={jamMarkers}
-        onJoinJam={(jamId) => handleJoin(jamId)}
-        onMarkerClick={handleMarkerClick}
-        currentUserId={currentUserId}
-        emptyMessage="Aucune jam à venir 🎸"
-      />
-      <DayFilter selectedDate={selectedDate} onChange={setSelectedDate} availableDates={availableDates} />
+      <div className="relative">
+        <EventMap
+          markers={jamMarkers}
+          onJoinJam={(jamId) => handleJoin(jamId)}
+          onMarkerClick={handleMarkerClick}
+          currentUserId={currentUserId}
+          emptyMessage="Aucune jam à venir 🎸"
+        />
 
-      {/* Filtres batterie + clavier + proximité */}
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <button
-          onClick={() => setDrumsOnly((v) => !v)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-            drumsOnly
-              ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
-              : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
-          }`}
-        >
-          <Drum className="h-3.5 w-3.5 shrink-0" /> Batterie
-        </button>
+        {/* Près de moi — flottant au-dessus de la carte */}
+        <div className="absolute top-3 right-3 z-20">
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                onClick={() => { if (!nearMe) handleToggleNearMe(true); }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border backdrop-blur-md shadow-lg transition-colors ${
+                  nearMe
+                    ? "bg-white/15 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
+                    : "bg-black/40 border-white/15 text-white hover:bg-black/55"
+                }`}
+              >
+                <LocateFixed className="h-3.5 w-3.5 shrink-0" />
+                {geoLoading
+                  ? "Localisation..."
+                  : nearMe && userPosition
+                  ? `${radiusKm === null ? "Tout" : radiusKm + " km"}`
+                  : "Près de moi"}
+                {nearMe && <ChevronDown className="h-3 w-3 shrink-0" />}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 bg-zik-card/90 backdrop-blur-md border-white/8 p-4 space-y-3" align="end">
+              {geoError && <p className="text-xs text-zik-red">{geoError}</p>}
+              {nearMe && userPosition && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-1.5">Rayon</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {([
+                      { key: null, label: "Tout" },
+                      { key: 1, label: "1 km" },
+                      { key: 5, label: "5 km" },
+                      { key: 10, label: "10 km" },
+                      { key: 25, label: "25 km" },
+                    ] as const).map(({ key, label }) => {
+                      const isActive = radiusKm === key;
+                      return (
+                        <button
+                          key={label}
+                          onClick={() => setRadiusKm(key)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                            isActive
+                              ? "bg-white/10 border-zik-grad-to/70 text-white"
+                              : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    onClick={() => handleToggleNearMe(false)}
+                    className="mt-3 text-xs text-gray-400 hover:text-zik-red transition-colors"
+                  >
+                    Désactiver la localisation
+                  </button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
 
-        <button
-          onClick={() => setKeyboardOnly((v) => !v)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-            keyboardOnly
-              ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
-              : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
-          }`}
-        >
-          <Piano className="h-3.5 w-3.5 shrink-0" /> Clavier
-        </button>
-
-        <Popover>
-          <PopoverTrigger asChild>
+      <DayFilter
+        selectedDate={selectedDate}
+        onChange={setSelectedDate}
+        availableDates={availableDates}
+        trailing={
+          <>
             <button
-              onClick={() => { if (!nearMe) handleToggleNearMe(true); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                nearMe
+              onClick={() => setDrumsOnly((v) => !v)}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                drumsOnly
                   ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
                   : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
               }`}
             >
-              <LocateFixed className="h-3.5 w-3.5 shrink-0" />
-              {geoLoading
-                ? "Localisation..."
-                : nearMe && userPosition
-                ? `Près de moi · ${radiusKm === null ? "Tout" : radiusKm + " km"}`
-                : "Près de moi"}
-              {nearMe && <ChevronDown className="h-3 w-3 shrink-0" />}
+              <Drum className="h-3.5 w-3.5 shrink-0" /> Batterie
             </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-64 bg-zik-card/90 backdrop-blur-md border-white/8 p-4 space-y-3" align="start">
-            {geoError && <p className="text-xs text-zik-red">{geoError}</p>}
-            {nearMe && userPosition && (
-              <div>
-                <p className="text-xs text-gray-400 mb-1.5">Rayon</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {([
-                    { key: null, label: "Tout" },
-                    { key: 1, label: "1 km" },
-                    { key: 5, label: "5 km" },
-                    { key: 10, label: "10 km" },
-                    { key: 25, label: "25 km" },
-                  ] as const).map(({ key, label }) => {
-                    const isActive = radiusKm === key;
-                    return (
-                      <button
-                        key={label}
-                        onClick={() => setRadiusKm(key)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                          isActive
-                            ? "bg-white/10 border-zik-grad-to/70 text-white"
-                            : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-                <button
-                  onClick={() => handleToggleNearMe(false)}
-                  className="mt-3 text-xs text-gray-400 hover:text-zik-red transition-colors"
-                >
-                  Désactiver la localisation
-                </button>
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
-      </div>
+
+            <button
+              onClick={() => setKeyboardOnly((v) => !v)}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                keyboardOnly
+                  ? "bg-white/10 border-zik-grad-to/70 text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.6)]"
+                  : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
+              }`}
+            >
+              <Piano className="h-3.5 w-3.5 shrink-0" /> Clavier
+            </button>
+          </>
+        }
+      />
 
       {filteredJams.length === 0 ? (
         <p className="text-gray-400 text-sm text-center py-6">{emptyMessage}</p>
