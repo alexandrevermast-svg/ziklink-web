@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Clock, UserPlus, Check, Drum, Piano, LocateFixed, Heart, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -62,7 +62,12 @@ export default function JamCard({
   const mapsUrl = getMapsUrl(jam.location);
   const matchedGenre = jam.genres?.find((g) => GENRE_POSTERS[g]);
   const posterUrl = jam.poster_url || (matchedGenre ? GENRE_POSTERS[matchedGenre] : DEFAULT_JAM_POSTER);
-  const showDetails = expanded || !!isSelected;
+
+  // La sélection depuis la carte déplie une seule fois ; ensuite l'utilisateur
+  // reste libre de replier/déplier au clic, même si la jam reste sélectionnée.
+  useEffect(() => {
+    if (isSelected) setExpanded(true);
+  }, [isSelected]);
 
   return (
     <div
@@ -122,7 +127,7 @@ export default function JamCard({
       </div>
 
       <div className={`grid overflow-hidden transition-all duration-300 ease-in-out ${
-        showDetails ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"
+        expanded ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"
       }`}>
         <div className="min-h-0">
           <img
