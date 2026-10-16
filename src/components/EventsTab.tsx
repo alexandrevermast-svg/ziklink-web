@@ -62,7 +62,6 @@ export default function EventsTab({ initialJams, initialParticipantsMap, initial
       {/* Onglet Jams */}
       <TabsContent value="jams">
         <div className="flex flex-col gap-4 pt-4 px-4">
-          <h2 className="text-base font-semibold text-white">Jams à venir</h2>
           <JamList initialJams={initialJams} initialParticipantsMap={initialParticipantsMap} />
         </div>
       </TabsContent>
@@ -70,7 +69,6 @@ export default function EventsTab({ initialJams, initialParticipantsMap, initial
       {/* Onglet Concerts */}
       <TabsContent value="concerts">
         <div className="flex flex-col gap-4 pt-4 px-4">
-          <h2 className="text-base font-semibold text-white">Concerts à venir</h2>
           <ConcertList initialConcerts={initialConcerts} />
         </div>
       </TabsContent>
