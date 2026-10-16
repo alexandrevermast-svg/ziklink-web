@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import moment from "moment-timezone";
-import { ChevronDown, Drum, Piano, LocateFixed } from "lucide-react";
+import { ChevronDown, Drum, Piano, LocateFixed, Check } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import JamCard from "@/components/JamCard";
 import type { EventMarker } from "@/components/EventMap";
@@ -429,12 +429,12 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
                 {nearMe && <ChevronDown className="h-3 w-3 shrink-0" />}
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-64 bg-zik-card/90 backdrop-blur-md border-white/8 p-4 space-y-3" align="end">
-              {geoError && <p className="text-xs text-zik-red">{geoError}</p>}
+            <PopoverContent className="w-56 bg-zik-card/90 backdrop-blur-md border-white/8 p-2" align="end">
+              {geoError && <p className="text-xs text-zik-red px-2 py-1">{geoError}</p>}
               {nearMe && userPosition && (
                 <div>
-                  <p className="text-xs text-gray-400 mb-1.5">Rayon</p>
-                  <div className="flex flex-wrap gap-1.5">
+                  <p className="text-xs text-gray-400 px-2 pt-1 pb-1.5">Rayon</p>
+                  <div className="flex flex-col gap-0.5">
                     {([
                       { key: null, label: "Tout" },
                       { key: 1, label: "1 km" },
@@ -447,23 +447,26 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
                         <button
                           key={label}
                           onClick={() => setRadiusKm(key)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                          className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                             isActive
-                              ? "bg-white/10 border-zik-grad-to/70 text-white"
-                              : "bg-white/6 border-transparent text-gray-400 hover:bg-white/10"
+                              ? "bg-white/10 text-white"
+                              : "text-gray-400 hover:bg-white/6"
                           }`}
                         >
                           {label}
+                          {isActive && <Check className="h-3.5 w-3.5 text-zik-grad-to shrink-0" />}
                         </button>
                       );
                     })}
                   </div>
-                  <button
-                    onClick={() => handleToggleNearMe(false)}
-                    className="mt-3 text-xs text-gray-400 hover:text-zik-red transition-colors"
-                  >
-                    Désactiver la localisation
-                  </button>
+                  <div className="mt-1 pt-1 border-t border-white/8">
+                    <button
+                      onClick={() => handleToggleNearMe(false)}
+                      className="w-full text-left px-3 py-2 rounded-lg text-xs text-gray-400 hover:bg-white/6 hover:text-zik-red transition-colors"
+                    >
+                      Désactiver la localisation
+                    </button>
+                  </div>
                 </div>
               )}
             </PopoverContent>
