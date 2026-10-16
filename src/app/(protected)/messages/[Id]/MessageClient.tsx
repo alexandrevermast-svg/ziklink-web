@@ -27,7 +27,7 @@ function Avatar({ username }: { username: string }) {
   return (
     <div
       className="h-7 w-7 rounded-full flex items-center justify-center text-white text-[10px] font-semibold shrink-0"
-      style={{ background: 'linear-gradient(135deg, #C084FC, #818CF8)' }}
+      style={{ background: 'linear-gradient(135deg, #7C3AED, #A855F7)' }}
     >
       {initials}
     </div>
@@ -175,7 +175,7 @@ const MessageClient: React.FC<MessageClientProps> = ({
                 {!isMe && (
                   <span
                     className="text-[11px] ml-1 mb-0.5 font-medium"
-                    style={{ color: '#C084FC' }}
+                    style={{ color: '#A855F7' }}
                   >
                     {group.username}
                   </span>
@@ -192,7 +192,7 @@ const MessageClient: React.FC<MessageClientProps> = ({
                           className="selectable px-3.5 py-2 text-sm leading-relaxed"
                           style={{
                             ...(isMe ? {
-                              background: 'linear-gradient(135deg, #C084FC, #818CF8)',
+                              background: 'linear-gradient(135deg, #7C3AED, #A855F7)',
                               color: '#fff',
                               borderRadius: isFirst
                                 ? '18px 4px 18px 18px'
@@ -271,8 +271,8 @@ const MessageClient: React.FC<MessageClientProps> = ({
             color: '#F1F0F6',
           }}
           onFocus={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(192,132,252,0.40)';
-            e.currentTarget.style.background = 'rgba(192,132,252,0.06)';
+            e.currentTarget.style.borderColor = 'rgba(168,85,247,0.40)';
+            e.currentTarget.style.background = 'rgba(168,85,247,0.06)';
           }}
           onBlur={(e) => {
             e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
@@ -287,7 +287,7 @@ const MessageClient: React.FC<MessageClientProps> = ({
             width: 40,
             height: 40,
             background: newMessage.trim() && !isSending
-              ? 'linear-gradient(135deg, #C084FC, #818CF8)'
+              ? 'linear-gradient(135deg, #7C3AED, #A855F7)'
               : 'rgba(255,255,255,0.08)',
             color: newMessage.trim() && !isSending
               ? '#fff'

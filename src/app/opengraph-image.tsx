@@ -18,7 +18,7 @@ export default async function OpengraphImage() {
           justifyContent: "center",
           background: "#0E0B16",
           backgroundImage:
-            "radial-gradient(circle at 25% 20%, rgba(192,132,252,0.25), transparent 55%), radial-gradient(circle at 80% 80%, rgba(129,140,248,0.25), transparent 55%)",
+            "radial-gradient(circle at 25% 20%, rgba(124,58,237,0.25), transparent 55%), radial-gradient(circle at 80% 80%, rgba(168,85,247,0.25), transparent 55%)",
         }}
       >
         <div
@@ -26,7 +26,7 @@ export default async function OpengraphImage() {
             display: "flex",
             fontSize: 120,
             fontWeight: 700,
-            backgroundImage: "linear-gradient(90deg, #C084FC, #818CF8)",
+            backgroundImage: "linear-gradient(90deg, #7C3AED, #A855F7)",
             backgroundClip: "text",
             color: "transparent",
           }}

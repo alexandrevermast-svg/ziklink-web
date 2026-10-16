@@ -33,9 +33,9 @@ function ConvAvatar({ title, avatarUrl, type }: {
   const configs: Record<string, { from: string; to: string }> = {
     direct:       { from: '#818CF8', to: '#6366F1' },
     jam:          { from: '#34D399', to: '#10B981' },
-    group:        { from: '#C084FC', to: '#818CF8' },
+    group:        { from: '#7C3AED', to: '#A855F7' },
     concert:      { from: '#FB923C', to: '#F97316' },
-    direct_group: { from: '#C084FC', to: '#818CF8' },
+    direct_group: { from: '#7C3AED', to: '#A855F7' },
   };
   const c = configs[type] ?? configs.direct;
 
@@ -67,8 +67,8 @@ function TypeBadge({ type }: { type: string }) {
     direct:       { label: 'DM',         bg: 'rgba(129,140,248,0.12)', color: '#818CF8' },
     jam:          { label: 'Jam 🎸',     bg: 'rgba(52,211,153,0.12)',  color: '#34D399' },
     concert:      { label: 'Concert 🎤', bg: 'rgba(251,146,60,0.12)',  color: '#FB923C' },
-    group:        { label: 'Groupe',     bg: 'rgba(192,132,252,0.12)', color: '#C084FC' },
-    direct_group: { label: 'Contact',    bg: 'rgba(192,132,252,0.12)', color: '#C084FC' },
+    group:        { label: 'Groupe',     bg: 'rgba(168,85,247,0.12)', color: '#A855F7' },
+    direct_group: { label: 'Contact',    bg: 'rgba(168,85,247,0.12)', color: '#A855F7' },
   };
   const c = config[type] ?? config.direct;
   return (
@@ -112,9 +112,9 @@ export default async function MessagesPage() {
       <div className="flex flex-col items-center justify-center p-8 gap-4 min-h-[60vh] text-center">
         <div
           className="h-16 w-16 rounded-full flex items-center justify-center"
-          style={{ background: 'rgba(192,132,252,0.12)', border: '1px solid rgba(192,132,252,0.20)' }}
+          style={{ background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.20)' }}
         >
-          <MessageCircle className="h-8 w-8" style={{ color: '#C084FC' }} />
+          <MessageCircle className="h-8 w-8" style={{ color: '#A855F7' }} />
         </div>
         <div>
           <h1 className="text-lg font-semibold" style={{ color: '#F1F0F6' }}>
@@ -159,7 +159,7 @@ export default async function MessagesPage() {
   href={`/messages/${conv.id}`}
   className="conv-row flex items-center gap-3 px-4 py-3.5 relative"
   style={{
-    background: hasUnread ? 'rgba(192,132,252,0.05)' : 'transparent',
+    background: hasUnread ? 'rgba(168,85,247,0.05)' : 'transparent',
     borderBottom: i < conversations.length - 1
       ? '1px solid rgba(255,255,255,0.04)'
       : 'none',
@@ -172,7 +172,7 @@ export default async function MessagesPage() {
                   style={{
                     width: 3,
                     height: 28,
-                    background: 'linear-gradient(180deg, #C084FC, #818CF8)',
+                    background: 'linear-gradient(180deg, #7C3AED, #A855F7)',
                   }}
                 />
               )}
@@ -207,7 +207,7 @@ export default async function MessagesPage() {
                       <span
                         className="h-5 min-w-5 px-1 flex items-center justify-center rounded-full text-white text-[10px] font-bold"
                         style={{
-                          background: 'linear-gradient(135deg, #C084FC, #818CF8)',
+                          background: 'linear-gradient(135deg, #7C3AED, #A855F7)',
                           minWidth: 20,
                         }}
                       >

@@ -142,7 +142,7 @@ export default function AddressSearchInput({
           background: 'rgba(255,255,255,0.05)',
           border: '1px solid',
           borderColor: isOpen
-            ? 'rgba(192,132,252,0.40)'
+            ? 'rgba(168,85,247,0.40)'
             : selected
             ? 'rgba(52,211,153,0.40)'
             : 'rgba(255,255,255,0.10)',
@@ -150,7 +150,7 @@ export default function AddressSearchInput({
         }}
       >
         {isLoading ? (
-          <Loader2 size={16} className="animate-spin shrink-0" style={{ color: '#C084FC' }} />
+          <Loader2 size={16} className="animate-spin shrink-0" style={{ color: '#A855F7' }} />
         ) : (
           <MapPin
             size={16}
@@ -207,7 +207,7 @@ export default function AddressSearchInput({
               className="w-full flex items-start gap-3 px-4 py-3 text-left transition-colors duration-100"
               style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background = 'rgba(192,132,252,0.08)';
+                (e.currentTarget as HTMLElement).style.background = 'rgba(168,85,247,0.08)';
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.background = 'transparent';
@@ -216,7 +216,7 @@ export default function AddressSearchInput({
               <MapPin
                 size={14}
                 className="shrink-0 mt-0.5"
-                style={{ color: '#C084FC' }}
+                style={{ color: '#A855F7' }}
               />
               <span
                 className="text-sm leading-snug"

@@ -20,8 +20,8 @@ const TYPE_CONFIG: Record<NotificationType, { icon: string; color: string }> = {
   jam_accepted:  { icon: '🎸', color: '#34D399' },
   jam_turn:      { icon: '🎤', color: '#34D399' },
   jam_request:    { icon: '🥁', color: '#FB923C' },
-  group_request: { icon: '👥', color: '#C084FC' },
-  group_accepted:{ icon: '✅', color: '#C084FC' },
+  group_request: { icon: '👥', color: '#A855F7' },
+  group_accepted:{ icon: '✅', color: '#A855F7' },
   rehearsal_schedule: { icon: '🗓️', color: '#34D399' },
 };
 
@@ -39,7 +39,7 @@ function NotifItem({
       onClick={() => onRead(notif.id, notif.link)}
       className="w-full flex items-start gap-3 px-4 py-3 text-left transition-all duration-150"
       style={{
-        background: notif.read ? 'transparent' : 'rgba(192,132,252,0.05)',
+        background: notif.read ? 'transparent' : 'rgba(168,85,247,0.05)',
         borderBottom: '1px solid rgba(255,255,255,0.04)',
       }}
       onMouseEnter={(e) => {
@@ -47,7 +47,7 @@ function NotifItem({
       }}
       onMouseLeave={(e) => {
         (e.currentTarget as HTMLElement).style.background =
-          notif.read ? 'transparent' : 'rgba(192,132,252,0.05)';
+          notif.read ? 'transparent' : 'rgba(168,85,247,0.05)';
       }}
     >
       {/* Icône type */}
@@ -94,7 +94,7 @@ function NotifItem({
           style={{
             width: 7,
             height: 7,
-            background: 'linear-gradient(135deg, #C084FC, #818CF8)',
+            background: 'linear-gradient(135deg, #7C3AED, #A855F7)',
           }}
         />
       )}
@@ -150,13 +150,13 @@ export default function NotificationBell({ userId }: { userId: string | null }) 
           width: 36,
           height: 36,
           background: isOpen
-            ? 'rgba(192,132,252,0.15)'
+            ? 'rgba(168,85,247,0.15)'
             : 'rgba(255,255,255,0.06)',
           border: '1px solid',
           borderColor: isOpen
-            ? 'rgba(192,132,252,0.30)'
+            ? 'rgba(168,85,247,0.30)'
             : 'rgba(255,255,255,0.10)',
-          color: isOpen ? '#C084FC' : 'rgba(255,255,255,0.55)',
+          color: isOpen ? '#A855F7' : 'rgba(255,255,255,0.55)',
         }}
         aria-label="Notifications"
       >
@@ -171,7 +171,7 @@ export default function NotificationBell({ userId }: { userId: string | null }) 
               height: 17,
               padding: '0 4px',
               fontSize: 10,
-              background: 'linear-gradient(135deg, #C084FC, #818CF8)',
+              background: 'linear-gradient(135deg, #7C3AED, #A855F7)',
               borderRadius: 10,
               border: '2px solid #0E0B16',
             }}
@@ -220,12 +220,12 @@ export default function NotificationBell({ userId }: { userId: string | null }) 
               <button
                 onClick={markAllRead}
                 className="text-xs font-medium transition-colors duration-150"
-                style={{ color: '#C084FC' }}
+                style={{ color: '#A855F7' }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLElement).style.color = '#818CF8';
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.color = '#C084FC';
+                  (e.currentTarget as HTMLElement).style.color = '#A855F7';
                 }}
               >
                 Tout marquer lu
@@ -240,7 +240,7 @@ export default function NotificationBell({ userId }: { userId: string | null }) 
                 onClick={handleEnablePush}
                 disabled={isPushLoading}
                 className="w-full flex items-center gap-2.5 text-xs font-medium rounded-xl px-3 py-2.5 transition-colors disabled:opacity-50"
-                style={{ background: 'rgba(192,132,252,0.10)', color: '#C084FC' }}
+                style={{ background: 'rgba(168,85,247,0.10)', color: '#A855F7' }}
               >
                 <BellRing size={14} strokeWidth={1.75} />
                 {isPushLoading ? 'Activation...' : 'Activer les notifications push'}

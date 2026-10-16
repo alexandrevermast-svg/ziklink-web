@@ -69,13 +69,13 @@ export default function Header() {
               width: 36,
               height: 36,
               background: isMenuOpen
-                ? 'rgba(192,132,252,0.15)'
+                ? 'rgba(168,85,247,0.15)'
                 : 'rgba(255,255,255,0.06)',
               border: '1px solid',
               borderColor: isMenuOpen
-                ? 'rgba(192,132,252,0.30)'
+                ? 'rgba(168,85,247,0.30)'
                 : 'rgba(255,255,255,0.10)',
-              color: isMenuOpen ? '#C084FC' : 'rgba(255,255,255,0.55)',
+              color: isMenuOpen ? '#A855F7' : 'rgba(255,255,255,0.55)',
             }}
           >
             <User size={17} strokeWidth={1.75} />
@@ -99,7 +99,7 @@ export default function Header() {
                 onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
-                <User size={14} strokeWidth={1.75} style={{ color: '#C084FC' }} />
+                <User size={14} strokeWidth={1.75} style={{ color: '#A855F7' }} />
                 Mon compte
               </Link>
 

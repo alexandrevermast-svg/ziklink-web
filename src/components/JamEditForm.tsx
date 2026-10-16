@@ -432,7 +432,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
         {location.address && (
           <p className="text-xs mt-2 px-1 flex items-center gap-1.5"
             style={{ color: 'rgba(255,255,255,0.64)' }}>
-            <MapPin size={12} style={{ color: '#C084FC' }} />
+            <MapPin size={12} style={{ color: '#A855F7' }} />
             {location.address}
           </p>
         )}

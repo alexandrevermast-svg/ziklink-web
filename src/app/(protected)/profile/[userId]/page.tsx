@@ -232,7 +232,7 @@ export default function PublicProfilePage() {
             alt={profile.username ?? ''}
             className="h-24 w-24 rounded-full object-cover"
             style={{
-              border: '3px solid rgba(192,132,252,0.25)',
+              border: '3px solid rgba(168,85,247,0.25)',
               boxShadow: '0 0 0 3px rgba(14,11,22,1), 0 8px 32px rgba(0,0,0,0.4)',
             }}
           />
@@ -240,8 +240,8 @@ export default function PublicProfilePage() {
           <div
             className="h-24 w-24 rounded-full flex items-center justify-center text-white text-2xl font-bold"
             style={{
-              background: 'linear-gradient(135deg, #C084FC, #818CF8)',
-              border: '3px solid rgba(192,132,252,0.25)',
+              background: 'linear-gradient(135deg, #7C3AED, #A855F7)',
+              border: '3px solid rgba(168,85,247,0.25)',
               boxShadow: '0 0 0 3px rgba(14,11,22,1)',
             }}
           >
@@ -256,7 +256,7 @@ export default function PublicProfilePage() {
           {profile.city && (
             <p className="text-sm flex items-center justify-center gap-1 mt-0.5"
               style={{ color: 'rgba(255,255,255,0.64)' }}>
-              <MapPin size={13} style={{ color: '#C084FC' }} /> {profile.city}
+              <MapPin size={13} style={{ color: '#A855F7' }} /> {profile.city}
             </p>
           )}
         </div>
@@ -270,7 +270,7 @@ export default function PublicProfilePage() {
             disabled={isDMLoading}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
             style={{
-              background: 'linear-gradient(135deg, #C084FC, #818CF8)',
+              background: 'linear-gradient(135deg, #7C3AED, #A855F7)',
               color: '#fff',
               opacity: isDMLoading ? 0.7 : 1,
             }}
@@ -288,13 +288,13 @@ export default function PublicProfilePage() {
               className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
               style={{
                 background: showGroupPicker
-                  ? 'rgba(192,132,252,0.15)'
+                  ? 'rgba(168,85,247,0.15)'
                   : 'rgba(255,255,255,0.06)',
                 border: '1px solid',
                 borderColor: showGroupPicker
-                  ? 'rgba(192,132,252,0.30)'
+                  ? 'rgba(168,85,247,0.30)'
                   : 'rgba(255,255,255,0.08)',
-                color: showGroupPicker ? '#C084FC' : 'rgba(255,255,255,0.60)',
+                color: showGroupPicker ? '#A855F7' : 'rgba(255,255,255,0.60)',
               }}
             >
               <Users size={15} />
@@ -338,7 +338,7 @@ export default function PublicProfilePage() {
                       style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
                       onMouseEnter={(e) => {
                         if (status === 'idle') {
-                          (e.currentTarget as HTMLElement).style.background = 'rgba(192,132,252,0.08)';
+                          (e.currentTarget as HTMLElement).style.background = 'rgba(168,85,247,0.08)';
                         }
                       }}
                       onMouseLeave={(e) => {
@@ -348,7 +348,7 @@ export default function PublicProfilePage() {
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div
                           className="h-7 w-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
-                          style={{ background: 'rgba(192,132,252,0.15)', color: '#C084FC' }}
+                          style={{ background: 'rgba(168,85,247,0.15)', color: '#A855F7' }}
                         >
                           {group.name.slice(0, 2).toUpperCase()}
                         </div>
@@ -359,7 +359,7 @@ export default function PublicProfilePage() {
 
                       {/* Statut */}
                       {status === 'loading' && (
-                        <Loader2 size={14} className="animate-spin shrink-0" style={{ color: '#C084FC' }} />
+                        <Loader2 size={14} className="animate-spin shrink-0" style={{ color: '#A855F7' }} />
                       )}
                       {status === 'success' && (
                         <Check size={14} className="shrink-0" style={{ color: '#34D399' }} />
@@ -405,14 +405,14 @@ export default function PublicProfilePage() {
               className="flex items-center gap-2.5 rounded-xl p-3 transition-colors"
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = 'rgba(192,132,252,0.20)';
-                (e.currentTarget as HTMLElement).style.background = 'rgba(192,132,252,0.05)';
+                (e.currentTarget as HTMLElement).style.borderColor = 'rgba(168,85,247,0.20)';
+                (e.currentTarget as HTMLElement).style.background = 'rgba(168,85,247,0.05)';
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';
                 (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
               }}>
-              <Link2 size={15} style={{ color: '#C084FC' }} className="shrink-0" />
+              <Link2 size={15} style={{ color: '#A855F7' }} className="shrink-0" />
               <span className="text-sm font-medium truncate" style={{ color: '#F1F0F6' }}>
                 {link.label || link.url}
               </span>
@@ -428,7 +428,7 @@ export default function PublicProfilePage() {
             className="text-sm font-semibold mb-2 flex items-center gap-1.5"
             style={{ color: '#F1F0F6' }}
           >
-            <Music2 size={15} style={{ color: '#C084FC' }} /> Instruments
+            <Music2 size={15} style={{ color: '#A855F7' }} /> Instruments
           </h2>
           <div className="flex flex-wrap gap-2">
             {userInstruments.map((inst) => (
@@ -436,9 +436,9 @@ export default function PublicProfilePage() {
                 key={inst!.key}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium"
                 style={{
-                  background: 'rgba(192,132,252,0.10)',
-                  color: '#C084FC',
-                  border: '1px solid rgba(192,132,252,0.20)',
+                  background: 'rgba(168,85,247,0.10)',
+                  color: '#A855F7',
+                  border: '1px solid rgba(168,85,247,0.20)',
                 }}
               >
                 <span>{inst!.emoji}</span> {inst!.label}
@@ -452,7 +452,7 @@ export default function PublicProfilePage() {
       {upcomingEvents.length > 0 && (
         <div>
           <h2 className="text-sm font-semibold mb-2 flex items-center gap-1.5" style={{ color: '#F1F0F6' }}>
-            <CalendarDays size={15} style={{ color: '#C084FC' }} />
+            <CalendarDays size={15} style={{ color: '#A855F7' }} />
             Prochains événements
           </h2>
           <div className="space-y-2">
@@ -463,8 +463,8 @@ export default function PublicProfilePage() {
                 className="w-full flex items-center justify-between gap-3 p-3 rounded-xl text-left transition-all duration-150"
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(192,132,252,0.20)';
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(192,132,252,0.05)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(168,85,247,0.20)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(168,85,247,0.05)';
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';
@@ -500,8 +500,8 @@ export default function PublicProfilePage() {
                 className="w-full flex items-center justify-between gap-3 p-3 rounded-xl text-left transition-all duration-150"
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(192,132,252,0.20)';
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(192,132,252,0.05)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(168,85,247,0.20)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(168,85,247,0.05)';
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';

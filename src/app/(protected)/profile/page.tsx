@@ -222,14 +222,14 @@ export default function MyProfilePage() {
           {avatarUrl ? (
             <img src={avatarUrl} alt={username}
               className="h-24 w-24 rounded-full object-cover"
-              style={{ border: '3px solid rgba(192,132,252,0.30)', boxShadow: '0 0 0 3px rgba(14,11,22,1)' }}
+              style={{ border: '3px solid rgba(168,85,247,0.30)', boxShadow: '0 0 0 3px rgba(14,11,22,1)' }}
             />
           ) : (
             <div
               className="h-24 w-24 rounded-full flex items-center justify-center text-white text-2xl font-bold"
               style={{
-                background: 'linear-gradient(135deg, #C084FC, #818CF8)',
-                border: '3px solid rgba(192,132,252,0.30)',
+                background: 'linear-gradient(135deg, #7C3AED, #A855F7)',
+                border: '3px solid rgba(168,85,247,0.30)',
                 boxShadow: '0 0 0 3px rgba(14,11,22,1)',
               }}
             >
@@ -288,7 +288,7 @@ export default function MyProfilePage() {
 
         <div>
           <label className="text-sm font-medium mb-1.5 flex items-center gap-1.5" style={{ color: 'rgba(255,255,255,0.70)' }}>
-            <MapPin size={14} style={{ color: '#C084FC' }} /> Ville
+            <MapPin size={14} style={{ color: '#A855F7' }} /> Ville
           </label>
           <input
             value={city}
@@ -300,7 +300,7 @@ export default function MyProfilePage() {
 
         <div>
           <label className="text-sm font-medium mb-2 flex items-center gap-1.5" style={{ color: 'rgba(255,255,255,0.70)' }}>
-            <Music2 size={14} style={{ color: '#C084FC' }} /> Instruments
+            <Music2 size={14} style={{ color: '#A855F7' }} /> Instruments
           </label>
           <div className="flex flex-wrap gap-2">
             {INSTRUMENTS.map((inst) => {
@@ -312,10 +312,10 @@ export default function MyProfilePage() {
                   onClick={() => toggleInstrument(inst.key)}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-150"
                   style={{
-                    background: active ? 'rgba(192,132,252,0.15)' : 'rgba(255,255,255,0.05)',
+                    background: active ? 'rgba(168,85,247,0.15)' : 'rgba(255,255,255,0.05)',
                     border: '1px solid',
-                    borderColor: active ? 'rgba(192,132,252,0.40)' : 'rgba(255,255,255,0.08)',
-                    color: active ? '#C084FC' : 'rgba(255,255,255,0.64)',
+                    borderColor: active ? 'rgba(168,85,247,0.40)' : 'rgba(255,255,255,0.08)',
+                    color: active ? '#A855F7' : 'rgba(255,255,255,0.64)',
                   }}
                 >
                   <span>{inst.emoji}</span> {inst.label}
@@ -327,7 +327,7 @@ export default function MyProfilePage() {
 
         <div>
           <label className="text-sm font-medium mb-2 flex items-center gap-1.5" style={{ color: 'rgba(255,255,255,0.70)' }}>
-            <Link2 size={14} style={{ color: '#C084FC' }} /> Liens ({links.length}/{MAX_PROFILE_LINKS})
+            <Link2 size={14} style={{ color: '#A855F7' }} /> Liens ({links.length}/{MAX_PROFILE_LINKS})
           </label>
           <div className="space-y-2">
             {links.map((link, i) => (
@@ -354,7 +354,7 @@ export default function MyProfilePage() {
             {links.length < MAX_PROFILE_LINKS && (
               <button type="button" onClick={addLink}
                 className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
-                style={{ color: '#C084FC', background: 'rgba(192,132,252,0.08)' }}>
+                style={{ color: '#A855F7', background: 'rgba(168,85,247,0.08)' }}>
                 <Plus size={14} /> Ajouter un lien
               </button>
             )}
@@ -370,7 +370,7 @@ export default function MyProfilePage() {
         style={{
           background: saved
             ? 'rgba(52,211,153,0.15)'
-            : 'linear-gradient(135deg, #C084FC, #818CF8)',
+            : 'linear-gradient(135deg, #7C3AED, #A855F7)',
           color: saved ? '#34D399' : '#fff',
           border: saved ? '1px solid rgba(52,211,153,0.30)' : 'none',
           opacity: isSaving ? 0.7 : 1,
@@ -391,7 +391,7 @@ export default function MyProfilePage() {
             className="text-sm font-semibold mb-2 flex items-center gap-1.5"
             style={{ color: '#F1F0F6' }}
           >
-            <Users size={15} style={{ color: '#C084FC' }} />
+            <Users size={15} style={{ color: '#A855F7' }} />
             Mes groupes ({groups.length})
           </h2>
           <div className="space-y-2">
@@ -402,8 +402,8 @@ export default function MyProfilePage() {
                 className="w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-150"
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(192,132,252,0.20)';
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(192,132,252,0.05)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(168,85,247,0.20)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(168,85,247,0.05)';
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';
@@ -428,7 +428,7 @@ export default function MyProfilePage() {
             className="text-sm font-semibold mb-2 flex items-center gap-1.5"
             style={{ color: '#F1F0F6' }}
           >
-            <Megaphone size={15} style={{ color: '#C084FC' }} />
+            <Megaphone size={15} style={{ color: '#A855F7' }} />
             Mes annonces ({myAds.length})
           </h2>
           <div className="space-y-2">
@@ -439,8 +439,8 @@ export default function MyProfilePage() {
                 className="w-full flex items-center justify-between gap-3 p-3 rounded-xl text-left transition-all duration-150"
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(192,132,252,0.20)';
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(192,132,252,0.05)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(168,85,247,0.20)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(168,85,247,0.05)';
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';
@@ -471,7 +471,7 @@ export default function MyProfilePage() {
             className="text-sm font-semibold mb-2 flex items-center gap-1.5"
             style={{ color: '#F1F0F6' }}
           >
-            <CalendarDays size={15} style={{ color: '#C084FC' }} />
+            <CalendarDays size={15} style={{ color: '#A855F7' }} />
             Prochains événements
           </h2>
           <div className="space-y-2">
@@ -482,8 +482,8 @@ export default function MyProfilePage() {
                 className="w-full flex items-center justify-between gap-3 p-3 rounded-xl text-left transition-all duration-150"
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(192,132,252,0.20)';
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(192,132,252,0.05)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(168,85,247,0.20)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(168,85,247,0.05)';
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';
@@ -526,8 +526,8 @@ export default function MyProfilePage() {
                 className="w-full flex items-center justify-between gap-3 p-3 rounded-xl text-left transition-all duration-150"
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(192,132,252,0.20)';
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(192,132,252,0.05)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(168,85,247,0.20)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(168,85,247,0.05)';
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';
