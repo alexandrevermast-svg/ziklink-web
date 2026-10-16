@@ -508,6 +508,11 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
               <button onClick={() => setIsParticipantsModalOpen(true)} title="Voir les participants"
                 className="flex items-center gap-1 text-xs font-medium text-zik-grad-to hover:underline">
                 <Users className="h-3.5 w-3.5" /> Participants
+                {pendingParticipants.length > 0 && (
+                  <span className="ml-0.5 bg-zik-orange/20 text-zik-orange text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                    {pendingParticipants.length}
+                  </span>
+                )}
               </button>
               <button onClick={() => setIsInstrumentManagerOpen(true)} title="Gérer les instruments"
                 className="flex items-center gap-1 text-xs font-medium text-zik-grad-to hover:underline">
