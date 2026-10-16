@@ -42,15 +42,15 @@ export default function ConcertCard({ concert, isInterested, interestedCount, is
       onClick={() => router.push(`/events/concerts/${concert.id}`)}
       className="rounded-2xl border border-white/8 bg-white/4 backdrop-blur-md overflow-hidden hover:bg-white/6 hover:border-white/14 transition-all cursor-pointer active:scale-[0.99]"
     >
-      <div className="flex">
+      <div className="flex flex-col">
         {concert.poster_url ? (
-          <img src={concert.poster_url} alt={concert.title} className="w-24 shrink-0 object-cover self-stretch" />
+          <img src={concert.poster_url} alt={concert.title} className="w-full h-40 object-cover" />
         ) : (
-          <div className="w-24 shrink-0 bg-linear-to-br from-zik-grad-from/20 to-zik-grad-to/20 flex items-center justify-center">
+          <div className="w-full h-40 bg-linear-to-br from-zik-grad-from/20 to-zik-grad-to/20 flex items-center justify-center">
             <Music2 className="h-8 w-8 text-zik-grad-to" />
           </div>
         )}
-        <div className="flex-1 min-w-0 p-3">
+        <div className="min-w-0 p-3">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <h3 className="text-lg font-semibold text-white truncate">{concert.title}</h3>
