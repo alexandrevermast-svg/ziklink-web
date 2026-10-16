@@ -46,8 +46,8 @@ function createDotIcon(background: string, glow: string) {
   });
 }
 
-// ✅ Couleurs adaptées à ton thème — jam en dégradé violet avec halo, concert reste rouge
-const JAM_ICON     = createDotIcon("linear-gradient(135deg, #7C3AED, #A855F7)", "rgba(168,85,247,0.55)");
+// ✅ Couleurs adaptées à ton thème — jam en ambre avec halo, concert reste rouge
+const JAM_ICON     = createDotIcon("linear-gradient(135deg, #FBBF24, #F59E0B)", "rgba(251,191,36,0.55)");
 const CONCERT_ICON = createDotIcon("var(--zik-red)", "rgba(248,113,113,0.5)");
 
 function InvalidateSize() {
@@ -118,7 +118,7 @@ export default function EventMap({
             <span className="flex items-center gap-1">
               <span
                 className="inline-block w-2.5 h-2.5 rounded-full border border-zik-bg shadow-sm"
-                style={{ background: "linear-gradient(135deg, #7C3AED, #A855F7)" }}
+                style={{ background: "linear-gradient(135deg, #FBBF24, #F59E0B)" }}
               /> Jam
             </span>
           )}
@@ -158,7 +158,7 @@ export default function EventMap({
               <Popup>
                 <div className="text-sm min-w-32 leading-tight">
                   <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                    m.type === "jam" ? "bg-zik-grad-to/20 text-zik-grad-to" : "bg-zik-red/20 text-zik-red"
+                    m.type === "jam" ? "bg-amber-400/20 text-amber-400" : "bg-zik-red/20 text-zik-red"
                   }`}>
                     {m.type === "jam" ? "🎸 Jam" : "🎤 Concert"}
                   </span>
