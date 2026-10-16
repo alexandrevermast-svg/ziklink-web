@@ -43,17 +43,17 @@ export default function ServicesPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "offre" | "demande")} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-zik-card/50 p-1 rounded-xl border border-zik-border">
+        <TabsList className="grid w-full grid-cols-2 bg-white/4 backdrop-blur-md p-1 rounded-full border border-white/8">
           <TabsTrigger
             value="offre"
-            className="text-zik-muted data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+            className="text-gray-400 data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)] rounded-full transition-all"
           >
             <Megaphone className="mr-2 h-4 w-4" />
             Offre
           </TabsTrigger>
           <TabsTrigger
             value="demande"
-            className="text-zik-muted data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+            className="text-gray-400 data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)] rounded-full transition-all"
           >
             <Search className="mr-2 h-4 w-4" />
             Demande

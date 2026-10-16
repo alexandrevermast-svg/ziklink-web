@@ -513,10 +513,10 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
 
       {/* ── ONGLETS ─────────────────────────────────────────────────────── */}
       <Tabs defaultValue="slots" className="flex-1 flex flex-col overflow-hidden">
-        <TabsList className="grid grid-cols-3 bg-white/4 backdrop-blur-md p-1 rounded-xl border border-white/8 mx-4 mt-3 shrink-0">
+        <TabsList className="grid grid-cols-3 bg-white/4 backdrop-blur-md p-1 rounded-full border border-white/8 mx-4 mt-3 shrink-0">
           <TabsTrigger
             value="slots"
-            className="text-gray-400 data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+            className="text-gray-400 data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)] rounded-full transition-all"
           >
             Passages
             {totalSlotsTaken > 0 && (
@@ -527,7 +527,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           </TabsTrigger>
           <TabsTrigger
             value="participants"
-            className="text-gray-400 data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+            className="text-gray-400 data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)] rounded-full transition-all"
           >
             Participants
             {confirmedParticipants.length > 0 && (
@@ -538,7 +538,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           </TabsTrigger>
           <TabsTrigger
             value="chat"
-            className="text-gray-400 data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+            className="text-gray-400 data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)] rounded-full transition-all"
           >
             Chat
             {messages.length > 0 && (

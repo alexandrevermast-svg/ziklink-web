@@ -325,19 +325,25 @@ export default function ConcertDetailPage() {
 
       {/* Onglets */}
       <Tabs defaultValue="interested" className="flex-1 flex flex-col overflow-hidden">
-        <TabsList className="grid grid-cols-2 mx-4 mt-3 shrink-0">
-          <TabsTrigger value="interested" className="text-zik-text">
+        <TabsList className="grid grid-cols-2 bg-white/4 backdrop-blur-md p-1 rounded-full border border-white/8 mx-4 mt-3 shrink-0">
+          <TabsTrigger
+            value="interested"
+            className="text-gray-400 data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)] rounded-full transition-all"
+          >
             <Users className="h-3.5 w-3.5 mr-1.5" /> Intéressés
             {interestedProfiles.length > 0 && (
-              <span className="ml-1.5 bg-zik-grad-to/10 text-zik-grad-to text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 bg-white/20 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                 {interestedProfiles.length}
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="chat" className="text-zik-text">
+          <TabsTrigger
+            value="chat"
+            className="text-gray-400 data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)] rounded-full transition-all"
+          >
             <Send className="h-3.5 w-3.5 mr-1.5" /> Chat
             {messages.length > 0 && (
-              <span className="ml-1.5 bg-zik-grad-to/10 text-zik-grad-to text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 bg-white/20 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                 {messages.length}
               </span>
             )}
