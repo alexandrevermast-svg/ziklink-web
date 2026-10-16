@@ -24,20 +24,23 @@ export default function Modal({ open, onClose, title, description, children }: M
 
   return createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: 99999 }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(14, 11, 22, 0.8)" }} />
+      <div style={{ position: "absolute", inset: 0, background: "rgba(14, 11, 22, 0.75)", backdropFilter: "blur(4px)" }} />
       <div style={{
         position: "absolute", top: "50%", left: "50%",
         transform: "translate(-50%, -50%)",
-        background: "var(--zik-card)", borderRadius: "12px", padding: "24px",
+        background: "rgba(26,22,40,0.75)",
+        backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: "20px", padding: "24px",
         width: "min(90vw, 640px)", maxHeight: "90vh", overflowY: "auto",
         boxShadow: "0 20px 60px rgba(0,0,0,0.5)", color: "var(--zik-text)",
       }}>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-xl font-bold text-zik-text">{title}</h2>
-            {description && <p className="text-sm text-zik-muted mt-1">{description}</p>}
+            <h2 className="text-xl font-bold text-white">{title}</h2>
+            {description && <p className="text-sm text-gray-400 mt-1">{description}</p>}
           </div>
-          <button onClick={onClose} className="p-1 rounded hover:bg-zik-card-hover text-zik-muted hover:text-zik-text transition-colors shrink-0 ml-4">
+          <button onClick={onClose} className="p-1 rounded-full hover:bg-white/8 text-gray-400 hover:text-white transition-colors shrink-0 ml-4">
             <X className="h-5 w-5" />
           </button>
         </div>

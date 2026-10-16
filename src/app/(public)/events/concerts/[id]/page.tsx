@@ -40,7 +40,7 @@ function Avatar({ profile, size = "md" }: { profile: Profile | null; size?: "sm"
   return profile?.avatar_url ? (
     <img src={profile.avatar_url} alt={profile.username ?? ""} className={`${cls} rounded-full object-cover shrink-0`} />
   ) : (
-    <div className={`${cls} rounded-full bg-zik-purple flex items-center justify-center text-white font-semibold shrink-0`}>
+    <div className={`${cls} rounded-full bg-linear-to-br from-zik-grad-from to-zik-grad-to flex items-center justify-center text-white font-semibold shrink-0`}>
       {initials}
     </div>
   );
@@ -214,7 +214,7 @@ export default function ConcertDetailPage() {
                 {/* Bouton Modifier pour l'organisateur */}
                 {isOrganizer && (
                   <Button size="sm" variant="outline"
-                    className="text-xs flex items-center gap-1.5 border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
+                    className="text-xs flex items-center gap-1.5 border-zik-border text-zik-text hover:border-zik-grad-to hover:text-zik-grad-to"
                     onClick={() => setIsEditOpen(true)}>
                     <Pencil className="h-3.5 w-3.5" /> Modifier
                   </Button>
@@ -225,15 +225,15 @@ export default function ConcertDetailPage() {
               </div>
             </div>
             {/* ✅ Fond adapté à ton thème */}
-            <div className="h-28 rounded-xl bg-linear-to-br from-zik-purple/20 to-zik-indigo/20 flex items-center justify-center mb-3">
-              <Music2 className="h-12 w-12 text-zik-purple/50" />
+            <div className="h-28 rounded-xl bg-linear-to-br from-zik-grad-from/20 to-zik-grad-to/20 flex items-center justify-center mb-3">
+              <Music2 className="h-12 w-12 text-zik-grad-to/50" />
             </div>
           </div>
         )}
 
         <div className="px-4 pt-3 pb-3 border-b border-zik-border">
           <h1 className="text-xl font-bold text-zik-text">{concert.title}</h1>
-          {concert.artist && <p className="text-base text-zik-purple font-medium mt-0.5">{concert.artist}</p>}
+          {concert.artist && <p className="text-base text-zik-grad-to font-medium mt-0.5">{concert.artist}</p>}
 
           {concert.genres && concert.genres.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-1.5">
@@ -259,7 +259,7 @@ export default function ConcertDetailPage() {
               {concert.description.length > 100 && (
                 <button
                   onClick={() => toggleDescription(concert.id)}
-                  className="text-xs text-zik-purple mt-1 hover:bg-zik-purple/10 rounded-lg px-2 py-1 flex items-center gap-1 transition-colors"
+                  className="text-xs text-zik-grad-to mt-1 hover:bg-zik-grad-to/10 rounded-lg px-2 py-1 flex items-center gap-1 transition-colors"
                 >
                   {expandedDescriptions[concert.id] ? (
                     <>
@@ -276,13 +276,13 @@ export default function ConcertDetailPage() {
           )}
           <div className="flex flex-wrap gap-3 mt-2 text-sm text-zik-text">
             <span className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5 text-zik-purple" />
+              <Clock className="h-3.5 w-3.5 text-zik-grad-to" />
               {formatDate(concert.start_time)} · {formatTime(concert.start_time)}
               {concert.end_at && ` → ${formatTime(concert.end_at)}`}
             </span>
             {address && (
-              <MapLink address={address} mapsUrl={mapsUrl} className="flex items-center gap-1 truncate max-w-xs hover:text-zik-purple hover:underline">
-                <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-purple" />{address}
+              <MapLink address={address} mapsUrl={mapsUrl} className="flex items-center gap-1 truncate max-w-xs hover:text-zik-grad-to hover:underline">
+                <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-grad-to" />{address}
               </MapLink>
             )}
           </div>
@@ -296,7 +296,7 @@ export default function ConcertDetailPage() {
             </span>
             {concert.ticket_url && (
               <a href={concert.ticket_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-1 text-xs text-zik-purple hover:underline font-medium">
+                className="flex items-center gap-1 text-xs text-zik-grad-to hover:underline font-medium">
                 <ExternalLink className="h-3 w-3" /> Billetterie
               </a>
             )}
@@ -329,7 +329,7 @@ export default function ConcertDetailPage() {
           <TabsTrigger value="interested" className="text-zik-text">
             <Users className="h-3.5 w-3.5 mr-1.5" /> Intéressés
             {interestedProfiles.length > 0 && (
-              <span className="ml-1.5 bg-zik-purple/10 text-zik-purple text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 bg-zik-grad-to/10 text-zik-grad-to text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                 {interestedProfiles.length}
               </span>
             )}
@@ -337,7 +337,7 @@ export default function ConcertDetailPage() {
           <TabsTrigger value="chat" className="text-zik-text">
             <Send className="h-3.5 w-3.5 mr-1.5" /> Chat
             {messages.length > 0 && (
-              <span className="ml-1.5 bg-zik-purple/10 text-zik-purple text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 bg-zik-grad-to/10 text-zik-grad-to text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                 {messages.length}
               </span>
             )}
@@ -393,7 +393,7 @@ export default function ConcertDetailPage() {
                         {/* ✅ Messages adaptés */}
                         <div className={`selectable px-3 py-2 rounded-2xl text-sm ${
                           isMe
-                            ? "bg-zik-purple text-white rounded-tr-sm"
+                            ? "bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white rounded-tr-sm"
                             : "bg-zik-card/80 text-zik-text rounded-tl-sm border border-zik-border"
                         }`}>
                           {msg.content}
@@ -412,13 +412,13 @@ export default function ConcertDetailPage() {
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
                   placeholder="Envoyer un message..."
-                  className="flex-1 text-sm bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-purple/50"
+                  className="flex-1 text-sm bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
                   disabled={isSending}
                 />
                 <Button
                   type="submit"
                   size="sm"
-                  className="bg-zik-purple hover:bg-zik-indigo shrink-0 disabled:opacity-50"
+                  className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 shrink-0 disabled:opacity-50"
                   disabled={!messageInput.trim() || isSending}
                 >
                   <Send className="h-4 w-4" />

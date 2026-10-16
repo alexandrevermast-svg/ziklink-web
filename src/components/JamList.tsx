@@ -161,7 +161,7 @@ function ParticipantAvatars({ participants }: { participants: ParticipantWithPro
             <div
               key={p.user_id}
               title={p.profile?.username ?? ""}
-              className="h-7 w-7 rounded-full border-2 border-zik-bg bg-zik-purple flex items-center justify-center text-white text-[10px] font-semibold"
+              className="h-7 w-7 rounded-full border-2 border-zik-bg bg-linear-to-br from-zik-grad-from to-zik-grad-to flex items-center justify-center text-white text-[10px] font-semibold"
               style={{ zIndex: MAX_VISIBLE - i }}
             >
               {initials}

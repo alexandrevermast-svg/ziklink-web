@@ -42,7 +42,7 @@ export default function BottomNav() {
               key={item.name}
               href={item.href}
               className="flex flex-col items-center justify-center gap-1 flex-1 py-2 relative transition-all duration-200"
-              style={{ color: isActive ? "#C084FC" : "rgba(255,255,255,0.60)" }}
+              style={{ color: isActive ? "#A855F7" : "rgba(255,255,255,0.60)" }}
             >
               {/* Indicateur actif */}
               {isActive && (
@@ -51,7 +51,7 @@ export default function BottomNav() {
                   style={{
                     width: 32,
                     height: 2,
-                    background: "linear-gradient(90deg, #C084FC, #818CF8)",
+                    background: "linear-gradient(90deg, #7C3AED, #A855F7)",
                   }}
                 />
               )}
@@ -63,7 +63,7 @@ export default function BottomNav() {
                   width: 36,
                   height: 28,
                   background: isActive
-                    ? "rgba(192,132,252,0.12)"
+                    ? "rgba(168,85,247,0.15)"
                     : "transparent",
                 }}
               >

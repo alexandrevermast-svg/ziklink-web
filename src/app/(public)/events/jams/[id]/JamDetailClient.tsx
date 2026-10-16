@@ -429,7 +429,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
             {isOrganizer && (
               <>
                 <Button size="sm" variant="outline"
-                  className="text-xs flex items-center gap-1.5 border-zik-border text-zik-text hover:border-zik-purple hover:text-zik-purple"
+                  className="text-xs flex items-center gap-1.5 border-zik-border text-zik-text hover:border-zik-grad-to hover:text-zik-grad-to"
                   onClick={() => setIsEditOpen(true)}>
                   <Pencil className="h-3.5 w-3.5" /> Modifier
                 </Button>
@@ -488,7 +488,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
                 Inscriptions dès {formatTime(joinOpensAt(jam.start_time).toISOString())}
               </span>
             ) : (
-              <Button size="sm" className="text-xs bg-zik-purple hover:bg-zik-indigo" onClick={handleJoin}>
+              <Button size="sm" className="text-xs bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0" onClick={handleJoin}>
                 <UserPlus className="h-3.5 w-3.5 mr-1" />
                 {currentUserId && !jam.is_open ? "Demander à rejoindre" : "Rejoindre"}
               </Button>
@@ -500,11 +500,11 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
             <div className="flex items-center gap-1.5 text-xs font-medium">
               {isMainOrganizer
                 ? <><Crown className="h-3.5 w-3.5 text-zik-indigo" /><span className="text-zik-indigo">Organisateur</span></>
-                : <><ShieldCheck className="h-3.5 w-3.5 text-zik-purple" /><span className="text-zik-purple">Co-organisateur</span></>
+                : <><ShieldCheck className="h-3.5 w-3.5 text-zik-grad-to" /><span className="text-zik-grad-to">Co-organisateur</span></>
               }
             </div>
             <button onClick={() => setIsInstrumentManagerOpen(true)} title="Gérer les instruments"
-              className="flex items-center gap-1 text-xs font-medium text-zik-purple hover:underline shrink-0">
+              className="flex items-center gap-1 text-xs font-medium text-zik-grad-to hover:underline shrink-0">
               <Settings2 className="h-3.5 w-3.5" /> Instruments
             </button>
           </div>
@@ -513,10 +513,10 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
 
       {/* ── ONGLETS ─────────────────────────────────────────────────────── */}
       <Tabs defaultValue="slots" className="flex-1 flex flex-col overflow-hidden">
-        <TabsList className="grid grid-cols-3 bg-zik-card/50 p-1 rounded-xl border border-zik-border mx-4 mt-3 shrink-0">
+        <TabsList className="grid grid-cols-3 bg-white/4 backdrop-blur-md p-1 rounded-xl border border-white/8 mx-4 mt-3 shrink-0">
           <TabsTrigger
             value="slots"
-            className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+            className="text-gray-400 data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
           >
             Passages
             {totalSlotsTaken > 0 && (
@@ -527,7 +527,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           </TabsTrigger>
           <TabsTrigger
             value="participants"
-            className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+            className="text-gray-400 data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
           >
             Participants
             {confirmedParticipants.length > 0 && (
@@ -538,7 +538,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           </TabsTrigger>
           <TabsTrigger
             value="chat"
-            className="text-zik-muted data-[state=active]:bg-zik-purple data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
+            className="text-gray-400 data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:font-medium data-[state=active]:shadow-sm rounded-lg transition-all"
           >
             Chat
             {messages.length > 0 && (

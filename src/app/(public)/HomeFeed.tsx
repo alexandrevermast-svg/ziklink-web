@@ -40,7 +40,7 @@ function ParticipantAvatars({ participants }: { participants: ParticipantWithPro
               style={{ zIndex: MAX_VISIBLE - i }} />
           ) : (
             <div key={p.user_id}
-              className="h-6 w-6 rounded-full border-2 border-zik-bg bg-zik-purple flex items-center justify-center text-white text-[9px] font-semibold"
+              className="h-6 w-6 rounded-full border-2 border-zik-bg bg-linear-to-br from-zik-grad-from to-zik-grad-to flex items-center justify-center text-white text-[9px] font-semibold"
               style={{ zIndex: MAX_VISIBLE - i }}>
               {initials}
             </div>
@@ -305,7 +305,7 @@ export default function HomeFeed({
         </div>
         {!currentUserId && (
           <button onClick={() => router.push("/login")}
-            className="text-xs font-medium text-zik-purple border border-zik-purple/30 px-3 py-1.5 rounded-full hover:bg-zik-purple/10 transition-colors">
+            className="text-xs font-medium text-zik-grad-to border border-zik-grad-to/30 px-3 py-1.5 rounded-full hover:bg-zik-grad-to/10 transition-colors">
             Se connecter
           </button>
         )}
@@ -334,10 +334,11 @@ export default function HomeFeed({
         onClick={() => setDayFilter(filter)}
         className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-medium transition-all duration-150"
         style={{
-          background: isActive ? 'rgba(192,132,252,0.15)' : 'rgba(255,255,255,0.04)',
+          background: isActive ? 'rgba(168,85,247,0.15)' : 'rgba(255,255,255,0.04)',
           border: '1px solid',
-          borderColor: isActive ? 'rgba(192,132,252,0.35)' : 'rgba(255,255,255,0.07)',
-          color: isActive ? '#C084FC' : 'rgba(255,255,255,0.67)',
+          borderColor: isActive ? 'rgba(168,85,247,0.6)' : 'rgba(255,255,255,0.07)',
+          color: isActive ? '#FFFFFF' : 'rgba(255,255,255,0.67)',
+          boxShadow: isActive ? '0 0 12px -2px rgba(168,85,247,0.5)' : 'none',
         }}
       >
         {filter === "today" ? "Aujourd'hui" : "Demain"}
@@ -345,8 +346,8 @@ export default function HomeFeed({
           <span
             className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
             style={{
-              background: isActive ? 'rgba(192,132,252,0.25)' : 'rgba(255,255,255,0.08)',
-              color: isActive ? '#C084FC' : 'rgba(255,255,255,0.64)',
+              background: isActive ? 'rgba(168,85,247,0.25)' : 'rgba(255,255,255,0.08)',
+              color: isActive ? '#FFFFFF' : 'rgba(255,255,255,0.64)',
             }}
           >
             {count}
