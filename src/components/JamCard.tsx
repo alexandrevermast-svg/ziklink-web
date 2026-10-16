@@ -47,6 +47,9 @@ function formatTime(d: string) {
 }
 
 const DEFAULT_JAM_POSTER = "/images/jam-default-poster.jpg";
+const GENRE_POSTERS: Record<string, string> = {
+  Jazz: "/images/jam-default-poster-jazz.jpg",
+};
 
 export default function JamCard({
   jam, isCreator, isParticipant, isJoining, isInterested, isInterestPending, joinOpen, distanceKm,
@@ -57,7 +60,8 @@ export default function JamCard({
   const [expanded, setExpanded] = useState(false);
   const addressParts = getAddressParts(jam.location);
   const mapsUrl = getMapsUrl(jam.location);
-  const posterUrl = jam.poster_url || DEFAULT_JAM_POSTER;
+  const matchedGenre = jam.genres?.find((g) => GENRE_POSTERS[g]);
+  const posterUrl = jam.poster_url || (matchedGenre ? GENRE_POSTERS[matchedGenre] : DEFAULT_JAM_POSTER);
   const showDetails = expanded || !!isSelected;
 
   return (
