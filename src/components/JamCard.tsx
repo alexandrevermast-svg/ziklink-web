@@ -67,11 +67,11 @@ export default function JamCard({
   return (
     <div
       onClick={() => setExpanded((v) => !v)}
-      className="relative overflow-hidden rounded-xl border border-zik-indigo/60 p-4 hover:bg-zik-card-hover hover:border-zik-indigo/80 hover:shadow-sm transition-all cursor-pointer active:scale-[0.99] bg-zik-card"
+      className="relative overflow-hidden rounded-2xl border border-white/8 p-4 bg-white/4 backdrop-blur-md hover:bg-white/6 hover:border-white/14 transition-all cursor-pointer active:scale-[0.99]"
     >
 
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-lg font-semibold text-[#FFC857] truncate flex-1 min-w-0">{jam.title}</h3>
+        <h3 className="text-lg font-semibold text-white truncate flex-1 min-w-0">{jam.title}</h3>
         <div className="flex items-center gap-1.5 shrink-0">
           <span title={jam.has_drums ? "Batterie disponible" : "Pas de batterie"}
             className={`h-6 w-6 rounded-full flex items-center justify-center ${
@@ -89,14 +89,14 @@ export default function JamCard({
       </div>
 
       <div className="mt-3">
-        <div className="flex flex-wrap gap-3 text-sm text-zik-text">
+        <div className="flex flex-wrap gap-3 text-sm text-gray-400">
           <span className="flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5 text-zik-muted" />
+            <Clock className="h-3.5 w-3.5" />
             {formatTime(jam.start_time)}
             {jam.end_at && ` → ${formatTime(jam.end_at)}`}
           </span>
           {distanceKm !== undefined && (
-            <span className="flex items-center gap-1 text-zik-purple font-medium">
+            <span className="flex items-center gap-1 text-zik-grad-to font-medium">
               <LocateFixed className="h-3.5 w-3.5" />
               {formatDistanceKm(distanceKm)}
             </span>
@@ -108,11 +108,11 @@ export default function JamCard({
             mapsUrl={mapsUrl}
             className="group flex items-start gap-1.5 mt-1 text-left"
           >
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-zik-muted mt-0.5 group-hover:text-zik-purple transition-colors" />
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-gray-400 mt-0.5 group-hover:text-zik-grad-to transition-colors" />
             <span className="min-w-0 leading-tight">
-              {addressParts.name && <span className="block text-sm text-zik-text">{addressParts.name}</span>}
+              {addressParts.name && <span className="block text-sm text-gray-300">{addressParts.name}</span>}
               {addressParts.detail && (
-                <span className={`block line-clamp-2 ${addressParts.name ? "text-xs text-zik-muted mt-0.5" : "text-sm text-zik-text"}`}>
+                <span className={`block line-clamp-2 text-gray-500 ${addressParts.name ? "text-xs mt-0.5" : "text-sm"}`}>
                   {addressParts.detail}
                 </span>
               )}
@@ -135,7 +135,7 @@ export default function JamCard({
             }}
           />
           {jam.description?.trim() && (
-            <p className="text-sm text-zik-muted whitespace-pre-line">{jam.description}</p>
+            <p className="text-sm text-gray-400 whitespace-pre-line">{jam.description}</p>
           )}
         </div>
       </div>
@@ -155,11 +155,16 @@ export default function JamCard({
           <button
             onClick={(e) => { e.stopPropagation(); router.push(`/events/jams/${jam.id}`); }}
             title="Voir la jam en détail"
-            className="h-7 w-7 flex items-center justify-center rounded-full text-zik-muted hover:text-zik-purple hover:bg-zik-purple/10 transition-colors"
+            className="h-7 w-7 flex items-center justify-center rounded-full text-gray-400 hover:text-zik-grad-to hover:bg-white/8 transition-colors"
           >
             <ArrowUpRight className="h-4 w-4" />
           </button>
-          <ShareButton url={`/events/jams/${jam.id}`} title={jam.title} text={jam.description ?? undefined} />
+          <ShareButton
+            url={`/events/jams/${jam.id}`}
+            title={jam.title}
+            text={jam.description ?? undefined}
+            className="h-7 w-7 flex items-center justify-center rounded-full text-gray-400 hover:text-zik-grad-to hover:bg-white/8 transition-colors"
+          />
           {!isCreator && (
             <button
               onClick={(e) => onToggleInterest(jam.id, e)}
@@ -185,7 +190,7 @@ export default function JamCard({
             ) : joinOpen ? (
               <Button
                 size="sm"
-                className="text-xs bg-zik-purple hover:bg-zik-indigo"
+                className="text-xs bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white"
                 onClick={(e) => onJoin(jam.id, e)}
                 disabled={isJoining}
               >
@@ -193,13 +198,13 @@ export default function JamCard({
                 {isJoining ? "..." : "Rejoindre"}
               </Button>
             ) : (
-              <span className="text-[10px] text-zik-muted italic">
+              <span className="text-[10px] text-gray-400 italic">
                 Inscriptions dès {formatTime(joinOpensAt(jam.start_time).toISOString())}
               </span>
             )
           )}
           {isCreator && (
-            <span className="text-xs text-zik-muted italic">
+            <span className="text-xs text-gray-400 italic">
               {participantCount ?? 0} inscrit{(participantCount ?? 0) > 1 ? "s" : ""} · {interestedCount ?? 0} intéressé{(interestedCount ?? 0) > 1 ? "s" : ""}
             </span>
           )}

@@ -40,21 +40,21 @@ export default function ConcertCard({ concert, isInterested, interestedCount, is
   return (
     <div
       onClick={() => router.push(`/events/concerts/${concert.id}`)}
-      className="rounded-lg border border-zik-border overflow-hidden hover:border-zik-purple/30 hover:shadow-sm transition-all cursor-pointer active:scale-[0.99]"
+      className="rounded-2xl border border-white/8 bg-white/4 backdrop-blur-md overflow-hidden hover:bg-white/6 hover:border-white/14 transition-all cursor-pointer active:scale-[0.99]"
     >
       <div className="flex">
         {concert.poster_url ? (
           <img src={concert.poster_url} alt={concert.title} className="w-24 shrink-0 object-cover self-stretch" />
         ) : (
-          <div className="w-24 shrink-0 bg-linear-to-br from-zik-purple/20 to-zik-indigo/20 flex items-center justify-center">
-            <Music2 className="h-8 w-8 text-zik-purple" />
+          <div className="w-24 shrink-0 bg-linear-to-br from-zik-grad-from/20 to-zik-grad-to/20 flex items-center justify-center">
+            <Music2 className="h-8 w-8 text-zik-grad-to" />
           </div>
         )}
         <div className="flex-1 min-w-0 p-3">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h3 className="text-lg font-semibold text-[#FFC857] truncate">{concert.title}</h3>
-              {concert.artist && <p className="text-sm text-zik-purple font-medium truncate">{concert.artist}</p>}
+              <h3 className="text-lg font-semibold text-white truncate">{concert.title}</h3>
+              {concert.artist && <p className="text-sm text-zik-grad-to font-medium truncate">{concert.artist}</p>}
             </div>
           </div>
 
@@ -70,20 +70,20 @@ export default function ConcertCard({ concert, isInterested, interestedCount, is
               ))}
             </div>
           )}
-          <div className="flex flex-wrap gap-2 mt-2 text-sm text-zik-text">
+          <div className="flex flex-wrap gap-2 mt-2 text-sm text-gray-400">
             <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3 text-zik-muted" />
+              <Clock className="h-3 w-3" />
               {formatDate(concert.start_time)} · {formatTime(concert.start_time)}
               {concert.end_at && ` → ${formatTime(concert.end_at)}`}
             </span>
           </div>
           {addressParts && (addressParts.name || addressParts.detail) && (
             <div className="flex items-start gap-1.5 mt-1">
-              <MapPin className="h-3 w-3 shrink-0 text-zik-muted mt-0.5" />
+              <MapPin className="h-3 w-3 shrink-0 text-gray-400 mt-0.5" />
               <span className="min-w-0 leading-tight">
-                {addressParts.name && <span className="block text-sm text-zik-text">{addressParts.name}</span>}
+                {addressParts.name && <span className="block text-sm text-gray-300">{addressParts.name}</span>}
                 {addressParts.detail && (
-                  <span className={`block line-clamp-2 ${addressParts.name ? "text-xs text-zik-muted mt-0.5" : "text-sm text-zik-text"}`}>
+                  <span className={`block line-clamp-2 text-gray-500 ${addressParts.name ? "text-xs mt-0.5" : "text-sm"}`}>
                     {addressParts.detail}
                   </span>
                 )}
@@ -98,14 +98,19 @@ export default function ConcertCard({ concert, isInterested, interestedCount, is
               {concert.is_free ? "Gratuit" : concert.price ? `${concert.price} €` : "Payant"}
             </span>
             <div className="flex items-center gap-1.5">
-              <ShareButton url={`/events/concerts/${concert.id}`} title={concert.title} text={concert.artist ?? undefined} />
+              <ShareButton
+                url={`/events/concerts/${concert.id}`}
+                title={concert.title}
+                text={concert.artist ?? undefined}
+                className="h-7 w-7 flex items-center justify-center rounded-full text-gray-400 hover:text-zik-grad-to hover:bg-white/8 transition-colors"
+              />
               <button
                 onClick={(e) => onToggleInterest(concert.id, e)}
                 disabled={isToggling}
                 className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
                   isInterested
                     ? "bg-zik-red/10 border-zik-red/20 text-zik-red"
-                    : "bg-zik-card border-zik-border text-zik-muted hover:border-zik-red/20 hover:text-zik-red"
+                    : "bg-white/5 border-white/10 text-gray-400 hover:border-zik-red/30 hover:text-zik-red"
                 }`}
               >
                 <Heart className={`h-3.5 w-3.5 ${isInterested ? "fill-zik-red" : ""}`} />

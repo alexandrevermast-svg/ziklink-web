@@ -15,6 +15,10 @@
   --color-zik-subtle:     rgba(255,255,255,0.15);
   --color-zik-border:     rgba(255,255,255,0.06);
   --color-zik-border-md:  rgba(255,255,255,0.12);
+
+  /* ── Refonte glassmorphism (déploiement progressif, cards en premier) ── */
+  --color-zik-grad-from:  #7C3AED;
+  --color-zik-grad-to:    #A855F7;
 }
 
 /* ── Variables CSS natives ───────────────────────── */
