@@ -125,7 +125,15 @@ export default function JamCard({
         showDetails ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"
       }`}>
         <div className="min-h-0">
-          <img src={posterUrl} alt="" className="w-full h-36 object-cover rounded-lg mb-2" />
+          <img
+            src={posterUrl}
+            alt=""
+            className="w-full h-36 object-cover rounded-lg mb-2"
+            style={{
+              maskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
+              WebkitMaskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
+            }}
+          />
           {jam.description?.trim() && (
             <p className="text-sm text-zik-muted whitespace-pre-line">{jam.description}</p>
           )}
