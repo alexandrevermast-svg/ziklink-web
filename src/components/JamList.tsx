@@ -320,7 +320,12 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
     if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${jamId}`)}`); return; }
     const name = await ensureStageName(currentUserId);
     if (!name) return;
-    await joinJam(jamId, currentUserId);
+    // Les jams sur approbation doivent passer par un statut "pending" — la
+    // colonne status a "confirmed" comme valeur par défaut en base, donc
+    // l'omettre inscrivait tout le monde d'office, même sur une jam fermée.
+    const jam = jams.find((j) => j.id === jamId);
+    const status = jam?.is_open === false ? "pending" : "confirmed";
+    await joinJam(jamId, currentUserId, status);
     await fetchParticipants(jams.map((j) => j.id));
   }, [currentUserId, jams, fetchParticipants, joinJam, router, ensureStageName]);
 

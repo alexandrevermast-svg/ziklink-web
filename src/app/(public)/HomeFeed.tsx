@@ -197,9 +197,12 @@ export default function HomeFeed({
     if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${jamId}`)}`); return; }
     const name = await ensureStageName(currentUserId);
     if (!name) return;
-    await joinJam(jamId, currentUserId, "confirmed");
+    // Les jams sur approbation doivent passer par un statut "pending".
+    const jam = jams.find((j) => j.id === jamId);
+    const status = jam?.is_open === false ? "pending" : "confirmed";
+    await joinJam(jamId, currentUserId, status);
     await refetch();
-  }, [currentUserId, joinJam, refetch, router, ensureStageName]);
+  }, [currentUserId, jams, joinJam, refetch, router, ensureStageName]);
 
   const handleMarkerClick = useCallback((marker: EventMarker) => {
     if (marker.type !== "jam") return;
