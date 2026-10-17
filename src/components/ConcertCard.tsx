@@ -70,7 +70,7 @@ export default function ConcertCard({ concert, isInterested, interestedCount, is
               ))}
             </div>
           )}
-          <div className="flex flex-wrap gap-2 mt-2 text-sm text-gray-400">
+          <div className="flex flex-wrap gap-2 mt-2 text-sm text-gray-300">
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
               {formatDate(concert.start_time)} · {formatTime(concert.start_time)}
@@ -79,11 +79,11 @@ export default function ConcertCard({ concert, isInterested, interestedCount, is
           </div>
           {addressParts && (addressParts.name || addressParts.detail) && (
             <div className="flex items-start gap-1.5 mt-1">
-              <MapPin className="h-3 w-3 shrink-0 text-gray-400 mt-0.5" />
+              <MapPin className="h-3 w-3 shrink-0 text-gray-300 mt-0.5" />
               <span className="min-w-0 leading-tight">
-                {addressParts.name && <span className="block text-sm text-gray-300">{addressParts.name}</span>}
+                {addressParts.name && <span className="block text-sm text-gray-200">{addressParts.name}</span>}
                 {addressParts.detail && (
-                  <span className={`block line-clamp-2 text-gray-500 ${addressParts.name ? "text-xs mt-0.5" : "text-sm"}`}>
+                  <span className={`block line-clamp-2 text-gray-400 ${addressParts.name ? "text-xs mt-0.5" : "text-sm"}`}>
                     {addressParts.detail}
                   </span>
                 )}
@@ -102,7 +102,7 @@ export default function ConcertCard({ concert, isInterested, interestedCount, is
                 url={`/events/concerts/${concert.id}`}
                 title={concert.title}
                 text={concert.artist ?? undefined}
-                className="h-7 w-7 flex items-center justify-center rounded-full text-gray-400 hover:text-zik-grad-to hover:bg-white/8 transition-colors"
+                className="h-7 w-7 flex items-center justify-center rounded-full text-gray-300 hover:text-zik-grad-to hover:bg-white/8 transition-colors"
               />
               <button
                 onClick={(e) => onToggleInterest(concert.id, e)}
@@ -110,7 +110,7 @@ export default function ConcertCard({ concert, isInterested, interestedCount, is
                 className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
                   isInterested
                     ? "bg-zik-red/10 border-zik-red/20 text-zik-red"
-                    : "bg-white/5 border-white/10 text-gray-400 hover:border-zik-red/30 hover:text-zik-red"
+                    : "bg-white/5 border-white/10 text-gray-300 hover:border-zik-red/30 hover:text-zik-red"
                 }`}
               >
                 <Heart className={`h-3.5 w-3.5 ${isInterested ? "fill-zik-red" : ""}`} />

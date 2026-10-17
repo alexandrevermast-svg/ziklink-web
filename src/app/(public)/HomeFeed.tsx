@@ -63,7 +63,7 @@ function EventRow({ href, time, timeColorClass, title, genres }: {
           </span>
         )}
       </span>
-      <ChevronRight className="h-3.5 w-3.5 text-gray-500 shrink-0" />
+      <ChevronRight className="h-3.5 w-3.5 text-gray-400 shrink-0" />
     </Link>
   );
 }
@@ -345,25 +345,25 @@ export default function HomeFeed({
         </div>
       )}
 
-      {/* Groupes qui recrutent */}
+      {/* Groupes */}
       {initialRecruitingAds.length > 0 && (
         <div className="flex flex-col gap-2.5">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-[15px] font-bold text-white">👥 Groupes qui recrutent</h2>
+            <h2 className="text-[15px] font-bold text-white">👥 Groupes</h2>
             <Link href="/groups" className="text-xs font-semibold text-zik-grad-to">Tout voir</Link>
           </div>
-          <div className="flex gap-3 overflow-x-auto -mx-4 px-4 pb-1">
+          <div className="flex flex-col gap-2.5">
             {initialRecruitingAds.filter((ad) => ad.groups).map((ad) => (
               <Link
                 key={ad.id}
                 href={`/groups/${ad.groups!.id}`}
-                className="shrink-0 w-56 rounded-2xl bg-white/4 backdrop-blur-md border border-white/8 p-3.5 flex flex-col gap-2"
+                className="w-full rounded-2xl bg-white/4 backdrop-blur-md border border-white/8 p-3.5 flex flex-col gap-2"
               >
                 <div className="flex items-center gap-2.5">
                   <GroupAvatar group={ad.groups!} size="sm" />
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-white truncate">{ad.groups!.name}</p>
-                    {ad.groups!.city && <p className="text-xs text-gray-400">{ad.groups!.city}</p>}
+                    {ad.groups!.city && <p className="text-xs text-gray-300">{ad.groups!.city}</p>}
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-2">
@@ -404,11 +404,11 @@ export default function HomeFeed({
               <p className="text-sm font-semibold text-white truncate">
                 {initialLatestMusician.username ?? initialLatestMusician.display_name ?? "Nouveau musicien"}
               </p>
-              <p className="text-xs text-gray-400 truncate">
+              <p className="text-xs text-gray-300 truncate">
                 {[initialLatestMusician.city, initialLatestMusician.instruments?.join(", ")].filter(Boolean).join(" · ") || "Vient de s'inscrire"}
               </p>
             </div>
-            <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
+            <ChevronRight className="h-4 w-4 text-gray-300 shrink-0" />
           </Link>
         </div>
       )}
@@ -420,26 +420,26 @@ export default function HomeFeed({
           <Link href="/groups" className="text-xs font-semibold text-zik-grad-to">Tout voir</Link>
         </div>
         {initialMusicianAds.length > 0 ? (
-          <div className="flex gap-3 overflow-x-auto -mx-4 px-4 pb-1">
+          <div className="flex flex-col gap-2.5">
             {initialMusicianAds.map((ad) => (
               <Link
                 key={ad.id}
                 href={`/ads/${ad.id}`}
-                className="shrink-0 w-56 rounded-2xl bg-white/4 backdrop-blur-md border border-white/8 p-3.5 flex flex-col gap-2"
+                className="w-full rounded-2xl bg-white/4 backdrop-blur-md border border-white/8 p-3.5 flex flex-col gap-2"
               >
                 <div className="flex items-center gap-2 text-zik-grad-to">
                   <Music2 className="h-4 w-4 shrink-0" />
                   <span className="text-[11px] font-semibold uppercase tracking-wide">{ad.instrument ?? "Musicien"}</span>
                 </div>
                 <p className="text-sm font-semibold text-white truncate">{ad.title}</p>
-                {ad.city && <p className="text-xs text-gray-400 truncate">{ad.city}</p>}
+                {ad.city && <p className="text-xs text-gray-300 truncate">{ad.city}</p>}
               </Link>
             ))}
           </div>
         ) : (
           <Link href="/groups" className="flex flex-col items-center gap-2 text-center py-5 px-4 rounded-2xl bg-white/3 border border-dashed border-white/14">
-            <Megaphone className="h-5 w-5 text-gray-400" />
-            <span className="text-[13px] text-gray-400">Aucune annonce pour l'instant</span>
+            <Megaphone className="h-5 w-5 text-gray-300" />
+            <span className="text-[13px] text-gray-300">Aucune annonce pour l'instant</span>
             <span className="text-xs font-semibold text-zik-grad-to">Publier une annonce</span>
           </Link>
         )}
