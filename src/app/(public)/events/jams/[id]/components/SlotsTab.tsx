@@ -13,9 +13,14 @@ function InstrumentIcon({ instKey, emoji }: { instKey: string; emoji: string }) 
   return <span className="text-base leading-none">{emoji}</span>;
 }
 
+// Clé technique utilisée comme "instrument" quand la jam est en mode solo —
+// un seul créneau par passage, sans distinction d'instrument.
+export const SOLO_INSTRUMENT_KEY = "solo";
+
 interface SlotsTabProps {
   canInteract: boolean;
   isOrganizer: boolean;
+  soloMode: boolean;
   currentUserId: string | null;
   instruments: JamInstrument[];
   slots: JamSlot[];
@@ -44,7 +49,7 @@ interface SlotsTabProps {
 }
 
 export function SlotsTab({
-  canInteract, isOrganizer, currentUserId, instruments, slots, numRows, currentSlotIndex,
+  canInteract, isOrganizer, soloMode, currentUserId, instruments, slots, numRows, currentSlotIndex,
   lastSlotIndex, onSetLastSlot,
   claimingCell, pickerCell,
   editingSongSlotId, songInputValue, onSongInputChange,
@@ -56,7 +61,10 @@ export function SlotsTab({
   const getSlot = (instrument: string, slot_index: number) =>
     slots.find((s) => s.instrument === instrument && s.slot_index === slot_index) ?? null;
 
-  const displayInstruments = instruments;
+  // En mode solo, un seul créneau par passage (pas de colonnes par instrument).
+  const displayInstruments = soloMode
+    ? [{ id: SOLO_INSTRUMENT_KEY, jam_id: "", key: SOLO_INSTRUMENT_KEY, label: "", emoji: "", position: 0 }]
+    : instruments;
 
   const maxOccupiedIndex = slots.length > 0 ? Math.max(...slots.map((s) => s.slot_index)) : -1;
   const pastCount = currentSlotIndex ?? 0;
@@ -217,10 +225,12 @@ export function SlotsTab({
 
                 return (
   <div key={inst.key} className="flex items-center gap-1.5 rounded-lg border border-zik-border/60 px-2 py-1 min-w-0">
-    <span className="flex items-center gap-1 text-sm text-zik-text/80 shrink-0 w-32 truncate">
-      <InstrumentIcon instKey={inst.key} emoji={inst.emoji} />
-      <span className="truncate">{inst.label}</span>
-    </span>
+    {!soloMode && (
+      <span className="flex items-center gap-1 text-sm text-zik-text/80 shrink-0 w-32 truncate">
+        <InstrumentIcon instKey={inst.key} emoji={inst.emoji} />
+        <span className="truncate">{inst.label}</span>
+      </span>
+    )}
 
     {slot ? (
       <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-base font-semibold flex-1 min-w-0 ${

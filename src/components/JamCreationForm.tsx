@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Lock, Unlock, Repeat2, Users, MapPin, CalendarDays, Clock, Drum, Piano, Upload, X } from "lucide-react";
+import { Lock, Unlock, Repeat2, Users, MapPin, CalendarDays, Clock, Drum, Piano, Upload, X, Mic } from "lucide-react";
 import AddressSearchInput from '@/components/AddressSearchInput';
 import { toUtcDateTime, resolveEndDateTime } from '@/lib/eventDateTime';
 import { Calendar } from "@/components/ui/calendar";
@@ -44,6 +44,7 @@ interface RecurrenceData {
 interface JamFormData {
   title: string; description: string; date: string;
   start_hour: string; end_hour: string; is_open: boolean; has_drums: boolean; has_keyboard: boolean;
+  solo_mode: boolean;
   genres: string[];
   location: { lat: number; lng: number; address: string; name?: string; street?: string; postcode?: string; city?: string };
 }
@@ -84,7 +85,7 @@ function formatDateShort(d: Date) {
 export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormProps) {
   const supabase = createClient();
   const [formData, setFormData] = useState<JamFormData>({
-    title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true,
+    title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true, solo_mode: false,
     genres: [],
     location: { lat: 48.8566, lng: 2.3522, address: "" },
   });
@@ -226,7 +227,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
           .in("id", (createdJams ?? []).map((j: any) => j.jam_id));
       }
 
-      // create_jam_sessions n'a pas de paramètre genres/poster_url — appliqués après coup.
+      // create_jam_sessions n'a pas de paramètre genres/poster_url/solo_mode — appliqués après coup.
       if (formData.genres.length > 0) {
         await supabase.from("jam_sessions")
           .update({ genres: formData.genres })
@@ -237,8 +238,13 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
           .update({ poster_url: posterUrl })
           .in("id", (createdJams ?? []).map((j: any) => j.jam_id));
       }
+      if (formData.solo_mode) {
+        await supabase.from("jam_sessions")
+          .update({ solo_mode: true })
+          .in("id", (createdJams ?? []).map((j: any) => j.jam_id));
+      }
 
-      setFormData({ title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true, genres: [], location: { lat: 48.8566, lng: 2.3522, address: "" } });
+      setFormData({ title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true, solo_mode: false, genres: [], location: { lat: 48.8566, lng: 2.3522, address: "" } });
       setPosterFile(null);
       setPosterPreview(null);
       setSelectedLocation(null);
@@ -552,6 +558,28 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         <Switch
           checked={formData.is_open}
           onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, is_open: checked }))}
+          className="data-[state=checked]:bg-zik-grad-to data-[state=unchecked]:bg-zik-card-hover"
+        />
+      </div>
+
+      {/* Mode solo */}
+      <div className="flex items-center justify-between rounded-lg border border-zik-border p-4 bg-zik-card/50">
+        <div className="flex items-center gap-3">
+          <Mic className={`h-5 w-5 ${formData.solo_mode ? "text-zik-grad-to" : "text-zik-muted"}`} />
+          <div>
+            <p className="text-sm font-medium text-zik-text">
+              {formData.solo_mode ? "Un·e musicien·ne à la fois" : "Plusieurs musiciens par passage"}
+            </p>
+            <p className="text-xs text-zik-muted">
+              {formData.solo_mode
+                ? "Un seul créneau par passage, sans distinction d'instrument"
+                : "Chaque passage se remplit instrument par instrument"}
+            </p>
+          </div>
+        </div>
+        <Switch
+          checked={formData.solo_mode}
+          onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, solo_mode: checked }))}
           className="data-[state=checked]:bg-zik-grad-to data-[state=unchecked]:bg-zik-card-hover"
         />
       </div>

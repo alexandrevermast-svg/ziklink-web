@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Lock, Unlock, CalendarDays, MapPin, Drum, Piano, Upload, X } from "lucide-react";
+import { Lock, Unlock, CalendarDays, MapPin, Drum, Piano, Upload, X, Mic } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { fr } from "date-fns/locale";
 import { format } from "date-fns";
@@ -28,6 +28,7 @@ interface JamEditFormProps {
   jam: {
     id: string; title: string; description: string; start_time: string;
     end_at: string | null; location: string | null; is_open: boolean; has_drums: boolean; has_keyboard: boolean;
+    solo_mode?: boolean;
     genres?: string[] | null;
     poster_url?: string | null;
     recurrence_id?: string | null;
@@ -57,6 +58,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
   const [isOpen, setIsOpen] = useState(jam.is_open);
   const [hasDrums, setHasDrums] = useState(jam.has_drums);
   const [hasKeyboard, setHasKeyboard] = useState(jam.has_keyboard);
+  const [soloMode, setSoloMode] = useState(jam.solo_mode ?? false);
   const [genres, setGenres] = useState<string[]>(jam.genres ?? []);
   const [location, setLocation] = useState<{ lat: number; lng: number; address: string; name?: string; street?: string; postcode?: string; city?: string }>(parsedLoc);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(
@@ -121,6 +123,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
           is_open: isOpen,
           has_drums: hasDrums,
           has_keyboard: hasKeyboard,
+          solo_mode: soloMode,
           genres: genres.length > 0 ? genres : null,
           poster_url: posterUrl,
         })
@@ -140,6 +143,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
             is_open: isOpen,
             has_drums: hasDrums,
             has_keyboard: hasKeyboard,
+            solo_mode: soloMode,
             genres: genres.length > 0 ? genres : null,
             poster_url: posterUrl,
           })
@@ -359,6 +363,28 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
         <Switch
           checked={hasKeyboard}
           onCheckedChange={setHasKeyboard}
+          className="data-[state=checked]:bg-zik-grad-to data-[state=unchecked]:bg-zik-card-hover"
+        />
+      </div>
+
+      {/* Mode solo */}
+      <div className="flex items-center justify-between rounded-lg border border-zik-border p-4 bg-zik-card/50">
+        <div className="flex items-center gap-3">
+          <Mic className={`h-5 w-5 ${soloMode ? "text-zik-grad-to" : "text-zik-muted"}`} />
+          <div>
+            <p className="text-sm font-medium text-zik-text">
+              {soloMode ? "Un·e musicien·ne à la fois" : "Plusieurs musiciens par passage"}
+            </p>
+            <p className="text-xs text-zik-muted">
+              {soloMode
+                ? "Un seul créneau par passage, sans distinction d'instrument"
+                : "Chaque passage se remplit instrument par instrument"}
+            </p>
+          </div>
+        </div>
+        <Switch
+          checked={soloMode}
+          onCheckedChange={setSoloMode}
           className="data-[state=checked]:bg-zik-grad-to data-[state=unchecked]:bg-zik-card-hover"
         />
       </div>

@@ -602,6 +602,7 @@ export type Database = {
           location: string | null
           poster_url: string | null
           recurrence_id: string | null
+          solo_mode: boolean
           start_time: string
           title: string
         }
@@ -621,6 +622,7 @@ export type Database = {
           location?: string | null
           poster_url?: string | null
           recurrence_id?: string | null
+          solo_mode?: boolean
           start_time: string
           title: string
         }
@@ -640,6 +642,7 @@ export type Database = {
           location?: string | null
           poster_url?: string | null
           recurrence_id?: string | null
+          solo_mode?: boolean
           start_time?: string
           title?: string
         }

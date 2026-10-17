@@ -536,10 +536,12 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
                   </span>
                 )}
               </button>
-              <button onClick={() => setIsInstrumentManagerOpen(true)} title="Gérer les instruments"
-                className="flex items-center gap-1 text-xs font-medium text-zik-grad-to hover:underline">
-                <Settings2 className="h-3.5 w-3.5" /> Instruments
-              </button>
+              {!jam.solo_mode && (
+                <button onClick={() => setIsInstrumentManagerOpen(true)} title="Gérer les instruments"
+                  className="flex items-center gap-1 text-xs font-medium text-zik-grad-to hover:underline">
+                  <Settings2 className="h-3.5 w-3.5" /> Instruments
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -575,6 +577,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
         <SlotsTab
           canInteract={canInteract}
           isOrganizer={isOrganizer}
+          soloMode={!!jam.solo_mode}
           currentUserId={currentUserId}
           instruments={instruments}
           slots={slots}
