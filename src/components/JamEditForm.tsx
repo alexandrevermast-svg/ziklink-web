@@ -367,7 +367,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
       <div>
         <label className="text-sm font-medium text-zik-text mb-2 block">Affiche (optionnel)</label>
         {posterPreview ? (
-          <div className="relative w-full max-w-xs">
+          <div className="relative w-full">
             <img
               src={posterPreview}
               alt="Aperçu affiche"
