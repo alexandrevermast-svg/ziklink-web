@@ -107,7 +107,7 @@ export default function JamCard({
           <MapLink
             address={[addressParts.name, addressParts.detail].filter(Boolean).join(", ")}
             mapsUrl={mapsUrl}
-            className="group flex items-start gap-1.5 mt-1 text-left"
+            className="group flex items-start gap-1.5 mt-2 text-left"
           >
             <MapPin className="h-3.5 w-3.5 shrink-0 text-gray-300 mt-0.5 group-hover:text-zik-grad-to transition-colors" />
             <span className="min-w-0 leading-tight">
