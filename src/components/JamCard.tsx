@@ -133,7 +133,7 @@ export default function JamCard({
           <img
             src={posterUrl}
             alt=""
-            className="w-full h-36 object-cover rounded-lg mb-2"
+            className="w-full max-h-96 object-contain rounded-lg mb-2 bg-zik-card"
             style={{
               maskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
               WebkitMaskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
