@@ -216,21 +216,26 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   // Carte sticky qui se réduit progressivement au scroll (208px -> 132px).
   const mapHeight = useShrinkOnScroll(208, 132, 180);
   const jamCardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  // Lu au moment du scroll sans faire dépendre l'effet de mapHeight, sinon
+  // tout changement de hauteur de la carte pendant le scroll (après coup)
+  // re-déclencherait le scroll et "collerait" la page à cette position.
+  const mapHeightRef = useRef(mapHeight);
+  useEffect(() => { mapHeightRef.current = mapHeight; }, [mapHeight]);
 
-  // Quand une card se déplie, on scroll pour que son haut arrive juste sous
-  // la carte sticky (dont la hauteur actuelle dépend du scroll).
+  // Quand une card se déplie, on scroll UNE SEULE FOIS (au clic) pour que
+  // son haut arrive juste sous la carte sticky.
   useEffect(() => {
     if (!expandedJamId) return;
     const el = jamCardRefs.current[expandedJamId];
     if (!el) return;
     const frame = requestAnimationFrame(() => {
       const rect = el.getBoundingClientRect();
-      const offset = 56 + mapHeight;
+      const offset = 56 + mapHeightRef.current;
       const targetY = window.scrollY + rect.top - offset;
       window.scrollTo({ top: targetY, behavior: "smooth" });
     });
     return () => cancelAnimationFrame(frame);
-  }, [expandedJamId, mapHeight]);
+  }, [expandedJamId]);
 
   const fetchParticipants = useCallback(async (jamIds: string[]) => {
     const { data } = await supabase.from("jam_participants")
