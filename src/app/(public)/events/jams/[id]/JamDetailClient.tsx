@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import {
   ArrowLeft, Lock, Unlock, Clock,
   UserPlus, Check, Crown, ShieldCheck, Pencil,
-  Radio, Trash2, Heart, Settings2, Users
+  Radio, Trash2, Heart, Settings2, Users, MessageCircle
 } from 'lucide-react';
 import JamEditForm from "@/components/JamEditForm";
 import Modal from "@/components/Modal";
@@ -21,8 +21,9 @@ import StageNamePromptModal from "@/components/StageNamePromptModal";
 import { isOwner } from "@/lib/permissions";
 import { canJoinJam, joinOpensAt } from "@/lib/jamJoinWindow";
 import type { Profile, Participant, Message, JamSlot, JamInstrument } from "./types";
-import { TRAILING_EMPTY_ROWS, slugifyInstrumentKey } from "./types";
+import { TRAILING_EMPTY_ROWS, slugifyInstrumentKey, getDisplayName } from "./types";
 import { formatTime } from "./utils";
+import { Avatar } from "./components/Avatar";
 import { ParticipantPicker } from "./components/ParticipantPicker";
 import { ProfilePopup } from "./components/ProfilePopup";
 import { ParticipantsTab } from "./components/ParticipantsTab";
@@ -44,6 +45,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
   const supabase = createClient();
 
   const [jam, setJam] = useState<JamSession | null>(initialJam);
+  const [organizerProfile, setOrganizerProfile] = useState<Profile | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [participants, setParticipants] = useState<Participant[]>(initialParticipants);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -96,6 +98,15 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
       .eq("id", id)
       .single();
     setJam(jamData);
+
+    if (jamData?.created_by) {
+      const { data: organizerData } = await supabase
+        .from("profiles")
+        .select("id, username, avatar_url, display_name")
+        .eq("id", jamData.created_by)
+        .maybeSingle();
+      setOrganizerProfile(organizerData ?? null);
+    }
 
     const { data: participantsData } = await supabase
       .from("jam_participants")
@@ -465,6 +476,24 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
             {jam.end_at && ` → ${formatTime(jam.end_at)}`}
           </div>
         </div>
+
+        {/* Organisateur — visible de tous, pour pouvoir le contacter avant la jam */}
+        {organizerProfile && (
+          <div className="mt-3 flex items-center gap-2.5 p-2.5 rounded-xl bg-zik-card/50 border border-zik-border">
+            <Avatar profile={organizerProfile}
+              onClick={organizerProfile.id !== currentUserId ? (e) => handleAvatarClick(organizerProfile, e) : undefined} />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-zik-muted">Organisé par</p>
+              <p className="text-sm font-medium text-zik-text truncate">{getDisplayName(organizerProfile)}</p>
+            </div>
+            {currentUserId && organizerProfile.id !== currentUserId && (
+              <button onClick={() => handleOpenDM(organizerProfile.id)} title="Contacter l'organisateur"
+                className="shrink-0 flex items-center gap-1 text-xs font-medium text-zik-grad-to hover:underline">
+                <MessageCircle className="h-3.5 w-3.5" /> Contacter
+              </button>
+            )}
+          </div>
+        )}
 
         {myActiveSlot && (
           <div className="mt-3 flex items-center gap-2 bg-zik-emerald/10 border border-zik-emerald/30 rounded-lg px-3 py-2">
