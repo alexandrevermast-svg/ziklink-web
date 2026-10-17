@@ -215,6 +215,22 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   const [expandedJamId, setExpandedJamId] = useState<string | null>(null);
   // Carte sticky qui se réduit progressivement au scroll (208px -> 132px).
   const mapHeight = useShrinkOnScroll(208, 132, 180);
+  const jamCardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Quand une card se déplie, on scroll pour que son haut arrive juste sous
+  // la carte sticky (dont la hauteur actuelle dépend du scroll).
+  useEffect(() => {
+    if (!expandedJamId) return;
+    const el = jamCardRefs.current[expandedJamId];
+    if (!el) return;
+    const frame = requestAnimationFrame(() => {
+      const rect = el.getBoundingClientRect();
+      const offset = 56 + mapHeight;
+      const targetY = window.scrollY + rect.top - offset;
+      window.scrollTo({ top: targetY, behavior: "smooth" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [expandedJamId, mapHeight]);
 
   const fetchParticipants = useCallback(async (jamIds: string[]) => {
     const { data } = await supabase.from("jam_participants")
@@ -556,6 +572,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
                 interestedCount={jamInterestCounts[jam.id] ?? 0}
                 expanded={jam.id === expandedJamId}
                 onToggleExpand={handleToggleExpand}
+                cardRef={(el) => { jamCardRefs.current[jam.id] = el; }}
                 onToggleInterest={handleToggleInterest}
                 onJoin={handleJoin}
                 onLeave={handleLeave}
