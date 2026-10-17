@@ -45,8 +45,8 @@ function dayBounds() {
 // Pour les jams (onSelect fourni), le clic sur la ligne centre la carte sur
 // le pin au lieu de naviguer direct — la navigation passe par la flèche
 // dédiée, comme sur JamCard dans la page events.
-function EventRow({ href, time, timeColorClass, title, genres, onSelect }: {
-  href: string; time: string; timeColorClass: string; title: string; genres?: string[] | null; onSelect?: () => void;
+function EventRow({ href, time, timeColorClass, title, genres, onSelect, selected }: {
+  href: string; time: string; timeColorClass: string; title: string; genres?: string[] | null; onSelect?: () => void; selected?: boolean;
 }) {
   const content = (
     <>
@@ -73,7 +73,9 @@ function EventRow({ href, time, timeColorClass, title, genres, onSelect }: {
     return (
       <div
         onClick={onSelect}
-        className="flex items-center gap-3 py-3 border-b border-white/7 last:border-b-0 cursor-pointer"
+        className={`flex items-center gap-3 py-3 px-2 -mx-2 rounded-xl border-b border-white/7 last:border-b-0 cursor-pointer transition-colors ${
+          selected ? "bg-white/6" : ""
+        }`}
       >
         {content}
         <Link
@@ -342,6 +344,7 @@ export default function HomeFeed({
               title={jam.title}
               genres={jam.genres}
               onSelect={() => setSelectedJamId(jam.id)}
+              selected={jam.id === selectedJamId}
             />
           ))}
 
