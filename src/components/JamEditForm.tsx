@@ -371,7 +371,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
             <img
               src={posterPreview}
               alt="Aperçu affiche"
-              className="rounded-lg w-full object-cover max-h-48 border border-zik-border"
+              className="rounded-lg w-full object-contain max-h-80 border border-zik-border bg-zik-card"
             />
             <button
               type="button"
