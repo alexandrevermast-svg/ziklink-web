@@ -61,11 +61,6 @@ export function SlotsTab({
   const getSlot = (instrument: string, slot_index: number) =>
     slots.find((s) => s.instrument === instrument && s.slot_index === slot_index) ?? null;
 
-  // En mode solo, un seul créneau par passage (pas de colonnes par instrument).
-  const displayInstruments = soloMode
-    ? [{ id: SOLO_INSTRUMENT_KEY, jam_id: "", key: SOLO_INSTRUMENT_KEY, label: "", emoji: "", position: 0 }]
-    : instruments;
-
   const maxOccupiedIndex = slots.length > 0 ? Math.max(...slots.map((s) => s.slot_index)) : -1;
   const pastCount = currentSlotIndex ?? 0;
   const [showPast, setShowPast] = useState(false);
@@ -98,22 +93,17 @@ export function SlotsTab({
         // le morceau et la gamme — pas seulement celui dont dépend le créneau représentatif.
         const canEditInfo = !!infoSlot && (isOrganizer || rowSlots.some((s) => s.user_id === currentUserId));
 
-        return (
-          <div key={rowIdx} className={`rounded-xl border overflow-hidden transition-all ${
-            isCurrentSlot
-              ? "border-zik-emerald/40 bg-zik-emerald/5"
-              : isLastSlot
-                ? "border-zik-orange/40 bg-zik-orange/5"
-                : isPast
-                  ? "border-zik-border/40 bg-zik-card/20"
-                  : isTrailing
-                    ? "border-dashed border-zik-border/50 bg-zik-card/20"
-                    : "border-zik-border bg-zik-card/50"
-          }`}>
-            {/* En-tête : numéro / marquer en cours / morceau */}
-            <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-zik-border/60">
-              <div className="flex items-center gap-2 min-w-0 shrink-0">
-                {isOrganizer && (
+        // Mode solo : un seul créneau par passage — pas de grille par
+        // instrument, tout tient sur une ligne fusionnée (le créneau prend
+        // la place qu'occupait l'étiquette d'instrument).
+        const soloSlot = soloMode ? getSlot(SOLO_INSTRUMENT_KEY, rowIdx) : null;
+        const isSoloClaiming = claimingCell?.instrument === SOLO_INSTRUMENT_KEY && claimingCell?.slot_index === rowIdx;
+        const isSoloPickerOpen = pickerCell?.instrument === SOLO_INSTRUMENT_KEY && pickerCell?.slot_index === rowIdx;
+        const isSoloMe = soloSlot?.user_id === currentUserId;
+
+        const passageLabel = (
+          <div className="flex items-center gap-2 min-w-0 shrink-0">
+            {isOrganizer && (
                   <button onClick={() => onSetCurrentSlot(rowIdx)}
                     title={isCurrentSlot ? "Désactiver ce passage" : "Marquer comme en cours"}
                     className={`h-7 w-7 flex items-center justify-center rounded-full shrink-0 transition-all duration-150 ${
@@ -171,9 +161,10 @@ export function SlotsTab({
                 {isPast && (
                   <span className="text-sm font-medium text-zik-muted shrink-0">Terminé</span>
                 )}
-              </div>
+          </div>
+        );
 
-              {infoSlot && (
+        const songScaleControls = infoSlot && (
                 <div className="flex items-center gap-1.5 min-w-0">
                   {!infoSlot.song && !isEditingSong && canEditInfo && (
                     <button
@@ -212,67 +203,111 @@ export function SlotsTab({
                     </button>
                   )}
                 </div>
+        );
+
+        // Pastille d'inscription réutilisée telle quelle par les deux modes
+        // (grille par instrument, ou créneau unique fusionné en mode solo).
+        const renderSlotPill = (slot: JamSlot | null, instrumentKey: string, isMe: boolean, isClaiming: boolean, isPickerOpen: boolean) => (
+          slot ? (
+            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-base font-semibold flex-1 min-w-0 ${
+              isMe && isCurrentSlot
+                ? "bg-zik-emerald/10 text-zik-emerald border border-zik-emerald/30"
+                : isMe
+                  ? "bg-zik-grad-to/10 text-zik-grad-to border border-zik-grad-to/30"
+                  : "bg-zik-card text-zik-text border border-zik-border"
+            }`}>
+              <Avatar
+                profile={slot.profile ?? (slot.guest_name ? { id: "", username: slot.guest_name, avatar_url: null } : null)}
+                size="sm"
+                onClick={slot.profile && slot.user_id !== currentUserId
+                  ? (e) => onAvatarClick(slot.profile!, e) : undefined} />
+              <span className="truncate flex-1">{getDisplayName(slot.profile, slot.guest_name ?? "?")}</span>
+              {(isMe || isOrganizer) && (
+                <button onClick={() => onRelease(slot.id)}
+                  className="opacity-60 hover:opacity-100 hover:text-zik-red transition-colors shrink-0">
+                  <X className="h-4 w-4" />
+                </button>
               )}
+            </div>
+          ) : canInteract ? (
+            <button
+              onClick={(e) => onEmptyCellClick(instrumentKey, rowIdx, e)}
+              title={isOrganizer ? "Assigner" : "Rejoindre"}
+              className={`flex items-center justify-center gap-1 flex-1 py-0.5 rounded-full text-sm font-medium border border-dashed transition-colors ${
+                isClaiming || isPickerOpen
+                  ? "border-zik-grad-to/50 bg-zik-grad-to/10 text-zik-grad-to"
+                  : "border-zik-border text-zik-muted hover:border-zik-grad-to/50 hover:text-zik-grad-to"
+              }`}>
+              {isClaiming ? (
+                <span className="animate-pulse">...</span>
+              ) : isOrganizer ? (
+                <UserPlus className="h-4 w-4" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+            </button>
+          ) : (
+            <span className="flex-1 text-right text-sm text-zik-muted/50">—</span>
+          )
+        );
+
+        if (soloMode) {
+          return (
+            <div key={rowIdx} className={`rounded-xl border overflow-hidden transition-all flex flex-wrap items-center justify-between gap-2 px-3 py-2 ${
+              isCurrentSlot
+                ? "border-zik-emerald/40 bg-zik-emerald/5"
+                : isLastSlot
+                  ? "border-zik-orange/40 bg-zik-orange/5"
+                  : isPast
+                    ? "border-zik-border/40 bg-zik-card/20"
+                    : isTrailing
+                      ? "border-dashed border-zik-border/50 bg-zik-card/20"
+                      : "border-zik-border bg-zik-card/50"
+            }`}>
+              <div className="flex items-center gap-2 min-w-0">
+                {passageLabel}
+                {songScaleControls}
+              </div>
+              <div className="flex items-center min-w-32 max-w-56">
+                {renderSlotPill(soloSlot, SOLO_INSTRUMENT_KEY, isSoloMe, isSoloClaiming, isSoloPickerOpen)}
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div key={rowIdx} className={`rounded-xl border overflow-hidden transition-all ${
+            isCurrentSlot
+              ? "border-zik-emerald/40 bg-zik-emerald/5"
+              : isLastSlot
+                ? "border-zik-orange/40 bg-zik-orange/5"
+                : isPast
+                  ? "border-zik-border/40 bg-zik-card/20"
+                  : isTrailing
+                    ? "border-dashed border-zik-border/50 bg-zik-card/20"
+                    : "border-zik-border bg-zik-card/50"
+          }`}>
+            {/* En-tête : numéro / marquer en cours / morceau */}
+            <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-zik-border/60">
+              {passageLabel}
+              {songScaleControls}
             </div>
 
             {/* Instruments */}
             <div className="flex flex-col gap-1 p-1.5">
-              {displayInstruments.map((inst) => {
+              {instruments.map((inst) => {
                 const slot = getSlot(inst.key, rowIdx);
                 const isMe = slot?.user_id === currentUserId;
                 const isClaiming = claimingCell?.instrument === inst.key && claimingCell?.slot_index === rowIdx;
                 const isPickerOpen = pickerCell?.instrument === inst.key && pickerCell?.slot_index === rowIdx;
 
                 return (
-  <div key={inst.key} className="flex items-center gap-1.5 rounded-lg border border-zik-border/60 px-2 py-1 min-w-0">
-    {!soloMode && (
-      <span className="flex items-center gap-1 text-sm text-zik-text/80 shrink-0 w-32 truncate">
-        <InstrumentIcon instKey={inst.key} emoji={inst.emoji} />
-        <span className="truncate">{inst.label}</span>
-      </span>
-    )}
-
-    {slot ? (
-      <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-base font-semibold flex-1 min-w-0 ${
-        isMe && isCurrentSlot
-          ? "bg-zik-emerald/10 text-zik-emerald border border-zik-emerald/30"
-          : isMe
-            ? "bg-zik-grad-to/10 text-zik-grad-to border border-zik-grad-to/30"
-            : "bg-zik-card text-zik-text border border-zik-border"
-      }`}>
-        <Avatar
-          profile={slot.profile ?? (slot.guest_name ? { id: "", username: slot.guest_name, avatar_url: null } : null)}
-          size="sm"
-          onClick={slot.profile && slot.user_id !== currentUserId
-            ? (e) => onAvatarClick(slot.profile!, e) : undefined} />
-        <span className="truncate flex-1">{getDisplayName(slot.profile, slot.guest_name ?? "?")}</span>
-        {(isMe || isOrganizer) && (
-          <button onClick={() => onRelease(slot.id)}
-            className="opacity-60 hover:opacity-100 hover:text-zik-red transition-colors shrink-0">
-            <X className="h-4 w-4" />
-          </button>
-        )}
-      </div>
-                    ) : canInteract ? (
-                      <button
-                        onClick={(e) => onEmptyCellClick(inst.key, rowIdx, e)}
-                        title={isOrganizer ? "Assigner" : "Rejoindre"}
-                        className={`flex items-center justify-center gap-1 flex-1 py-0.5 rounded-full text-sm font-medium border border-dashed transition-colors ${
-                          isClaiming || isPickerOpen
-                            ? "border-zik-grad-to/50 bg-zik-grad-to/10 text-zik-grad-to"
-                            : "border-zik-border text-zik-muted hover:border-zik-grad-to/50 hover:text-zik-grad-to"
-                        }`}>
-                        {isClaiming ? (
-                          <span className="animate-pulse">...</span>
-                        ) : isOrganizer ? (
-                          <UserPlus className="h-4 w-4" />
-                        ) : (
-                          <Plus className="h-4 w-4" />
-                        )}
-                      </button>
-                    ) : (
-                      <span className="flex-1 text-right text-sm text-zik-muted/50">—</span>
-                    )}
+                  <div key={inst.key} className="flex items-center gap-1.5 rounded-lg border border-zik-border/60 px-2 py-1 min-w-0">
+                    <span className="flex items-center gap-1 text-sm text-zik-text/80 shrink-0 w-32 truncate">
+                      <InstrumentIcon instKey={inst.key} emoji={inst.emoji} />
+                      <span className="truncate">{inst.label}</span>
+                    </span>
+                    {renderSlotPill(slot, inst.key, isMe, isClaiming, isPickerOpen)}
                   </div>
                 );
               })}
