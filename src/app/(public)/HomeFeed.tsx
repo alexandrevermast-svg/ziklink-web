@@ -276,10 +276,9 @@ export default function HomeFeed({
           height="h-52"
           focusMarkerId={selectedJamId}
         />
-        {/* Fondu (dégradé d'opacité) sous la carte, superposé au haut du
-            contenu qui défile dessous (-mb-6 ne prend pas de place dans
-            le flux) */}
-        <div className="pointer-events-none h-6 -mb-6 bg-linear-to-b from-zik-bg to-transparent" />
+        {/* Fondu (dégradé d'opacité) sous la carte, positionné en absolu
+            (hors flux) pour rester garanti collé juste sous la carte */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-full h-6 bg-linear-to-b from-zik-bg to-transparent" />
       </div>
 
       {/* Filtre Aujourd'hui / Demain / Voir plus — SOUS la carte */}

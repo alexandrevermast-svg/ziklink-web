@@ -492,10 +492,11 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
         </div>
         </div>
 
-        {/* Fondu (dégradé d'opacité) sous la carte : se superpose au haut du
-            contenu qui défile dessous (grâce à -mb-6, il ne prend pas de
-            place dans le flux) au lieu d'être appliqué sur la carte. */}
-        <div className="pointer-events-none h-6 -mb-6 bg-linear-to-b from-zik-bg to-transparent" />
+        {/* Fondu (dégradé d'opacité) sous la carte : positionné en absolu
+            (hors flux) pour rester garanti collé juste sous la carte et se
+            superposer au haut du contenu qui défile dessous, sans jamais
+            affecter le rendu de la carte elle-même. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-full h-6 bg-linear-to-b from-zik-bg to-transparent" />
       </div>
 
       <DayFilter
