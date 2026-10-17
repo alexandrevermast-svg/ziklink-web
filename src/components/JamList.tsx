@@ -45,7 +45,7 @@ function formatDayLabelLong(d: Date) {
   return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
 }
 
-const VISIBLE_DAYS = 3;
+const VISIBLE_DAYS = 2;
 
 function DayFilter({ selectedDate, onChange, availableDates, trailing }: {
   selectedDate: Date | null; onChange: (d: Date | null) => void; availableDates: Date[]; trailing?: React.ReactNode;
