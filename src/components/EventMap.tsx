@@ -28,9 +28,10 @@ interface EventMapProps {
   currentUserId: string | null;
   emptyMessage?: string;
   height?: string;
+  focusMarkerId?: string | null;
 }
 
-function createDotIcon(background: string, glow: string) {
+function createDotIcon(background: string, glow: string, dimmed = false) {
   return L.divIcon({
     className: "",
     html: `<div style="
@@ -38,6 +39,7 @@ function createDotIcon(background: string, glow: string) {
       background: ${background};
       border: 2.5px solid var(--zik-bg);
       border-radius: 50%;
+      opacity: ${dimmed ? 0.4 : 1};
       box-shadow: 0 1px 4px rgba(0,0,0,0.5), 0 0 10px 2px ${glow};
     "></div>`,
     iconSize: [14, 14],
@@ -47,8 +49,11 @@ function createDotIcon(background: string, glow: string) {
 }
 
 // ✅ Couleurs adaptées à ton thème — jam en ambre avec halo, concert reste rouge
-const JAM_ICON     = createDotIcon("linear-gradient(135deg, #FBBF24, #F59E0B)", "rgba(251,191,36,0.55)");
-const CONCERT_ICON = createDotIcon("var(--zik-red)", "rgba(248,113,113,0.5)");
+const JAM_ICON        = createDotIcon("linear-gradient(135deg, #FBBF24, #F59E0B)", "rgba(251,191,36,0.55)");
+// Version atténuée des pins jam non sélectionnés — pour que le pin sélectionné
+// se détache nettement dès qu'une jam est choisie dans la liste ou sur la carte.
+const JAM_ICON_DIMMED  = createDotIcon("linear-gradient(135deg, #FBBF24, #F59E0B)", "rgba(251,191,36,0.55)", true);
+const CONCERT_ICON    = createDotIcon("var(--zik-red)", "rgba(248,113,113,0.5)");
 
 function InvalidateSize() {
   const map = useMap();
@@ -77,6 +82,21 @@ function FitBounds({ markers }: { markers: EventMarker[] }) {
   return null;
 }
 
+// Centre la carte sur le marqueur sélectionné (clic sur une card dans la
+// liste), sans toucher au cadrage initial géré par FitBounds.
+function FocusMarker({ markers, focusId }: { markers: EventMarker[]; focusId?: string | null }) {
+  const map = useMap();
+  const lastFocused = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focusId || focusId === lastFocused.current) return;
+    const marker = markers.find((m) => m.id === focusId);
+    if (!marker) return;
+    lastFocused.current = focusId;
+    map.panTo([marker.lat, marker.lng], { animate: true });
+  }, [focusId, markers, map]);
+  return null;
+}
+
 function formatTime(d: string) {
   return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
@@ -92,6 +112,7 @@ export default function EventMap({
   currentUserId,
   emptyMessage = "Aucun événement 📍",
   height = "h-52",
+  focusMarkerId,
 }: EventMapProps) {
   const hasJam     = useMemo(() => markers.some((m) => m.type === "jam"),     [markers]);
   const hasConcert = useMemo(() => markers.some((m) => m.type === "concert"), [markers]);
@@ -144,14 +165,16 @@ export default function EventMap({
 />
         <InvalidateSize />
         <FitBounds markers={markers} />
+        <FocusMarker markers={markers} focusId={focusMarkerId} />
 
         {markers.map((m) => {
           const skipPopup = m.type === "jam" && !!onMarkerClick;
+          const isDimmed = m.type === "jam" && !!focusMarkerId && m.id !== focusMarkerId;
           return (
           <Marker
             key={`${m.type}-${m.id}`}
             position={[m.lat, m.lng]}
-            icon={m.type === "jam" ? JAM_ICON : CONCERT_ICON}
+            icon={m.type === "jam" ? (isDimmed ? JAM_ICON_DIMMED : JAM_ICON) : CONCERT_ICON}
             eventHandlers={skipPopup ? { click: () => onMarkerClick!(m) } : undefined}
           >
             {!skipPopup && (

@@ -406,6 +406,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
           onMarkerClick={handleMarkerClick}
           currentUserId={currentUserId}
           emptyMessage="Aucune jam à venir 🎸"
+          focusMarkerId={selectedJamId}
         />
 
         {/* Près de moi — flottant au-dessus de la carte */}
@@ -530,6 +531,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
                 participantCount={participants.length}
                 interestedCount={jamInterestCounts[jam.id] ?? 0}
                 isSelected={jam.id === selectedJamId}
+                onSelect={setSelectedJamId}
                 onToggleInterest={handleToggleInterest}
                 onJoin={handleJoin}
                 onLeave={handleLeave}

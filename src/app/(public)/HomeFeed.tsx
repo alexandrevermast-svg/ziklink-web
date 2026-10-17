@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import moment from "moment-timezone";
-import { ChevronRight, Music2, Megaphone } from "lucide-react";
+import { ChevronRight, ArrowUpRight, Music2, Megaphone } from "lucide-react";
 import { GroupAvatar } from "@/app/(protected)/groups/GroupAvatar";
 import { genreColor } from "@/lib/musicGenres";
 import type { EventMarker } from "@/components/EventMap";
@@ -42,11 +42,14 @@ function dayBounds() {
 // l'heure suit le code couleur des pins de la carte (ambre = jam, rouge =
 // concert) plutôt que d'avoir sa propre card bordée. Les styles reprennent
 // le même badge coloré que sur les cards.
-function EventRow({ href, time, timeColorClass, title, genres }: {
-  href: string; time: string; timeColorClass: string; title: string; genres?: string[] | null;
+// Pour les jams (onSelect fourni), le clic sur la ligne centre la carte sur
+// le pin au lieu de naviguer direct — la navigation passe par la flèche
+// dédiée, comme sur JamCard dans la page events.
+function EventRow({ href, time, timeColorClass, title, genres, onSelect }: {
+  href: string; time: string; timeColorClass: string; title: string; genres?: string[] | null; onSelect?: () => void;
 }) {
-  return (
-    <Link href={href} className="flex items-center gap-3 py-3 border-b border-white/7 last:border-b-0">
+  const content = (
+    <>
       <span className={`shrink-0 w-14 text-sm font-bold ${timeColorClass}`}>{time}</span>
       <span className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-white truncate">{title}</p>
@@ -63,6 +66,31 @@ function EventRow({ href, time, timeColorClass, title, genres }: {
           </span>
         )}
       </span>
+    </>
+  );
+
+  if (onSelect) {
+    return (
+      <div
+        onClick={onSelect}
+        className="flex items-center gap-3 py-3 border-b border-white/7 last:border-b-0 cursor-pointer"
+      >
+        {content}
+        <Link
+          href={href}
+          onClick={(e) => e.stopPropagation()}
+          title="Voir la jam en détail"
+          className="shrink-0 h-7 w-7 flex items-center justify-center rounded-full text-gray-400 hover:text-zik-grad-to hover:bg-white/8 transition-colors"
+        >
+          <ArrowUpRight className="h-4 w-4" />
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <Link href={href} className="flex items-center gap-3 py-3 border-b border-white/7 last:border-b-0">
+      {content}
       <ChevronRight className="h-3.5 w-3.5 text-gray-400 shrink-0" />
     </Link>
   );
@@ -251,6 +279,7 @@ export default function HomeFeed({
         currentUserId={currentUserId}
         emptyMessage="Aucun événement 📍"
         height="h-52"
+        focusMarkerId={selectedJamId}
       />
 
       {/* Filtre Aujourd'hui / Demain / Voir plus — SOUS la carte */}
@@ -324,6 +353,7 @@ export default function HomeFeed({
               timeColorClass="text-amber-400"
               title={jam.title}
               genres={jam.genres}
+              onSelect={() => setSelectedJamId(jam.id)}
             />
           ))}
 

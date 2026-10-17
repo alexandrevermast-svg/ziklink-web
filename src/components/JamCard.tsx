@@ -37,6 +37,7 @@ interface JamCardProps {
   participantCount?: number;
   interestedCount?: number;
   isSelected?: boolean;
+  onSelect?: (jamId: string) => void;
   onToggleInterest: (jamId: string, e: React.MouseEvent) => void;
   onJoin: (jamId: string, e: React.MouseEvent) => void;
   onLeave: (jamId: string, e: React.MouseEvent) => void;
@@ -53,7 +54,7 @@ const GENRE_POSTERS: Record<string, string> = {
 
 export default function JamCard({
   jam, isCreator, isParticipant, isJoining, isInterested, isInterestPending, joinOpen, distanceKm,
-  participantCount, interestedCount, isSelected,
+  participantCount, interestedCount, isSelected, onSelect,
   onToggleInterest, onJoin, onLeave,
 }: JamCardProps) {
   const router = useRouter();
@@ -71,7 +72,7 @@ export default function JamCard({
 
   return (
     <div
-      onClick={() => setExpanded((v) => !v)}
+      onClick={() => { setExpanded((v) => !v); onSelect?.(jam.id); }}
       className="relative overflow-hidden rounded-2xl border border-white/8 p-4 bg-white/4 backdrop-blur-md hover:bg-white/6 hover:border-white/14 transition-all cursor-pointer active:scale-[0.99]"
     >
 
