@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -45,8 +45,8 @@ function dayBounds() {
 // Pour les jams (onSelect fourni), le clic sur la ligne centre la carte sur
 // le pin au lieu de naviguer direct — la navigation passe par la flèche
 // dédiée, comme sur JamCard dans la page events.
-function EventRow({ href, time, timeColorClass, title, genres, onSelect, selected }: {
-  href: string; time: string; timeColorClass: string; title: string; genres?: string[] | null; onSelect?: () => void; selected?: boolean;
+function EventRow({ href, time, timeColorClass, title, genres, onSelect, selected, rowRef }: {
+  href: string; time: string; timeColorClass: string; title: string; genres?: string[] | null; onSelect?: () => void; selected?: boolean; rowRef?: (el: HTMLDivElement | null) => void;
 }) {
   const content = (
     <>
@@ -72,6 +72,7 @@ function EventRow({ href, time, timeColorClass, title, genres, onSelect, selecte
   if (onSelect) {
     return (
       <div
+        ref={rowRef}
         onClick={onSelect}
         className={`flex items-center gap-3 py-3 px-2 -mx-2 rounded-xl border-b border-white/7 last:border-b-0 cursor-pointer transition-colors ${
           selected ? "bg-white/6" : ""
@@ -130,6 +131,7 @@ export default function HomeFeed({
   const [dayFilter, setDayFilter] = useState<DayFilter>("today");
   const { joinJam } = useJamParticipation();
   const [selectedJamId, setSelectedJamId] = useState<string | null>(null);
+  const jamRowRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const { today, tomorrow, dayAfterTomorrow } = useMemo(() => dayBounds(), []);
 
@@ -195,7 +197,12 @@ export default function HomeFeed({
   }, [currentUserId, joinJam, refetch, router]);
 
   const handleMarkerClick = useCallback((marker: EventMarker) => {
-    if (marker.type === "jam") setSelectedJamId(marker.id);
+    if (marker.type !== "jam") return;
+    setSelectedJamId(marker.id);
+    // La liste n'est pas réordonnée : si la jam sélectionnée est plus bas
+    // dans la liste (hors écran), on l'amène en vue au lieu de la laisser
+    // invisible.
+    jamRowRefs.current[marker.id]?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, []);
 
   const filteredJams = useMemo(() =>
@@ -354,6 +361,7 @@ export default function HomeFeed({
               genres={jam.genres}
               onSelect={() => setSelectedJamId(jam.id)}
               selected={jam.id === selectedJamId}
+              rowRef={(el) => { jamRowRefs.current[jam.id] = el; }}
             />
           ))}
 
