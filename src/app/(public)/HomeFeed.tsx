@@ -266,7 +266,7 @@ export default function HomeFeed({
           atteint les sections Groupes / Annonces plus bas. */}
       <div className="flex flex-col gap-4">
       {/* Carte */}
-      <div className="sticky top-16 z-20 w-full bg-zik-bg pb-4">
+      <div className="sticky top-[calc(56px+env(safe-area-inset-top))] z-20 w-full bg-zik-bg pb-4">
         <EventMap
           markers={markers}
           onJoinJam={(jamId) => handleJoinJam(jamId)}

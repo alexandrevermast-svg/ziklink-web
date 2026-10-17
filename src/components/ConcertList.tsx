@@ -225,7 +225,7 @@ const { data: concertsData } = await supabase
 
   return (
     <div className="space-y-4">
-      <div className="sticky top-16 z-20 w-full bg-zik-bg pb-4">
+      <div className="sticky top-[calc(56px+env(safe-area-inset-top))] z-20 w-full bg-zik-bg pb-4">
         <div className="transition-[height] duration-300 ease-out" style={{ height: mapHeight }}>
           <EventMap markers={concertMarkers} currentUserId={currentUserId} emptyMessage="Aucun concert à venir 🎤" height="h-full" fadeBottom />
         </div>
