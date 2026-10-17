@@ -6,8 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Camera, MapPin, Music2, ChevronRight, Loader2,
-  Check, ArrowLeft, Sparkles
+  Camera, MapPin, Check, Loader2, Sparkles
 } from 'lucide-react';
 
 // Config
@@ -20,211 +19,11 @@ const INSTRUMENTS = [
   { key: 'autres',   label: 'Autres',   emoji: '🎶' },
 ];
 
-const TOTAL_STEPS = 4;
-
-// Progress bar
-function ProgressBar({ step }: { step: number }) {
-  return (
-    <div className="flex gap-1.5 w-full">
-      {Array.from({ length: TOTAL_STEPS }, (_, i) => (
-        <div
-          key={i}
-          className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-            i < step ? 'bg-zik-grad-to' : i === step ? 'bg-zik-grad-to/50' : 'bg-zik-card/30'
-          }`}
-        />
-      ))}
-    </div>
-  );
+function OptionalTag() {
+  return <span className="text-zik-muted font-normal">(optionnel)</span>;
 }
 
-// Étape 0 : Pseudo
-function StepUsername({
-  value, onChange, error,
-}: { value: string; onChange: (v: string) => void; error: string | null }) {
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="text-center">
-        <div className="text-5xl mb-4">👋</div>
-        <h1 className="text-2xl font-bold text-zik-text">Bienvenue sur Ziklink !</h1>
-        <p className="text-zik-muted mt-2 text-sm">
-          Commence par choisir ton nom d'utilisateur.<br />
-          C'est comme ça que les autres musiciens te trouveront.
-        </p>
-      </div>
-      <div>
-        <label className="text-sm font-medium text-zik-text mb-1.5 block">Ton pseudo *</label>
-        <Input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Ex: guitare_hero42"
-          maxLength={30}
-          autoFocus
-          className={`bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50 ${
-            error ? 'border-zik-red/50 focus:ring-zik-red/50' : ''
-          }`}
-        />
-        {error && <p className="text-xs text-zik-red mt-1">{error}</p>}
-        <p className="text-xs text-zik-muted mt-1">{value.length}/30 caractères · lettres, chiffres et _</p>
-      </div>
-    </div>
-  );
-}
-
-// Étape 1 : Instruments
-function StepInstruments({
-  selected, onToggle,
-}: { selected: string[]; onToggle: (key: string) => void }) {
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="text-center">
-        <div className="text-5xl mb-4">🎸</div>
-        <h1 className="text-2xl font-bold text-zik-text">Quels instruments tu joues ?</h1>
-        <p className="text-zik-muted mt-2 text-sm">
-          Sélectionne tout ce qui te correspond.<br />
-          Tu pourras modifier ça plus tard.
-        </p>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        {INSTRUMENTS.map((inst) => {
-          const active = selected.includes(inst.key);
-          return (
-            <button
-              key={inst.key}
-              type="button"
-              onClick={() => onToggle(inst.key)}
-              className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all active:scale-[0.97] ${
-                active
-                  ? 'border-zik-grad-to bg-zik-grad-to/10 text-zik-grad-to'
-                  : 'border-zik-border bg-zik-card text-zik-muted hover:border-zik-grad-to/50 hover:bg-zik-card-hover'
-              }`}
-            >
-              <span className="text-2xl shrink-0">{inst.emoji}</span>
-              <span className="font-semibold text-sm">{inst.label}</span>
-              {active && <Check className="h-4 w-4 ml-auto shrink-0 text-zik-grad-to" />}
-            </button>
-          );
-        })}
-      </div>
-      {selected.length === 0 && (
-        <p className="text-xs text-center text-zik-muted">Tu peux aussi passer cette étape et compléter plus tard.</p>
-      )}
-    </div>
-  );
-}
-
-// Étape 2 : Ville + Bio
-function StepLocation({
-  city, bio, onCityChange, onBioChange,
-}: {
-  city: string; bio: string;
-  onCityChange: (v: string) => void;
-  onBioChange: (v: string) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="text-center">
-        <div className="text-5xl mb-4">📍</div>
-        <h1 className="text-2xl font-bold text-zik-text">Où tu jams ?</h1>
-        <p className="text-zik-muted mt-2 text-sm">
-          Ta ville permet aux autres musiciens de te trouver près de chez eux.
-        </p>
-      </div>
-      <div className="space-y-4">
-        <div>
-          <label className="text-sm font-medium text-zik-text mb-1.5 flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5 text-zik-grad-to" /> Ville
-          </label>
-          <Input
-            value={city}
-            onChange={(e) => onCityChange(e.target.value)}
-            placeholder="Ex: Paris, Lyon, Marseille..."
-            autoFocus
-            className="bg-zik-card border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-zik-text mb-1.5 block">
-            Présente-toi <span className="text-zik-muted font-normal">(optionnel)</span>
-          </label>
-          <textarea
-            value={bio}
-            onChange={(e) => onBioChange(e.target.value)}
-            placeholder="Ex: Guitariste depuis 10 ans, fan de blues et de rock..."
-            rows={3}
-            maxLength={280}
-            className="w-full border-zik-border rounded-xl px-3 py-2.5 text-sm resize-none outline-none bg-zik-card text-zik-text placeholder:text-zik-muted focus:ring-2 focus:ring-zik-grad-to/50 transition-all"
-          />
-          <p className="text-xs text-zik-muted text-right mt-0.5">{bio.length}/280</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Étape 3 : Photo
-function StepPhoto({
-  username, avatarPreview, onFileChange,
-}: {
-  username: string;
-  avatarPreview: string | null;
-  onFileChange: (file: File) => void;
-}) {
-  const fileRef = useRef<HTMLInputElement>(null);
-  const initials = username ? username.slice(0, 2).toUpperCase() : '?';
-
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="text-center">
-        <div className="text-5xl mb-4">📸</div>
-        <h1 className="text-2xl font-bold text-zik-text">Mets une photo de profil</h1>
-        <p className="text-zik-muted mt-2 text-sm">
-          Optionnel, mais ça aide les autres à te reconnaître !
-        </p>
-      </div>
-
-      <div className="flex flex-col items-center gap-4">
-        <div className="relative">
-          {avatarPreview ? (
-            <img
-              src={avatarPreview}
-              alt="preview"
-              className="h-28 w-28 rounded-full object-cover border-4 border-zik-bg shadow-lg"
-            />
-          ) : (
-            <div className="h-28 w-28 rounded-full bg-linear-to-br from-zik-grad-to to-zik-indigo flex items-center justify-center text-white text-3xl font-bold border-4 border-zik-bg shadow-lg">
-              {initials}
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="absolute bottom-0 right-0 h-9 w-9 rounded-full bg-zik-card border border-zik-border shadow-md flex items-center justify-center hover:bg-zik-card-hover transition-colors"
-          >
-            <Camera className="h-4 w-4 text-zik-muted" />
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) onFileChange(f); }}
-          />
-        </div>
-
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          className="text-sm font-medium text-zik-grad-to hover:text-zik-indigo transition-colors"
-        >
-          {avatarPreview ? 'Changer la photo' : 'Choisir une photo'}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// Étape finale : Success
+// Écran final de succès
 function StepSuccess({ username }: { username: string }) {
   return (
     <div className="flex flex-col items-center gap-6 text-center py-4">
@@ -266,7 +65,6 @@ function OnboardingForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get('next') || '';
 
-  const [step, setStep] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [isDone, setIsDone] = useState(false);
   const [finishError, setFinishError] = useState<string | null>(null);
@@ -279,6 +77,7 @@ function OnboardingForm() {
   const [bio, setBio] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const toggleInstrument = (key: string) => {
     setInstruments((prev) =>
@@ -307,17 +106,11 @@ function OnboardingForm() {
     return true;
   };
 
-  const handleNext = async () => {
-    if (step === 0) {
-      const ok = await validateUsername();
-      if (!ok) return;
-    }
-    if (step < TOTAL_STEPS - 1) {
-      setStep((s) => s + 1);
-    }
-  };
+  const handleFinish = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const ok = await validateUsername();
+    if (!ok) return;
 
-  const handleFinish = async () => {
     setIsSaving(true);
     setFinishError(null);
     try {
@@ -372,92 +165,152 @@ function OnboardingForm() {
     router.refresh();
   };
 
-  const isLastStep = step === TOTAL_STEPS - 1;
+  const initials = username ? username.slice(0, 2).toUpperCase() : '?';
 
   return (
     <div className="min-h-screen bg-zik-bg flex items-center justify-center p-4">
       <div className="w-full max-w-sm bg-zik-card rounded-3xl shadow-xl overflow-hidden">
         {!isDone ? (
-          <>
-            {/* Barre de progression */}
-            <div className="px-6 pt-6 pb-2">
-              <ProgressBar step={step} />
-              <p className="text-xs text-zik-muted mt-2 text-right">
-                Étape {step + 1} / {TOTAL_STEPS}
+          <form onSubmit={handleFinish} className="px-6 py-6 flex flex-col gap-6">
+            <div className="text-center">
+              <div className="text-5xl mb-3">👋</div>
+              <h1 className="text-2xl font-bold text-zik-text">Bienvenue sur Ziklink !</h1>
+              <p className="text-zik-muted mt-2 text-sm">
+                Complète ton profil pour commencer.<br />
+                Seul le pseudo est obligatoire, le reste peut être rempli plus tard.
               </p>
             </div>
 
-            {/* Contenu de l'étape */}
-            <div className="px-6 py-4 min-h-105">
-              {step === 0 && (
-                <StepUsername value={username} onChange={setUsername} error={usernameError} />
-              )}
-              {step === 1 && (
-                <StepInstruments selected={instruments} onToggle={toggleInstrument} />
-              )}
-              {step === 2 && (
-                <StepLocation
-                  city={city} bio={bio}
-                  onCityChange={setCity} onBioChange={setBio}
-                />
-              )}
-              {step === 3 && (
-                <StepPhoto
-                  username={username}
-                  avatarPreview={avatarPreview}
-                  onFileChange={handleAvatarFile}
-                />
-              )}
+            {/* Pseudo */}
+            <div>
+              <label className="text-sm font-medium text-zik-text mb-1.5 block">Ton pseudo *</label>
+              <Input
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Ex: guitare_hero42"
+                maxLength={30}
+                autoFocus
+                className={`bg-zik-bg border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50 ${
+                  usernameError ? 'border-zik-red/50 focus:ring-zik-red/50' : ''
+                }`}
+              />
+              {usernameError && <p className="text-xs text-zik-red mt-1">{usernameError}</p>}
+              <p className="text-xs text-zik-muted mt-1">{username.length}/30 caractères · lettres, chiffres et _</p>
             </div>
 
-            {finishError && (
-              <p className="text-xs text-zik-red text-center px-6 pb-3">{finishError}</p>
-            )}
-
-            {/* Navigation */}
-            <div className="px-6 pb-6 flex items-center justify-between gap-3">
-              {step > 0 ? (
-                <button
-                  onClick={() => setStep((s) => s - 1)}
-                  className="flex items-center gap-1 text-sm text-zik-muted hover:text-zik-text transition-colors"
-                >
-                  <ArrowLeft className="h-4 w-4" /> Retour
-                </button>
-              ) : <div />}
-
-              {isLastStep ? (
-                <Button
-                  onClick={handleFinish}
-                  disabled={isSaving}
-                  className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 px-6"
-                >
-                  {isSaving
-                    ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Création...</>
-                    : <><Sparkles className="h-4 w-4 mr-2" /> Terminer</>
-                  }
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleNext}
-                  className="bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 px-6"
-                >
-                  Suivant <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              )}
+            {/* Instruments */}
+            <div>
+              <label className="text-sm font-medium text-zik-text mb-1.5 block">
+                Instruments <OptionalTag />
+              </label>
+              <div className="grid grid-cols-2 gap-2.5">
+                {INSTRUMENTS.map((inst) => {
+                  const active = instruments.includes(inst.key);
+                  return (
+                    <button
+                      key={inst.key}
+                      type="button"
+                      onClick={() => toggleInstrument(inst.key)}
+                      className={`flex items-center gap-2.5 p-3 rounded-xl border-2 text-left transition-all active:scale-[0.97] ${
+                        active
+                          ? 'border-zik-grad-to bg-zik-grad-to/10 text-zik-grad-to'
+                          : 'border-zik-border bg-zik-bg text-zik-muted hover:border-zik-grad-to/50 hover:bg-zik-card-hover'
+                      }`}
+                    >
+                      <span className="text-xl shrink-0">{inst.emoji}</span>
+                      <span className="font-semibold text-sm">{inst.label}</span>
+                      {active && <Check className="h-4 w-4 ml-auto shrink-0 text-zik-grad-to" />}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Skip pour étapes optionnelles */}
-            {step > 0 && (
-              <div className="text-center pb-4">
+            {/* Ville */}
+            <div>
+              <label className="text-sm font-medium text-zik-text mb-1.5 flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5 text-zik-grad-to" /> Ville <OptionalTag />
+              </label>
+              <Input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Ex: Paris, Lyon, Marseille..."
+                className="bg-zik-bg border-zik-border text-zik-text placeholder:text-zik-muted focus:ring-zik-grad-to/50"
+              />
+            </div>
+
+            {/* Bio */}
+            <div>
+              <label className="text-sm font-medium text-zik-text mb-1.5 block">
+                Présente-toi <OptionalTag />
+              </label>
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Ex: Guitariste depuis 10 ans, fan de blues et de rock..."
+                rows={3}
+                maxLength={280}
+                className="w-full border-zik-border rounded-xl px-3 py-2.5 text-sm resize-none outline-none bg-zik-bg text-zik-text placeholder:text-zik-muted focus:ring-2 focus:ring-zik-grad-to/50 transition-all"
+              />
+              <p className="text-xs text-zik-muted text-right mt-0.5">{bio.length}/280</p>
+            </div>
+
+            {/* Photo */}
+            <div>
+              <label className="text-sm font-medium text-zik-text mb-1.5 block">
+                Photo de profil <OptionalTag />
+              </label>
+              <div className="flex items-center gap-4">
+                <div className="relative shrink-0">
+                  {avatarPreview ? (
+                    <img
+                      src={avatarPreview}
+                      alt="preview"
+                      className="h-16 w-16 rounded-full object-cover border-4 border-zik-bg shadow-lg"
+                    />
+                  ) : (
+                    <div className="h-16 w-16 rounded-full bg-linear-to-br from-zik-grad-to to-zik-indigo flex items-center justify-center text-white text-xl font-bold border-4 border-zik-bg shadow-lg">
+                      {initials}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    className="absolute bottom-0 right-0 h-7 w-7 rounded-full bg-zik-card border border-zik-border shadow-md flex items-center justify-center hover:bg-zik-card-hover transition-colors"
+                  >
+                    <Camera className="h-3.5 w-3.5 text-zik-muted" />
+                  </button>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleAvatarFile(f); }}
+                  />
+                </div>
                 <button
-                  onClick={isLastStep ? handleFinish : handleNext}
-                  className="text-xs text-zik-muted hover:text-zik-text transition-colors"
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="text-sm font-medium text-zik-grad-to hover:text-zik-indigo transition-colors"
                 >
-                  Passer cette étape →
+                  {avatarPreview ? 'Changer la photo' : 'Choisir une photo'}
                 </button>
               </div>
-            )}
-          </>
+            </div>
+
+            {finishError && <p className="text-xs text-zik-red text-center">{finishError}</p>}
+
+            <Button
+              type="submit"
+              disabled={isSaving}
+              className="w-full bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-base py-3 h-auto"
+            >
+              {isSaving
+                ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Création...</>
+                : <><Sparkles className="h-4 w-4 mr-2" /> Créer mon profil</>
+              }
+            </Button>
+          </form>
         ) : (
           /* Écran succès */
           <div className="px-6 py-8 flex flex-col gap-6">
