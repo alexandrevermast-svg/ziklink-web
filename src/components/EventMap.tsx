@@ -39,7 +39,7 @@ function createDotIcon(background: string, glow: string, dimmed = false) {
       background: ${background};
       border: 2.5px solid var(--zik-bg);
       border-radius: 50%;
-      opacity: ${dimmed ? 0.4 : 1};
+      opacity: ${dimmed ? 0.7 : 1};
       box-shadow: 0 1px 4px rgba(0,0,0,0.5), 0 0 10px 2px ${glow};
     "></div>`,
     iconSize: [14, 14],

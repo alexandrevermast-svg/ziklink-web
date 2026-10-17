@@ -210,6 +210,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   const [geoError, setGeoError] = useState<string | null>(null);
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
   const [selectedJamId, setSelectedJamId] = useState<string | null>(null);
+  const [reorderJamId, setReorderJamId] = useState<string | null>(null);
 
   const fetchParticipants = useCallback(async (jamIds: string[]) => {
     const { data } = await supabase.from("jam_participants")
@@ -287,6 +288,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
 
   const handleMarkerClick = useCallback((marker: EventMarker) => {
     setSelectedJamId(marker.id);
+    setReorderJamId(marker.id);
   }, []);
 
   const handleToggleNearMe = useCallback((checked: boolean) => {
@@ -337,17 +339,17 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
     return withDistance.map((w) => w.jam);
   }, [jams, selectedDate, drumsOnly, keyboardOnly, nearMe, userPosition, radiusKm]);
 
-  // La jam cliquée sur la carte remonte en tête de liste, sans changer
-  // l'ordre des autres.
+  // La jam cliquée sur la carte (uniquement via le pin, pas via la card)
+  // remonte en tête de liste, sans changer l'ordre des autres.
   const displayJams = useMemo(() => {
-    if (!selectedJamId) return filteredJams;
-    const idx = filteredJams.findIndex((j) => j.id === selectedJamId);
+    if (!reorderJamId) return filteredJams;
+    const idx = filteredJams.findIndex((j) => j.id === reorderJamId);
     if (idx <= 0) return filteredJams;
     const copy = [...filteredJams];
     const [selected] = copy.splice(idx, 1);
     copy.unshift(selected);
     return copy;
-  }, [filteredJams, selectedJamId]);
+  }, [filteredJams, reorderJamId]);
 
   const distanceById = useMemo(() => {
     if (!nearMe || !userPosition) return {} as Record<string, number>;
