@@ -91,7 +91,7 @@ export default function JamCard({
 
       <div className="mt-3">
         <div className="flex flex-wrap gap-3 text-sm text-gray-300">
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1 text-amber-400 font-medium">
             <Clock className="h-3.5 w-3.5" />
             {formatTime(jam.start_time)}
             {jam.end_at && ` → ${formatTime(jam.end_at)}`}
