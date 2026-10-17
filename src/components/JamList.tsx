@@ -356,6 +356,9 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   const handleMarkerClick = useCallback((marker: EventMarker) => {
     setSelectedJamId(marker.id);
     setReorderJamId(marker.id);
+    // La jam sélectionnée remonte en tête de liste — si on est scrollé plus
+    // bas, elle resterait invisible sans ce retour en haut de page.
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   // Chaque card se déplie/replie indépendamment — cliquer sur une autre ne
