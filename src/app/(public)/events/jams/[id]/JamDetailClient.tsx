@@ -6,9 +6,9 @@ import { createClient } from '@/lib/supabase/client';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import {
-  ArrowLeft, Lock, Unlock, Clock,
+  ArrowLeft, Clock,
   UserPlus, Check, Crown, ShieldCheck, Pencil,
-  Radio, Trash2, Heart, Settings2, Users, MessageCircle
+  Radio, Trash2, Heart, Settings2, Users
 } from 'lucide-react';
 import JamEditForm from "@/components/JamEditForm";
 import Modal from "@/components/Modal";
@@ -462,11 +462,17 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
 
         <div className="flex items-start justify-between gap-2">
           <h1 className="flex-1 min-w-0 text-xl font-bold text-zik-text truncate">{jam.title}</h1>
-          <span className={`shrink-0 flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${
-            jam.is_open ? "bg-zik-emerald/10 text-zik-emerald" : "bg-zik-orange/10 text-zik-orange"
-          }`}>
-            {jam.is_open ? <><Unlock className="h-3 w-3" />Ouverte</> : <><Lock className="h-3 w-3" />Inscription requise</>}
-          </span>
+          {organizerProfile && (
+            <button
+              type="button"
+              onClick={(e) => handleAvatarClick(organizerProfile, e)}
+              title={`Voir le profil de ${getDisplayName(organizerProfile)}`}
+              className="shrink-0 flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full bg-zik-card/60 border border-zik-border hover:border-zik-grad-to/40 transition-colors"
+            >
+              <Avatar profile={organizerProfile} size="sm" />
+              <span className="text-zik-text truncate max-w-28">{getDisplayName(organizerProfile)}</span>
+            </button>
+          )}
         </div>
 
         <div className="mt-2 text-sm text-zik-text">
@@ -476,24 +482,6 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
             {jam.end_at && ` → ${formatTime(jam.end_at)}`}
           </div>
         </div>
-
-        {/* Organisateur — visible de tous, pour pouvoir le contacter avant la jam */}
-        {organizerProfile && (
-          <div className="mt-3 flex items-center gap-2.5 p-2.5 rounded-xl bg-zik-card/50 border border-zik-border">
-            <Avatar profile={organizerProfile}
-              onClick={organizerProfile.id !== currentUserId ? (e) => handleAvatarClick(organizerProfile, e) : undefined} />
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-zik-muted">Organisé par</p>
-              <p className="text-sm font-medium text-zik-text truncate">{getDisplayName(organizerProfile)}</p>
-            </div>
-            {currentUserId && organizerProfile.id !== currentUserId && (
-              <button onClick={() => handleOpenDM(organizerProfile.id)} title="Contacter l'organisateur"
-                className="shrink-0 flex items-center gap-1 text-xs font-medium text-zik-grad-to hover:underline">
-                <MessageCircle className="h-3.5 w-3.5" /> Contacter
-              </button>
-            )}
-          </div>
-        )}
 
         {myActiveSlot && (
           <div className="mt-3 flex items-center gap-2 bg-zik-emerald/10 border border-zik-emerald/30 rounded-lg px-3 py-2">
