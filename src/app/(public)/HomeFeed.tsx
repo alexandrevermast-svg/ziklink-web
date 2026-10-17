@@ -39,17 +39,29 @@ function dayBounds() {
 }
 
 // Ligne compacte jam/concert — heure, titre, styles, chevron. La couleur de
-// l'heure suit le code couleur des pins de la carte (violet = jam, rouge =
-// concert) plutôt que d'avoir sa propre card bordée.
-function EventRow({ href, time, timeColorClass, title, meta }: {
-  href: string; time: string; timeColorClass: string; title: string; meta?: string;
+// l'heure suit le code couleur des pins de la carte (ambre = jam, rouge =
+// concert) plutôt que d'avoir sa propre card bordée. Les styles reprennent
+// le même badge coloré que sur les cards.
+function EventRow({ href, time, timeColorClass, title, genres }: {
+  href: string; time: string; timeColorClass: string; title: string; genres?: string[] | null;
 }) {
   return (
     <Link href={href} className="flex items-center gap-3 py-3 border-b border-white/7 last:border-b-0">
       <span className={`shrink-0 w-14 text-sm font-bold ${timeColorClass}`}>{time}</span>
       <span className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-white truncate">{title}</p>
-        {meta && <p className="mt-0.5 text-[11px] font-semibold tracking-wide text-gray-400 uppercase truncate">{meta}</p>}
+        {genres && genres.length > 0 && (
+          <span className="flex flex-wrap gap-1 mt-1">
+            {genres.map((g) => (
+              <span key={g}
+                className="shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full"
+                style={{ backgroundColor: `${genreColor(g)}1A`, color: genreColor(g) }}
+              >
+                {g}
+              </span>
+            ))}
+          </span>
+        )}
       </span>
       <ChevronRight className="h-3.5 w-3.5 text-gray-500 shrink-0" />
     </Link>
@@ -222,14 +234,14 @@ export default function HomeFeed({
     <div className="flex flex-col gap-4 p-4 pb-24">
 
       {/* Header */}
-      <div className="flex items-center justify-end">
-        {!currentUserId && (
+      {!currentUserId && (
+        <div className="flex items-center justify-end">
           <button onClick={() => router.push("/login")}
             className="text-xs font-medium text-zik-grad-to border border-zik-grad-to/30 px-3 py-1.5 rounded-full hover:bg-zik-grad-to/10 transition-colors">
             Se connecter
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Carte */}
       <EventMap
@@ -301,14 +313,17 @@ export default function HomeFeed({
         </p>
       ) : (
         <div className="flex flex-col">
+          {displayJams.length > 0 && (
+            <p className="mb-0.5 text-[11px] font-bold tracking-wide text-amber-400 uppercase">Jams</p>
+          )}
           {displayJams.map((jam) => (
             <EventRow
               key={jam.id}
               href={`/events/jams/${jam.id}`}
               time={formatTime(jam.start_time)}
-              timeColorClass="text-zik-grad-to"
+              timeColorClass="text-amber-400"
               title={jam.title}
-              meta={jam.genres && jam.genres.length > 0 ? jam.genres.slice(0, 2).join(" · ") : undefined}
+              genres={jam.genres}
             />
           ))}
 
@@ -322,7 +337,7 @@ export default function HomeFeed({
                   time={formatTime(concert.start_time)}
                   timeColorClass="text-zik-red"
                   title={concert.title}
-                  meta={concert.genres && concert.genres.length > 0 ? concert.genres.slice(0, 2).join(" · ") : undefined}
+                  genres={concert.genres}
                 />
               ))}
             </>
