@@ -2,17 +2,17 @@
 
 import React, { useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import moment from "moment-timezone";
-import JamCard from "@/components/JamCard";
-import ConcertCard from "@/components/ConcertCard";
+import { ChevronRight, Music2, Megaphone } from "lucide-react";
+import { GroupAvatar } from "@/app/(protected)/groups/GroupAvatar";
+import { genreColor } from "@/lib/musicGenres";
 import type { EventMarker } from "@/components/EventMap";
-import type { JamSession, Concert, ParticipantWithProfile } from "./page";
+import type { JamSession, Concert, ParticipantWithProfile, RecruitingAd, MusicianAd, LatestMusician } from "./page";
 import { useJamParticipation } from "@/hooks/useJamParticipation";
-import { useJamInterest } from "@/hooks/useJamInterest";
 import { isOwner } from "@/lib/permissions";
-import { canJoinJam } from "@/lib/jamJoinWindow";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
@@ -24,40 +24,9 @@ function getLatLng(location: string | null): { lat: number; lng: number } | null
   try { const p = JSON.parse(location); return p?.lat && p?.lng ? { lat: p.lat, lng: p.lng } : null; }
   catch { return null; }
 }
-function ParticipantAvatars({ participants }: { participants: ParticipantWithProfile[] }) {
-  const MAX_VISIBLE = 4;
-  const visible = participants.slice(0, MAX_VISIBLE);
-  const extra = participants.length - MAX_VISIBLE;
-  if (participants.length === 0) return null;
-  return (
-    <div className="flex items-center">
-      <div className="flex -space-x-2">
-        {visible.map((p, i) => {
-          const initials = p.profile?.username ? p.profile.username.slice(0, 2).toUpperCase() : "?";
-          return p.profile?.avatar_url ? (
-            <img key={p.user_id} src={p.profile.avatar_url} alt={p.profile.username ?? ""}
-              className="h-6 w-6 rounded-full border-2 border-zik-bg object-cover"
-              style={{ zIndex: MAX_VISIBLE - i }} />
-          ) : (
-            <div key={p.user_id}
-              className="h-6 w-6 rounded-full border-2 border-zik-bg bg-linear-to-br from-zik-grad-from to-zik-grad-to flex items-center justify-center text-white text-[9px] font-semibold"
-              style={{ zIndex: MAX_VISIBLE - i }}>
-              {initials}
-            </div>
-          );
-        })}
-        {extra > 0 && (
-          <div className="h-6 w-6 rounded-full border-2 border-zik-bg bg-zik-card flex items-center justify-center text-zik-muted text-[9px] font-semibold"
-            style={{ zIndex: 0 }}>
-            +{extra}
-          </div>
-        )}
-      </div>
-      <span className="ml-2 text-xs text-zik-muted">
-        {participants.length} participant{participants.length > 1 ? "s" : ""}
-      </span>
-    </div>
-  );
+
+function formatTime(d: string) {
+  return new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
 type DayFilter = "today" | "tomorrow";
@@ -69,15 +38,33 @@ function dayBounds() {
   return { today: today.toDate(), tomorrow: tomorrow.toDate(), dayAfterTomorrow: dayAfterTomorrow.toDate() };
 }
 
+// Ligne compacte jam/concert — heure, titre, styles, chevron. La couleur de
+// l'heure suit le code couleur des pins de la carte (violet = jam, rouge =
+// concert) plutôt que d'avoir sa propre card bordée.
+function EventRow({ href, time, timeColorClass, title, meta }: {
+  href: string; time: string; timeColorClass: string; title: string; meta?: string;
+}) {
+  return (
+    <Link href={href} className="flex items-center gap-3 py-3 border-b border-white/7 last:border-b-0">
+      <span className={`shrink-0 w-14 text-sm font-bold ${timeColorClass}`}>{time}</span>
+      <span className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-white truncate">{title}</p>
+        {meta && <p className="mt-0.5 text-[11px] font-semibold tracking-wide text-gray-400 uppercase truncate">{meta}</p>}
+      </span>
+      <ChevronRight className="h-3.5 w-3.5 text-gray-500 shrink-0" />
+    </Link>
+  );
+}
+
 interface HomeFeedProps {
   currentUserId: string | null;
   initialJams: JamSession[];
   initialConcerts: Concert[];
   initialParticipantsMap: Record<string, ParticipantWithProfile[]>;
   initialMyInterests: string[];
-  initialMyJamInterests: string[];
-  initialConcertInterestCounts: Record<string, number>;
-  initialJamInterestCounts: Record<string, number>;
+  initialRecruitingAds: RecruitingAd[];
+  initialMusicianAds: MusicianAd[];
+  initialLatestMusician: LatestMusician | null;
 }
 
 export default function HomeFeed({
@@ -86,9 +73,9 @@ export default function HomeFeed({
   initialConcerts,
   initialParticipantsMap,
   initialMyInterests,
-  initialMyJamInterests,
-  initialConcertInterestCounts,
-  initialJamInterestCounts,
+  initialRecruitingAds,
+  initialMusicianAds,
+  initialLatestMusician,
 }: HomeFeedProps) {
   const supabase = createClient();
   const router = useRouter();
@@ -98,13 +85,8 @@ export default function HomeFeed({
   const [concerts, setConcerts] = useState<Concert[]>(initialConcerts);
   const [participantsMap, setParticipantsMap] = useState(initialParticipantsMap);
   const [myInterests, setMyInterests] = useState<Set<string>>(new Set(initialMyInterests));
-  const [concertInterestCounts, setConcertInterestCounts] = useState<Record<string, number>>(initialConcertInterestCounts);
-  const [jamInterestCounts, setJamInterestCounts] = useState<Record<string, number>>(initialJamInterestCounts);
-  const [myJamInterests, setMyJamInterests] = useState<Set<string>>(new Set(initialMyJamInterests));
   const [dayFilter, setDayFilter] = useState<DayFilter>("today");
-  const { joinJam, leaveJam, pendingJamId: joiningId } = useJamParticipation();
-  const { markInterested, unmarkInterested, pendingJamId: interestPendingId } = useJamInterest();
-  const [togglingConcertId, setTogglingConcertId] = useState<string | null>(null);
+  const { joinJam } = useJamParticipation();
   const [selectedJamId, setSelectedJamId] = useState<string | null>(null);
 
   const { today, tomorrow, dayAfterTomorrow } = useMemo(() => dayBounds(), []);
@@ -112,7 +94,8 @@ export default function HomeFeed({
   const selectedDay = dayFilter === "today" ? today : tomorrow;
   const selectedDayEnd = new Date(selectedDay.getTime() + 86400000);
 
-  // Re-fetch après une action (rejoindre/quitter une jam) — le rendu initial vient du serveur.
+  // Re-fetch après une action (rejoindre une jam depuis la carte) — le rendu
+  // initial vient du serveur.
   const refetch = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setCurrentUserId(user?.id ?? null);
@@ -140,18 +123,6 @@ export default function HomeFeed({
         map[p.jam_id].push({ user_id: p.user_id, profile: p.profile ?? null });
       }
       setParticipantsMap(map);
-
-      const { data: jamIntData } = await supabase
-        .from("jam_interested").select("jam_id, user_id")
-        .in("jam_id", ids);
-      const jamIntCountMap: Record<string, number> = {};
-      for (const row of jamIntData ?? []) {
-        jamIntCountMap[row.jam_id] = (jamIntCountMap[row.jam_id] ?? 0) + 1;
-      }
-      setJamInterestCounts(jamIntCountMap);
-      if (user) {
-        setMyJamInterests(new Set((jamIntData ?? []).filter((r) => r.user_id === user.id).map((r) => r.jam_id)));
-      }
     }
 
     const { data: concertsData } = await supabase
@@ -167,59 +138,19 @@ export default function HomeFeed({
       const { data: intData } = await supabase
         .from("concert_interested").select("concert_id, user_id")
         .in("concert_id", ids);
-      const countMap: Record<string, number> = {};
       const mySet = new Set<string>();
       for (const row of intData ?? []) {
-        countMap[row.concert_id] = (countMap[row.concert_id] ?? 0) + 1;
         if (user && row.user_id === user.id) mySet.add(row.concert_id);
       }
-      setConcertInterestCounts(countMap);
       setMyInterests(mySet);
     }
   }, [dayAfterTomorrow]);
 
-  const handleJoinJam = useCallback(async (jamId: string, e?: React.MouseEvent) => {
-    e?.stopPropagation();
+  const handleJoinJam = useCallback(async (jamId: string) => {
     if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${jamId}`)}`); return; }
     await joinJam(jamId, currentUserId, "confirmed");
     await refetch();
-  }, [currentUserId, joinJam, refetch]);
-
-  const handleLeaveJam = useCallback(async (jamId: string, e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    if (!currentUserId) return;
-    await leaveJam(jamId, currentUserId);
-    await refetch();
-  }, [currentUserId, leaveJam, refetch]);
-
-  const handleToggleJamInterest = useCallback(async (jamId: string, e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${jamId}`)}`); return; }
-    if (myJamInterests.has(jamId)) {
-      await unmarkInterested(jamId, currentUserId);
-      setMyJamInterests((prev) => { const s = new Set(prev); s.delete(jamId); return s; });
-    } else {
-      await markInterested(jamId, currentUserId);
-      setMyJamInterests((prev) => new Set([...prev, jamId]));
-    }
-  }, [currentUserId, myJamInterests, markInterested, unmarkInterested, router]);
-
-  const handleToggleConcertInterest = useCallback(async (concertId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/concerts/${concertId}`)}`); return; }
-    if (togglingConcertId) return;
-    setTogglingConcertId(concertId);
-    if (myInterests.has(concertId)) {
-      await supabase.from("concert_interested").delete().eq("concert_id", concertId).eq("user_id", currentUserId);
-      setMyInterests((prev) => { const s = new Set(prev); s.delete(concertId); return s; });
-      setConcertInterestCounts((prev) => ({ ...prev, [concertId]: Math.max(0, (prev[concertId] ?? 1) - 1) }));
-    } else {
-      await supabase.from("concert_interested").insert({ concert_id: concertId, user_id: currentUserId });
-      setMyInterests((prev) => new Set([...prev, concertId]));
-      setConcertInterestCounts((prev) => ({ ...prev, [concertId]: (prev[concertId] ?? 0) + 1 }));
-    }
-    setTogglingConcertId(null);
-  }, [currentUserId, togglingConcertId, myInterests, supabase, router]);
+  }, [currentUserId, joinJam, refetch, router]);
 
   const handleMarkerClick = useCallback((marker: EventMarker) => {
     if (marker.type === "jam") setSelectedJamId(marker.id);
@@ -291,18 +222,7 @@ export default function HomeFeed({
     <div className="flex flex-col gap-4 p-4 pb-24">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-baseline gap-2">
-          <h1 className="text-xl font-bold text-zik-text">
-            {dayFilter === "today" ? "Aujourd'hui" : "Demain"}
-          </h1>
-          <span className="text-sm text-zik-muted">
-            {totalFiltered === 0
-              ? "Aucun événement ce jour"
-              : `${filteredJams.length} jam${filteredJams.length > 1 ? "s" : ""} · ${filteredConcerts.length} concert${filteredConcerts.length > 1 ? "s" : ""}`
-            }
-          </span>
-        </div>
+      <div className="flex items-center justify-end">
         {!currentUserId && (
           <button onClick={() => router.push("/login")}
             className="text-xs font-medium text-zik-grad-to border border-zik-grad-to/30 px-3 py-1.5 rounded-full hover:bg-zik-grad-to/10 transition-colors">
@@ -321,58 +241,58 @@ export default function HomeFeed({
         height="h-52"
       />
 
-{/* Filtre Aujourd'hui / Demain / Voir plus — SOUS la carte */}
-<div className="flex gap-2">
-  {(["today", "tomorrow"] as DayFilter[]).map((filter) => {
-    const isActive = dayFilter === filter;
-    const count = filter === "today"
-      ? todayJams.length + todayConcerts.length
-      : tomorrowJams.length + tomorrowConcerts.length;
-    return (
-      <button
-        key={filter}
-        onClick={() => setDayFilter(filter)}
-        className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-medium transition-all duration-150"
-        style={{
-          background: isActive ? 'rgba(168,85,247,0.15)' : 'rgba(255,255,255,0.04)',
-          border: '1px solid',
-          borderColor: isActive ? 'rgba(168,85,247,0.6)' : 'rgba(255,255,255,0.07)',
-          color: isActive ? '#FFFFFF' : 'rgba(255,255,255,0.67)',
-          boxShadow: isActive ? '0 0 12px -2px rgba(168,85,247,0.5)' : 'none',
-        }}
-      >
-        {filter === "today" ? "Aujourd'hui" : "Demain"}
-        {count > 0 && (
-          <span
-            className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-            style={{
-              background: isActive ? 'rgba(168,85,247,0.25)' : 'rgba(255,255,255,0.08)',
-              color: isActive ? '#FFFFFF' : 'rgba(255,255,255,0.64)',
-            }}
-          >
-            {count}
-          </span>
-        )}
-      </button>
-    );
-  })}
+      {/* Filtre Aujourd'hui / Demain / Voir plus — SOUS la carte */}
+      <div className="flex gap-2">
+        {(["today", "tomorrow"] as DayFilter[]).map((filter) => {
+          const isActive = dayFilter === filter;
+          const count = filter === "today"
+            ? todayJams.length + todayConcerts.length
+            : tomorrowJams.length + tomorrowConcerts.length;
+          return (
+            <button
+              key={filter}
+              onClick={() => setDayFilter(filter)}
+              className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-medium transition-all duration-150"
+              style={{
+                background: isActive ? 'rgba(168,85,247,0.15)' : 'rgba(255,255,255,0.04)',
+                border: '1px solid',
+                borderColor: isActive ? 'rgba(168,85,247,0.6)' : 'rgba(255,255,255,0.07)',
+                color: isActive ? '#FFFFFF' : 'rgba(255,255,255,0.67)',
+                boxShadow: isActive ? '0 0 12px -2px rgba(168,85,247,0.5)' : 'none',
+              }}
+            >
+              {filter === "today" ? "Aujourd'hui" : "Demain"}
+              {count > 0 && (
+                <span
+                  className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                  style={{
+                    background: isActive ? 'rgba(168,85,247,0.25)' : 'rgba(255,255,255,0.08)',
+                    color: isActive ? '#FFFFFF' : 'rgba(255,255,255,0.64)',
+                  }}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
 
-  {/* Bouton "Voir plus" */}
-  <button
-    onClick={() => router.push('/events')}
-    className="flex items-center justify-center px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150"
-    style={{
-      background: 'rgba(255,255,255,0.04)',
-      border: '1px solid rgba(255,255,255,0.07)',
-      color: 'rgba(255,255,255,0.67)',
-      whiteSpace: 'nowrap',
-    }}
-  >
-    Voir plus →
-  </button>
-</div>
+        {/* Bouton "Voir plus" */}
+        <button
+          onClick={() => router.push('/events')}
+          className="flex items-center justify-center px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            color: 'rgba(255,255,255,0.67)',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Voir plus →
+        </button>
+      </div>
 
-      {/* Liste */}
+      {/* Liste compacte jams + concerts du jour sélectionné */}
       {totalFiltered === 0 ? (
         <p className="text-zik-muted text-sm text-center py-8">
           {dayFilter === "today"
@@ -380,46 +300,136 @@ export default function HomeFeed({
             : "Pas d'événement demain 🎸"}
         </p>
       ) : (
-        <div className="space-y-3">
-          {/* Jams */}
-          {displayJams.map((jam) => {
-            const participants = participantsMap[jam.id] ?? [];
-            const isParticipant = participants.some((p) => p.user_id === currentUserId);
-            const isCreator = isOwner(jam, currentUserId);
-
-            return (
-              <JamCard
-                key={jam.id}
-                jam={jam}
-                isCreator={isCreator}
-                isParticipant={isParticipant}
-                isJoining={joiningId === jam.id}
-                isInterested={myJamInterests.has(jam.id)}
-                isInterestPending={interestPendingId === jam.id}
-                joinOpen={canJoinJam(jam.start_time)}
-                participantCount={participants.length}
-                interestedCount={jamInterestCounts[jam.id] ?? 0}
-                isSelected={jam.id === selectedJamId}
-                onToggleInterest={handleToggleJamInterest}
-                onJoin={handleJoinJam}
-                onLeave={handleLeaveJam}
-              />
-            );
-          })}
-
-          {/* Concerts */}
-          {filteredConcerts.map((concert) => (
-            <ConcertCard
-              key={concert.id}
-              concert={concert}
-              isInterested={myInterests.has(concert.id)}
-              interestedCount={concertInterestCounts[concert.id] ?? 0}
-              isToggling={togglingConcertId === concert.id}
-              onToggleInterest={handleToggleConcertInterest}
+        <div className="flex flex-col">
+          {displayJams.map((jam) => (
+            <EventRow
+              key={jam.id}
+              href={`/events/jams/${jam.id}`}
+              time={formatTime(jam.start_time)}
+              timeColorClass="text-zik-grad-to"
+              title={jam.title}
+              meta={jam.genres && jam.genres.length > 0 ? jam.genres.slice(0, 2).join(" · ") : undefined}
             />
           ))}
+
+          {filteredConcerts.length > 0 && (
+            <>
+              <p className="mt-2 mb-0.5 text-[11px] font-bold tracking-wide text-zik-red uppercase">Concerts</p>
+              {filteredConcerts.map((concert) => (
+                <EventRow
+                  key={concert.id}
+                  href={`/events/concerts/${concert.id}`}
+                  time={formatTime(concert.start_time)}
+                  timeColorClass="text-zik-red"
+                  title={concert.title}
+                  meta={concert.genres && concert.genres.length > 0 ? concert.genres.slice(0, 2).join(" · ") : undefined}
+                />
+              ))}
+            </>
+          )}
         </div>
       )}
+
+      {/* Groupes qui recrutent */}
+      {initialRecruitingAds.length > 0 && (
+        <div className="flex flex-col gap-2.5">
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-[15px] font-bold text-white">👥 Groupes qui recrutent</h2>
+            <Link href="/groups" className="text-xs font-semibold text-zik-grad-to">Tout voir</Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto -mx-4 px-4 pb-1">
+            {initialRecruitingAds.filter((ad) => ad.groups).map((ad) => (
+              <Link
+                key={ad.id}
+                href={`/groups/${ad.groups!.id}`}
+                className="shrink-0 w-56 rounded-2xl bg-white/4 backdrop-blur-md border border-white/8 p-3.5 flex flex-col gap-2"
+              >
+                <div className="flex items-center gap-2.5">
+                  <GroupAvatar group={ad.groups!} size="sm" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-white truncate">{ad.groups!.name}</p>
+                    {ad.groups!.city && <p className="text-xs text-gray-400">{ad.groups!.city}</p>}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  {ad.groups!.genre ? (
+                    <span
+                      className="shrink-0 text-[10px] font-semibold px-2.5 py-0.5 rounded-full"
+                      style={{ backgroundColor: `${genreColor(ad.groups!.genre)}1A`, color: genreColor(ad.groups!.genre) }}
+                    >
+                      {ad.groups!.genre}
+                    </span>
+                  ) : <span />}
+                  <span className="shrink-0 text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-zik-emerald/10 text-zik-emerald">
+                    {ad.instrument ? `Cherche ${ad.instrument}` : "Recrute"}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Dernier musicien inscrit */}
+      {initialLatestMusician && (
+        <div className="flex flex-col gap-2.5">
+          <h2 className="text-[15px] font-bold text-white">🎵 Dernier musicien inscrit</h2>
+          <Link
+            href={`/profile/${initialLatestMusician.id}`}
+            className="flex items-center gap-3 p-3.5 rounded-2xl bg-white/4 backdrop-blur-md border border-white/8"
+          >
+            {initialLatestMusician.avatar_url ? (
+              <img src={initialLatestMusician.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover shrink-0" />
+            ) : (
+              <div className="h-12 w-12 rounded-full shrink-0 flex items-center justify-center text-sm font-bold text-white bg-linear-to-br from-zik-grad-from to-zik-grad-to">
+                {(initialLatestMusician.username ?? initialLatestMusician.display_name ?? "?").slice(0, 2).toUpperCase()}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white truncate">
+                {initialLatestMusician.username ?? initialLatestMusician.display_name ?? "Nouveau musicien"}
+              </p>
+              <p className="text-xs text-gray-400 truncate">
+                {[initialLatestMusician.city, initialLatestMusician.instruments?.join(", ")].filter(Boolean).join(" · ") || "Vient de s'inscrire"}
+              </p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
+          </Link>
+        </div>
+      )}
+
+      {/* Annonces */}
+      <div className="flex flex-col gap-2.5">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-[15px] font-bold text-white">📣 Annonces</h2>
+          <Link href="/groups" className="text-xs font-semibold text-zik-grad-to">Tout voir</Link>
+        </div>
+        {initialMusicianAds.length > 0 ? (
+          <div className="flex gap-3 overflow-x-auto -mx-4 px-4 pb-1">
+            {initialMusicianAds.map((ad) => (
+              <Link
+                key={ad.id}
+                href={`/ads/${ad.id}`}
+                className="shrink-0 w-56 rounded-2xl bg-white/4 backdrop-blur-md border border-white/8 p-3.5 flex flex-col gap-2"
+              >
+                <div className="flex items-center gap-2 text-zik-grad-to">
+                  <Music2 className="h-4 w-4 shrink-0" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wide">{ad.instrument ?? "Musicien"}</span>
+                </div>
+                <p className="text-sm font-semibold text-white truncate">{ad.title}</p>
+                {ad.city && <p className="text-xs text-gray-400 truncate">{ad.city}</p>}
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <Link href="/groups" className="flex flex-col items-center gap-2 text-center py-5 px-4 rounded-2xl bg-white/3 border border-dashed border-white/14">
+            <Megaphone className="h-5 w-5 text-gray-400" />
+            <span className="text-[13px] text-gray-400">Aucune annonce pour l'instant</span>
+            <span className="text-xs font-semibold text-zik-grad-to">Publier une annonce</span>
+          </Link>
+        )}
+      </div>
+
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import moment from "moment-timezone";
 import HomeFeed from "./HomeFeed";
-import type { JamSession as JamSessionRow, Concert as ConcertRow, Profile } from "@/types";
+import type { JamSession as JamSessionRow, Concert as ConcertRow, Profile, Group } from "@/types";
 
 export type JamSession = Pick<JamSessionRow, "id" | "title" | "description" | "start_time" | "end_at" | "location" | "is_open" | "created_by" | "has_drums" | "has_keyboard" | "genres" | "poster_url">;
 export type Concert = Pick<ConcertRow, "id" | "title" | "artist" | "start_time" | "end_at" | "location" | "genres" | "is_free" | "price" | "poster_url">;
@@ -9,6 +9,14 @@ export interface ParticipantWithProfile {
   user_id: string;
   profile: Pick<Profile, "id" | "username" | "avatar_url"> | null;
 }
+export interface RecruitingAd {
+  id: string;
+  title: string;
+  instrument: string | null;
+  groups: Pick<Group, "id" | "name" | "avatar_url" | "city" | "genre"> | null;
+}
+export type MusicianAd = { id: string; title: string; instrument: string | null; city: string | null; genres: string[] };
+export type LatestMusician = Pick<Profile, "id" | "username" | "display_name" | "avatar_url" | "city" | "instruments">;
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -50,29 +58,45 @@ export default async function HomePage() {
   const concerts: Concert[] = concertsData ?? [];
 
   let myInterests: string[] = [];
-  const concertInterestCounts: Record<string, number> = {};
   if (concerts.length > 0) {
     const ids = concerts.map((c) => c.id);
     const { data: intData } = await supabase
       .from("concert_interested").select("concert_id, user_id")
       .in("concert_id", ids);
     for (const row of intData ?? []) {
-      concertInterestCounts[row.concert_id] = (concertInterestCounts[row.concert_id] ?? 0) + 1;
       if (user && row.user_id === user.id) myInterests.push(row.concert_id);
     }
   }
 
-  let myJamInterests: string[] = [];
-  const jamInterestCounts: Record<string, number> = {};
-  if (jams.length > 0) {
-    const ids = jams.map((j) => j.id);
-    const { data: jamIntData } = await supabase
-      .from("jam_interested").select("jam_id, user_id")
-      .in("jam_id", ids);
-    for (const row of jamIntData ?? []) {
-      jamInterestCounts[row.jam_id] = (jamInterestCounts[row.jam_id] ?? 0) + 1;
-      if (user && row.user_id === user.id) myJamInterests.push(row.jam_id);
-    }
+  // Groupes qui recrutent — annonces "mode: groupe" du babillard musicien_ads.
+  const { data: recruitingAdsData } = await supabase
+    .from("musician_ads")
+    .select("id, title, instrument, groups(id, name, avatar_url, city, genre)")
+    .eq("mode", "groupe")
+    .order("created_at", { ascending: false })
+    .limit(6);
+  const recruitingAds: RecruitingAd[] = (recruitingAdsData ?? []) as any;
+
+  // Annonces de musiciens — même babillard, "mode: musicien".
+  const { data: musicianAdsData } = await supabase
+    .from("musician_ads")
+    .select("id, title, instrument, city, genres")
+    .eq("mode", "musicien")
+    .order("created_at", { ascending: false })
+    .limit(6);
+  const musicianAds: MusicianAd[] = musicianAdsData ?? [];
+
+  // Dernier musicien inscrit (profil complété) — nécessite la colonne
+  // profiles.created_at (voir migration fournie séparément).
+  let latestMusician: LatestMusician | null = null;
+  const { data: latestMusicianData } = await supabase
+    .from("profiles")
+    .select("id, username, display_name, avatar_url, city, instruments")
+    .eq("onboarding_completed", true)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  if (latestMusicianData && latestMusicianData.length > 0) {
+    latestMusician = latestMusicianData[0];
   }
 
   return (
@@ -82,9 +106,9 @@ export default async function HomePage() {
       initialConcerts={concerts}
       initialParticipantsMap={participantsMap}
       initialMyInterests={myInterests}
-      initialMyJamInterests={myJamInterests}
-      initialConcertInterestCounts={concertInterestCounts}
-      initialJamInterestCounts={jamInterestCounts}
+      initialRecruitingAds={recruitingAds}
+      initialMusicianAds={musicianAds}
+      initialLatestMusician={latestMusician}
     />
   );
 }
