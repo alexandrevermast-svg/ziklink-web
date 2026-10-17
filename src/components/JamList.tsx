@@ -215,7 +215,12 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
   const [selectedJamId, setSelectedJamId] = useState<string | null>(null);
   const [reorderJamId, setReorderJamId] = useState<string | null>(null);
-  const [expandedJamId, setExpandedJamId] = useState<string | null>(null);
+  // Chaque card se déplie/replie indépendamment des autres.
+  const [expandedJamIds, setExpandedJamIds] = useState<Set<string>>(new Set());
+  // Déclencheur du scroll-vers-la-card ci-dessous : un objet neuf à chaque
+  // dépli (même si c'est la même card qu'avant) pour que l'effet se
+  // redéclenche à chaque fois, pas seulement au premier dépli.
+  const [scrollTrigger, setScrollTrigger] = useState<{ id: string; token: number } | null>(null);
   // Carte sticky qui se réduit progressivement au scroll.
   const MAP_HEIGHT_FULL = 208;
   const MAP_HEIGHT_SHRUNK = 132;
@@ -236,8 +241,8 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   // fluide, visible, vers la position déjà exacte — plutôt que d'animer
   // vers une cible provisoire puis de "corriger" après coup.
   useEffect(() => {
-    if (!expandedJamId) return;
-    const el = jamCardRefs.current[expandedJamId];
+    if (!scrollTrigger) return;
+    const el = jamCardRefs.current[scrollTrigger.id];
     if (!el) return;
 
     const computeTarget = () => {
@@ -265,7 +270,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
     });
 
     return () => cancelAnimationFrame(frame);
-  }, [expandedJamId]);
+  }, [scrollTrigger]);
 
   const fetchParticipants = useCallback(async (jamIds: string[]) => {
     const { data } = await supabase.from("jam_participants")
@@ -353,12 +358,19 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
     setReorderJamId(marker.id);
   }, []);
 
-  // Une seule card ouverte à la fois : cliquer sur une autre la déplie et
-  // replie celle qui était ouverte.
+  // Chaque card se déplie/replie indépendamment — cliquer sur une autre ne
+  // referme pas celle déjà ouverte.
   const handleToggleExpand = useCallback((jamId: string) => {
     setSelectedJamId(jamId);
-    setExpandedJamId((prev) => (prev === jamId ? null : jamId));
-  }, []);
+    const willExpand = !expandedJamIds.has(jamId);
+    setExpandedJamIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(jamId)) next.delete(jamId);
+      else next.add(jamId);
+      return next;
+    });
+    if (willExpand) setScrollTrigger({ id: jamId, token: Date.now() });
+  }, [expandedJamIds]);
 
   const handleToggleNearMe = useCallback((checked: boolean) => {
     setNearMe(checked);
@@ -612,7 +624,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
                 distanceKm={distanceById[jam.id]}
                 participantCount={participants.length}
                 interestedCount={jamInterestCounts[jam.id] ?? 0}
-                expanded={jam.id === expandedJamId}
+                expanded={expandedJamIds.has(jam.id)}
                 onToggleExpand={handleToggleExpand}
                 cardRef={(el) => { jamCardRefs.current[jam.id] = el; }}
                 onToggleInterest={handleToggleInterest}
