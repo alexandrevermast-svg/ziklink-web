@@ -207,7 +207,7 @@ export default function EventMap({
                           onClick={() => onJoinJam?.(m.id)}
                           className="text-xs bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white px-3 py-0.5 rounded-full hover:brightness-110 transition-all"
                         >
-                          {m.is_open === false ? "Demander à rejoindre" : "Rejoindre"}
+                          Rejoindre
                         </button>
                   )}
 

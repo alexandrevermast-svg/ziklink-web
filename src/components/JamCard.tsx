@@ -196,7 +196,7 @@ export default function JamCard({
                 disabled={isJoining}
               >
                 <UserPlus className="h-3.5 w-3.5 mr-1" />
-                {isJoining ? "..." : jam.is_open ? "Rejoindre" : "Demander à rejoindre"}
+                {isJoining ? "..." : "Rejoindre"}
               </Button>
             ) : (
               <span className="text-[10px] text-gray-300 italic">
