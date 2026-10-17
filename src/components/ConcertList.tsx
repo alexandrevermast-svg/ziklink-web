@@ -223,7 +223,9 @@ const { data: concertsData } = await supabase
 
   return (
     <div className="space-y-4">
-      <EventMap markers={concertMarkers} currentUserId={currentUserId} emptyMessage="Aucun concert à venir 🎤" />
+      <div className="sticky top-16 z-20">
+        <EventMap markers={concertMarkers} currentUserId={currentUserId} emptyMessage="Aucun concert à venir 🎤" />
+      </div>
       <DayFilter selectedDate={selectedDate} onChange={setSelectedDate} availableDates={availableDates} />
       {filtered.length === 0 ? (
         

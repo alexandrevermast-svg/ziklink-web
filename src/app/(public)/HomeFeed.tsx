@@ -261,16 +261,22 @@ export default function HomeFeed({
         </div>
       )}
 
+      {/* Carte + filtre + liste jams/concerts — la carte reste visible tout
+          le long de cette section (sticky), et redevient normale dès qu'on
+          atteint les sections Groupes / Annonces plus bas. */}
+      <div className="flex flex-col gap-4">
       {/* Carte */}
-      <EventMap
-        markers={markers}
-        onJoinJam={(jamId) => handleJoinJam(jamId)}
-        onMarkerClick={handleMarkerClick}
-        currentUserId={currentUserId}
-        emptyMessage="Aucun événement 📍"
-        height="h-52"
-        focusMarkerId={selectedJamId}
-      />
+      <div className="sticky top-16 z-20">
+        <EventMap
+          markers={markers}
+          onJoinJam={(jamId) => handleJoinJam(jamId)}
+          onMarkerClick={handleMarkerClick}
+          currentUserId={currentUserId}
+          emptyMessage="Aucun événement 📍"
+          height="h-52"
+          focusMarkerId={selectedJamId}
+        />
+      </div>
 
       {/* Filtre Aujourd'hui / Demain / Voir plus — SOUS la carte */}
       <div className="flex gap-2">
@@ -365,6 +371,7 @@ export default function HomeFeed({
           )}
         </div>
       )}
+      </div>
 
       {/* Groupes */}
       {initialRecruitingAds.length > 0 && (

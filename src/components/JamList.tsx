@@ -409,7 +409,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
 
   return (
     <div className="space-y-4">
-      <div className="relative">
+      <div className="sticky top-16 z-20">
         <EventMap
           markers={jamMarkers}
           onJoinJam={(jamId) => handleJoin(jamId)}
