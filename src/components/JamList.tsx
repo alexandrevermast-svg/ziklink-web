@@ -13,6 +13,8 @@ import type { JamSession, Profile as ProfileRow } from "@/types";
 import { haversineDistanceKm, type LatLng } from "@/lib/geo";
 import { useJamParticipation } from "@/hooks/useJamParticipation";
 import { useJamInterest } from "@/hooks/useJamInterest";
+import { useStageNamePrompt } from "@/hooks/useStageNamePrompt";
+import StageNamePromptModal from "@/components/StageNamePromptModal";
 import { isOwner } from "@/lib/permissions";
 import { canJoinJam } from "@/lib/jamJoinWindow";
 import { useShrinkOnScroll } from "@/hooks/useShrinkOnScroll";
@@ -198,6 +200,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { joinJam, leaveJam, pendingJamId: joiningJamId } = useJamParticipation();
   const { markInterested, unmarkInterested, pendingJamId: interestPendingId } = useJamInterest();
+  const { ensureStageName, ...stageNamePrompt } = useStageNamePrompt();
   const [myJamInterests, setMyJamInterests] = useState<Set<string>>(new Set());
   const [jamInterestCounts, setJamInterestCounts] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(!initialJams);
@@ -315,9 +318,11 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   const handleJoin = useCallback(async (jamId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${jamId}`)}`); return; }
+    const name = await ensureStageName(currentUserId);
+    if (!name) return;
     await joinJam(jamId, currentUserId);
     await fetchParticipants(jams.map((j) => j.id));
-  }, [currentUserId, jams, fetchParticipants, joinJam, router]);
+  }, [currentUserId, jams, fetchParticipants, joinJam, router, ensureStageName]);
 
   const handleLeave = useCallback(async (jamId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -613,6 +618,15 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
           })}
         </div>
       )}
+
+      <StageNamePromptModal
+        open={stageNamePrompt.isOpen}
+        value={stageNamePrompt.value}
+        onChange={stageNamePrompt.setValue}
+        onSubmit={stageNamePrompt.handleSubmit}
+        onCancel={stageNamePrompt.handleCancel}
+        isSaving={stageNamePrompt.isSaving}
+      />
     </div>
   );
 }

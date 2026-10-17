@@ -4,6 +4,7 @@ import { UserPlus, Play, Radio, Music, X, Plus, Flag, Check, Guitar, ChevronDown
 import { Avatar } from "./Avatar";
 import { GuitarHeadstockIcon, BassHeadstockIcon } from "./InstrumentIcons";
 import type { JamSlot, JamInstrument, Profile } from "../types";
+import { getDisplayName } from "../types";
 
 function InstrumentIcon({ instKey, emoji }: { instKey: string; emoji: string }) {
   if (instKey === "guitare") return <GuitarHeadstockIcon className="h-5 w-5 object-contain shrink-0" />;
@@ -234,7 +235,7 @@ export function SlotsTab({
           size="sm"
           onClick={slot.profile && slot.user_id !== currentUserId
             ? (e) => onAvatarClick(slot.profile!, e) : undefined} />
-        <span className="truncate flex-1">{slot.profile?.username ?? slot.guest_name ?? "?"}</span>
+        <span className="truncate flex-1">{getDisplayName(slot.profile, slot.guest_name ?? "?")}</span>
         {(isMe || isOrganizer) && (
           <button onClick={() => onRelease(slot.id)}
             className="opacity-60 hover:opacity-100 hover:text-zik-red transition-colors shrink-0">

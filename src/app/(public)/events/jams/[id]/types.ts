@@ -1,4 +1,14 @@
-export interface Profile { id: string; username: string | null; avatar_url: string | null; }
+export interface Profile { id: string; username: string | null; avatar_url: string | null; display_name?: string | null; }
+
+// Préfère le nom affiché (prénom / nom de scène) au pseudo pour les humains
+// qui se croisent en vrai pendant une jam.
+export function getDisplayName(profile?: Profile | null, fallback = "Inconnu"): string {
+  return profile?.display_name?.trim() || profile?.username || fallback;
+}
+export function getInitials(profile?: Profile | null): string {
+  const name = profile?.display_name?.trim() || profile?.username;
+  return name ? name.slice(0, 2).toUpperCase() : "?";
+}
 export interface Participant { user_id: string; status: string; is_organizer: boolean; profile: Profile | null; }
 export interface Message { id: string; user_id: string; content: string; created_at: string; profile: Profile | null; }
 export interface JamSlot {

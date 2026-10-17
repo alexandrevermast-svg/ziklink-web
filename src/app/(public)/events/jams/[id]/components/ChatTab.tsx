@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
 import { Avatar } from "./Avatar";
 import type { Message, Profile } from "../types";
+import { getDisplayName } from "../types";
 
 interface ChatTabProps {
   conversationId: string | null;
@@ -49,7 +50,7 @@ export function ChatTab({
                     onClick={msg.profile ? (e) => onAvatarClick(msg.profile!, e) : undefined} />}
                   <div className={`max-w-[75%] ${isMe ? "items-end" : "items-start"} flex flex-col gap-0.5`}>
                     {!isMe && (
-                      <span className="text-xs text-zik-muted ml-0.5">{msg.profile?.username ?? "Inconnu"}</span>
+                      <span className="text-xs text-zik-muted ml-0.5">{getDisplayName(msg.profile)}</span>
                     )}
                     <div className={`selectable px-3 py-2 rounded-2xl text-sm ${
                       isMe

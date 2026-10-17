@@ -12,6 +12,8 @@ import { genreColor } from "@/lib/musicGenres";
 import type { EventMarker } from "@/components/EventMap";
 import type { JamSession, Concert, ParticipantWithProfile, RecruitingAd, MusicianAd, LatestMusician } from "./page";
 import { useJamParticipation } from "@/hooks/useJamParticipation";
+import { useStageNamePrompt } from "@/hooks/useStageNamePrompt";
+import StageNamePromptModal from "@/components/StageNamePromptModal";
 import { isOwner } from "@/lib/permissions";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
@@ -130,6 +132,7 @@ export default function HomeFeed({
   const [myInterests, setMyInterests] = useState<Set<string>>(new Set(initialMyInterests));
   const [dayFilter, setDayFilter] = useState<DayFilter>("today");
   const { joinJam } = useJamParticipation();
+  const { ensureStageName, ...stageNamePrompt } = useStageNamePrompt();
   const [selectedJamId, setSelectedJamId] = useState<string | null>(null);
   const jamRowRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -192,9 +195,11 @@ export default function HomeFeed({
 
   const handleJoinJam = useCallback(async (jamId: string) => {
     if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${jamId}`)}`); return; }
+    const name = await ensureStageName(currentUserId);
+    if (!name) return;
     await joinJam(jamId, currentUserId, "confirmed");
     await refetch();
-  }, [currentUserId, joinJam, refetch, router]);
+  }, [currentUserId, joinJam, refetch, router, ensureStageName]);
 
   const handleMarkerClick = useCallback((marker: EventMarker) => {
     if (marker.type !== "jam") return;
@@ -484,6 +489,14 @@ export default function HomeFeed({
         )}
       </div>
 
+      <StageNamePromptModal
+        open={stageNamePrompt.isOpen}
+        value={stageNamePrompt.value}
+        onChange={stageNamePrompt.setValue}
+        onSubmit={stageNamePrompt.handleSubmit}
+        onCancel={stageNamePrompt.handleCancel}
+        isSaving={stageNamePrompt.isSaving}
+      />
     </div>
   );
 }

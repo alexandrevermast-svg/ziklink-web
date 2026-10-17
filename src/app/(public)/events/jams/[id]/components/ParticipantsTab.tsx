@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Check, X, Crown, ShieldCheck } from "lucide-react";
 import { Avatar } from "./Avatar";
 import type { Participant, Profile } from "../types";
+import { getDisplayName } from "../types";
 
 interface ParticipantsTabProps {
   isOrganizer: boolean;
@@ -33,7 +34,7 @@ export function ParticipantsTab({
               <div key={p.user_id} className="flex items-center justify-between gap-2 p-3 rounded-lg bg-zik-orange/10 border border-zik-orange/20">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <Avatar profile={p.profile} onClick={p.profile && p.user_id !== currentUserId ? (e) => onAvatarClick(p.profile!, e) : undefined} />
-                  <span className="text-sm font-medium text-zik-text truncate">{p.profile?.username ?? "Inconnu"}</span>
+                  <span className="text-sm font-medium text-zik-text truncate">{getDisplayName(p.profile)}</span>
                 </div>
                 <div className="flex gap-1.5 shrink-0">
                   <Button size="sm" className="h-7 text-xs bg-zik-emerald hover:bg-zik-emerald/80 px-2" onClick={() => onAccept(p.user_id)}>
@@ -69,7 +70,7 @@ export function ParticipantsTab({
                 }`}>
                   <Avatar profile={p.profile} onClick={p.profile && p.user_id !== currentUserId ? (e) => onAvatarClick(p.profile!, e) : undefined} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-zik-text truncate">{p.profile?.username ?? "Inconnu"}</p>
+                    <p className="text-sm font-medium text-zik-text truncate">{getDisplayName(p.profile)}</p>
                     {isMainOrga && <p className="text-xs text-zik-indigo flex items-center gap-1"><Crown className="h-3 w-3" /> Organisateur</p>}
                     {isCoOrga && <p className="text-xs text-zik-grad-to flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> Co-organisateur</p>}
                   </div>

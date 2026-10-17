@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ShieldCheck, UserPlus } from "lucide-react";
 import type { Participant, JamSlot } from "../types";
+import { getDisplayName, getInitials } from "../types";
 
 interface ParticipantPickerProps {
   instrument: string; slot_index: number; participants: Participant[];
@@ -56,10 +57,10 @@ export function ParticipantPicker({ instrument, slot_index, participants, slots,
                 <img src={p.profile.avatar_url} alt="" className="h-6 w-6 rounded-full object-cover shrink-0" />
               ) : (
                 <div className="h-6 w-6 rounded-full bg-linear-to-br from-zik-grad-from to-zik-grad-to flex items-center justify-center text-white text-[9px] font-semibold shrink-0">
-                  {p.profile?.username?.slice(0, 2).toUpperCase() ?? "?"}
+                  {getInitials(p.profile)}
                 </div>
               )}
-              <span className="text-xs font-medium text-zik-text truncate">{p.profile?.username ?? "Inconnu"}</span>
+              <span className="text-xs font-medium text-zik-text truncate">{getDisplayName(p.profile)}</span>
               {p.is_organizer && <ShieldCheck className="h-3 w-3 text-zik-indigo shrink-0 ml-auto" />}
             </button>
           ))}

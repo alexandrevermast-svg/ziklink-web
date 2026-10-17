@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { User, MessageCircle } from "lucide-react";
 import type { Profile } from "../types";
+import { getDisplayName, getInitials } from "../types";
 
 export function ProfilePopup({ profile, anchorRef, onClose, onMessage, onViewProfile }: {
   profile: Profile; anchorRef: React.RefObject<HTMLElement>;
@@ -24,9 +25,9 @@ export function ProfilePopup({ profile, anchorRef, onClose, onMessage, onViewPro
       style={{ top: (rect?.bottom ?? 0) + 6, left: Math.min(rect?.left ?? 0, window.innerWidth - 200) }}>
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-zik-border">
         <div className="h-8 w-8 rounded-full bg-linear-to-br from-zik-grad-from to-zik-grad-to flex items-center justify-center text-white text-xs font-semibold shrink-0">
-          {profile.username?.slice(0, 2).toUpperCase() ?? "?"}
+          {getInitials(profile)}
         </div>
-        <span className="text-sm font-semibold text-zik-text truncate">{profile.username ?? "Inconnu"}</span>
+        <span className="text-sm font-semibold text-zik-text truncate">{getDisplayName(profile)}</span>
       </div>
       <button onClick={() => { onViewProfile(profile.id); onClose(); }}
         className="w-full flex items-center gap-2 text-xs text-zik-text font-medium hover:bg-zik-card-hover rounded-lg px-2 py-1.5 transition-colors mb-1">

@@ -16,6 +16,8 @@ import ShareButton from "@/components/ShareButton";
 import type { JamSession } from "@/types";
 import { useJamParticipation } from "@/hooks/useJamParticipation";
 import { useJamInterest } from "@/hooks/useJamInterest";
+import { useStageNamePrompt } from "@/hooks/useStageNamePrompt";
+import StageNamePromptModal from "@/components/StageNamePromptModal";
 import { isOwner } from "@/lib/permissions";
 import { canJoinJam, joinOpensAt } from "@/lib/jamJoinWindow";
 import type { Profile, Participant, Message, JamSlot, JamInstrument } from "./types";
@@ -68,6 +70,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
   const [pickerCell, setPickerCell] = useState<{ instrument: string; slot_index: number; anchorEl: HTMLElement } | null>(null);
   const { joinJam, leaveJam } = useJamParticipation();
   const { markInterested, unmarkInterested, pendingJamId: interestPendingId } = useJamInterest();
+  const { ensureStageName, ...stageNamePrompt } = useStageNamePrompt();
   const [isInterested, setIsInterested] = useState(false);
   const isMainOrganizer = isOwner(jam, currentUserId);
   const isCoOrganizer = participants.some((p) => p.user_id === currentUserId && p.is_organizer && p.status === "confirmed");
@@ -96,7 +99,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
 
     const { data: participantsData } = await supabase
       .from("jam_participants")
-      .select("user_id, status, is_organizer, profile:profiles(id, username, avatar_url)")
+      .select("user_id, status, is_organizer, profile:profiles(id, username, avatar_url, display_name)")
       .eq("jam_id", id);
     setParticipants((participantsData ?? []).map((p: any) => ({
       user_id: p.user_id, status: p.status ?? "confirmed",
@@ -114,14 +117,14 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
       if (convData) {
         setConversationId(convData.id);
         const { data: messagesData } = await supabase
-          .from("messages").select("id, user_id, content, created_at, profile:profiles(id, username, avatar_url)")
+          .from("messages").select("id, user_id, content, created_at, profile:profiles(id, username, avatar_url, display_name)")
           .eq("conversation_id", convData.id).order("created_at", { ascending: true });
         setMessages((messagesData ?? []).map((m: any) => ({ ...m, profile: m.profile ?? null })));
       }
     }
 
     const { data: slotsData } = await supabase
-      .from("jam_slots").select("*, profile:profiles(id, username, avatar_url)").eq("jam_id", id);
+      .from("jam_slots").select("*, profile:profiles(id, username, avatar_url, display_name)").eq("jam_id", id);
     setSlots((slotsData ?? []).map((s: any) => ({ ...s, profile: s.profile ?? null })));
 
     const { data: instrumentsData } = await supabase
@@ -153,7 +156,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` },
         async (payload) => {
           const msg = payload.new as any;
-          const { data: profile } = await supabase.from("profiles").select("id, username, avatar_url").eq("id", msg.user_id).single();
+          const { data: profile } = await supabase.from("profiles").select("id, username, avatar_url, display_name").eq("id", msg.user_id).single();
           setMessages((prev) => [...prev, { ...msg, profile: profile ?? null }]);
         }).subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -193,6 +196,8 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
   const handleJoin = async () => {
     if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${id}`)}`); return; }
     if (!jam) return;
+    const name = await ensureStageName(currentUserId);
+    if (!name) return;
     const status = jam.is_open ? "confirmed" : "pending";
     await joinJam(id, currentUserId, status);
     if (conversationId) await supabase.from("conversation_participants").insert({ conversation_id: conversationId, user_id: currentUserId });
@@ -628,6 +633,15 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           </Button>
         </div>
       </Modal>
+
+      <StageNamePromptModal
+        open={stageNamePrompt.isOpen}
+        value={stageNamePrompt.value}
+        onChange={stageNamePrompt.setValue}
+        onSubmit={stageNamePrompt.handleSubmit}
+        onCancel={stageNamePrompt.handleCancel}
+        isSaving={stageNamePrompt.isSaving}
+      />
     </div>
   );
 }
