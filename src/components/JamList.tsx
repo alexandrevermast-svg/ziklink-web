@@ -211,6 +211,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
   const [selectedJamId, setSelectedJamId] = useState<string | null>(null);
   const [reorderJamId, setReorderJamId] = useState<string | null>(null);
+  const [expandedJamId, setExpandedJamId] = useState<string | null>(null);
 
   const fetchParticipants = useCallback(async (jamIds: string[]) => {
     const { data } = await supabase.from("jam_participants")
@@ -289,6 +290,14 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   const handleMarkerClick = useCallback((marker: EventMarker) => {
     setSelectedJamId(marker.id);
     setReorderJamId(marker.id);
+    setExpandedJamId(marker.id);
+  }, []);
+
+  // Une seule card ouverte à la fois : cliquer sur une autre la déplie et
+  // replie celle qui était ouverte.
+  const handleToggleExpand = useCallback((jamId: string) => {
+    setSelectedJamId(jamId);
+    setExpandedJamId((prev) => (prev === jamId ? null : jamId));
   }, []);
 
   const handleToggleNearMe = useCallback((checked: boolean) => {
@@ -532,8 +541,8 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
                 distanceKm={distanceById[jam.id]}
                 participantCount={participants.length}
                 interestedCount={jamInterestCounts[jam.id] ?? 0}
-                isSelected={jam.id === selectedJamId}
-                onSelect={setSelectedJamId}
+                expanded={jam.id === expandedJamId}
+                onToggleExpand={handleToggleExpand}
                 onToggleInterest={handleToggleInterest}
                 onJoin={handleJoin}
                 onLeave={handleLeave}

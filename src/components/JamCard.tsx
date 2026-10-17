@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Clock, UserPlus, Check, Drum, Piano, LocateFixed, Heart, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -36,8 +35,8 @@ interface JamCardProps {
   distanceKm?: number;
   participantCount?: number;
   interestedCount?: number;
-  isSelected?: boolean;
-  onSelect?: (jamId: string) => void;
+  expanded: boolean;
+  onToggleExpand: (jamId: string) => void;
   onToggleInterest: (jamId: string, e: React.MouseEvent) => void;
   onJoin: (jamId: string, e: React.MouseEvent) => void;
   onLeave: (jamId: string, e: React.MouseEvent) => void;
@@ -54,25 +53,18 @@ const GENRE_POSTERS: Record<string, string> = {
 
 export default function JamCard({
   jam, isCreator, isParticipant, isJoining, isInterested, isInterestPending, joinOpen, distanceKm,
-  participantCount, interestedCount, isSelected, onSelect,
+  participantCount, interestedCount, expanded, onToggleExpand,
   onToggleInterest, onJoin, onLeave,
 }: JamCardProps) {
   const router = useRouter();
-  const [expanded, setExpanded] = useState(false);
   const addressParts = getAddressParts(jam.location);
   const mapsUrl = getMapsUrl(jam.location);
   const matchedGenre = jam.genres?.find((g) => GENRE_POSTERS[g]);
   const posterUrl = jam.poster_url || (matchedGenre ? GENRE_POSTERS[matchedGenre] : DEFAULT_JAM_POSTER);
 
-  // La sélection depuis la carte déplie une seule fois ; ensuite l'utilisateur
-  // reste libre de replier/déplier au clic, même si la jam reste sélectionnée.
-  useEffect(() => {
-    if (isSelected) setExpanded(true);
-  }, [isSelected]);
-
   return (
     <div
-      onClick={() => { setExpanded((v) => !v); onSelect?.(jam.id); }}
+      onClick={() => onToggleExpand(jam.id)}
       className="relative overflow-hidden rounded-2xl border border-white/8 p-4 bg-white/4 backdrop-blur-md hover:bg-white/6 hover:border-white/14 transition-all cursor-pointer active:scale-[0.99]"
     >
 
