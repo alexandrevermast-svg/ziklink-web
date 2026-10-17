@@ -213,8 +213,11 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   const [selectedJamId, setSelectedJamId] = useState<string | null>(null);
   const [reorderJamId, setReorderJamId] = useState<string | null>(null);
   const [expandedJamId, setExpandedJamId] = useState<string | null>(null);
-  // Carte sticky qui se réduit progressivement au scroll (208px -> 132px).
-  const mapHeight = useShrinkOnScroll(208, 132, 180);
+  // Carte sticky qui se réduit progressivement au scroll.
+  const MAP_HEIGHT_FULL = 208;
+  const MAP_HEIGHT_SHRUNK = 132;
+  const MAP_SHRINK_THRESHOLD = 180;
+  const mapHeight = useShrinkOnScroll(MAP_HEIGHT_FULL, MAP_HEIGHT_SHRUNK, MAP_SHRINK_THRESHOLD);
   const jamCardRefs = useRef<Record<string, HTMLDivElement | null>>({});
   // Lu au moment du scroll sans faire dépendre l'effet de mapHeight, sinon
   // tout changement de hauteur de la carte pendant le scroll (après coup)
@@ -223,27 +226,42 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   useEffect(() => { mapHeightRef.current = mapHeight; }, [mapHeight]);
 
   // Quand une card se déplie, on scroll UNE SEULE FOIS (au clic) pour que
-  // son haut arrive juste sous la carte sticky. Le scroll lui-même peut
-  // déclencher le rétrécissement de la carte (via useShrinkOnScroll), ce qui
-  // décale la cible en plein milieu de l'animation — une passe de rattrapage
-  // (silencieuse, seulement si l'écart est perceptible) corrige ça une fois
-  // que tout s'est stabilisé.
+  // son haut arrive juste sous la carte sticky. Si la destination traverse
+  // le seuil de rétrécissement de la carte, on se repositionne d'abord
+  // instantanément de l'autre côté du seuil (la carte prend donc sa taille
+  // finale AVANT toute animation visible), puis on fait le seul scroll
+  // fluide, visible, vers la position déjà exacte — plutôt que d'animer
+  // vers une cible provisoire puis de "corriger" après coup.
   useEffect(() => {
     if (!expandedJamId) return;
     const el = jamCardRefs.current[expandedJamId];
     if (!el) return;
 
-    const align = (smooth: boolean) => {
+    const computeTarget = () => {
       const rect = el.getBoundingClientRect();
       const offset = 56 + mapHeightRef.current;
-      const diff = rect.top - offset;
-      if (Math.abs(diff) < 4) return;
-      window.scrollTo({ top: window.scrollY + diff, behavior: smooth ? "smooth" : "auto" });
+      return window.scrollY + rect.top - offset;
     };
 
-    const frame = requestAnimationFrame(() => align(true));
-    const correction = setTimeout(() => align(false), 450);
-    return () => { cancelAnimationFrame(frame); clearTimeout(correction); };
+    const frame = requestAnimationFrame(() => {
+      const naiveTarget = computeTarget();
+      const crossesThreshold = (naiveTarget > MAP_SHRINK_THRESHOLD) !== (window.scrollY > MAP_SHRINK_THRESHOLD);
+
+      if (!crossesThreshold) {
+        window.scrollTo({ top: naiveTarget, behavior: "smooth" });
+        return;
+      }
+
+      const nudge = naiveTarget > MAP_SHRINK_THRESHOLD ? MAP_SHRINK_THRESHOLD + 1 : MAP_SHRINK_THRESHOLD - 1;
+      window.scrollTo({ top: nudge, behavior: "auto" });
+      // Deux frames pour laisser le temps à l'évènement scroll de se
+      // déclencher et à React de re-rendre avec la nouvelle hauteur.
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        window.scrollTo({ top: computeTarget(), behavior: "smooth" });
+      }));
+    });
+
+    return () => cancelAnimationFrame(frame);
   }, [expandedJamId]);
 
   const fetchParticipants = useCallback(async (jamIds: string[]) => {
