@@ -223,18 +223,27 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   useEffect(() => { mapHeightRef.current = mapHeight; }, [mapHeight]);
 
   // Quand une card se déplie, on scroll UNE SEULE FOIS (au clic) pour que
-  // son haut arrive juste sous la carte sticky.
+  // son haut arrive juste sous la carte sticky. Le scroll lui-même peut
+  // déclencher le rétrécissement de la carte (via useShrinkOnScroll), ce qui
+  // décale la cible en plein milieu de l'animation — une passe de rattrapage
+  // (silencieuse, seulement si l'écart est perceptible) corrige ça une fois
+  // que tout s'est stabilisé.
   useEffect(() => {
     if (!expandedJamId) return;
     const el = jamCardRefs.current[expandedJamId];
     if (!el) return;
-    const frame = requestAnimationFrame(() => {
+
+    const align = (smooth: boolean) => {
       const rect = el.getBoundingClientRect();
       const offset = 56 + mapHeightRef.current;
-      const targetY = window.scrollY + rect.top - offset;
-      window.scrollTo({ top: targetY, behavior: "smooth" });
-    });
-    return () => cancelAnimationFrame(frame);
+      const diff = rect.top - offset;
+      if (Math.abs(diff) < 4) return;
+      window.scrollTo({ top: window.scrollY + diff, behavior: smooth ? "smooth" : "auto" });
+    };
+
+    const frame = requestAnimationFrame(() => align(true));
+    const correction = setTimeout(() => align(false), 450);
+    return () => { cancelAnimationFrame(frame); clearTimeout(correction); };
   }, [expandedJamId]);
 
   const fetchParticipants = useCallback(async (jamIds: string[]) => {
