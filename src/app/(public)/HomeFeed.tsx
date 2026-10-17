@@ -267,16 +267,19 @@ export default function HomeFeed({
       <div className="flex flex-col gap-4">
       {/* Carte */}
       <div className="sticky top-[calc(56px+env(safe-area-inset-top))] z-20 w-full bg-zik-bg pb-4">
-        <EventMap
-          markers={markers}
-          onJoinJam={(jamId) => handleJoinJam(jamId)}
-          onMarkerClick={handleMarkerClick}
-          currentUserId={currentUserId}
-          emptyMessage="Aucun événement 📍"
-          height="h-52"
-          focusMarkerId={selectedJamId}
-          fadeBottom
-        />
+        <div className="relative">
+          <EventMap
+            markers={markers}
+            onJoinJam={(jamId) => handleJoinJam(jamId)}
+            onMarkerClick={handleMarkerClick}
+            currentUserId={currentUserId}
+            emptyMessage="Aucun événement 📍"
+            height="h-52"
+            focusMarkerId={selectedJamId}
+          />
+          {/* Fondu (opacité) entre le bas de la carte et les cards */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-linear-to-b from-transparent to-zik-bg" />
+        </div>
       </div>
 
       {/* Filtre Aujourd'hui / Demain / Voir plus — SOUS la carte */}

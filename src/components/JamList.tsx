@@ -424,8 +424,11 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
           emptyMessage="Aucune jam à venir 🎸"
           focusMarkerId={selectedJamId}
           height="h-full"
-          fadeBottom
         />
+
+        {/* Fondu (opacité) entre le bas de la carte et les cards — ne touche
+            pas au rendu de la carte elle-même, juste une superposition. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-linear-to-b from-transparent to-zik-bg" />
 
         {/* Près de moi — flottant au-dessus de la carte */}
         <div className="absolute top-3 right-3 z-20">
