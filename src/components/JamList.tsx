@@ -429,7 +429,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
                 {nearMe && <ChevronDown className="h-3 w-3 shrink-0" />}
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-56 bg-zik-card/90 backdrop-blur-md border-white/8 p-2" align="end">
+            <PopoverContent className="w-40 bg-zik-card/90 backdrop-blur-md border-white/8 p-2" align="end">
               {geoError && <p className="text-xs text-zik-red px-2 py-1">{geoError}</p>}
               {nearMe && userPosition && (
                 <div>
