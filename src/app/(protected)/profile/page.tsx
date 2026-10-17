@@ -24,6 +24,7 @@ const INSTRUMENTS = [
 interface Profile {
   id: string;
   username: string | null;
+  display_name: string | null;
   bio: string | null;
   city: string | null;
   instruments: string[] | null;
@@ -72,6 +73,7 @@ export default function MyProfilePage() {
   const [saved, setSaved] = useState(false);
 
   const [username, setUsername] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
   const [city, setCity] = useState('');
   const [instruments, setInstruments] = useState<string[]>([]);
@@ -85,13 +87,14 @@ export default function MyProfilePage() {
 
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('id, username, bio, city, instruments, avatar_url, links')
+        .select('id, username, display_name, bio, city, instruments, avatar_url, links')
         .eq('id', user.id)
         .single();
 
       if (profileData) {
         setProfile(profileData);
         setUsername(profileData.username ?? '');
+        setDisplayName(profileData.display_name ?? '');
         setBio(profileData.bio ?? '');
         setCity(profileData.city ?? '');
         setInstruments(profileData.instruments ?? []);
@@ -193,6 +196,7 @@ export default function MyProfilePage() {
       .filter((l) => l.url);
     await supabase.from('profiles').update({
       username: username.trim() || null,
+      display_name: displayName.trim() || null,
       bio: bio.trim() || null,
       city: city.trim() || null,
       instruments,
@@ -266,6 +270,22 @@ export default function MyProfilePage() {
             placeholder="Ton pseudo"
             className="zik-input"
           />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium mb-1.5 block" style={{ color: 'rgba(255,255,255,0.70)' }}>
+            Nom affiché <span style={{ color: 'rgba(255,255,255,0.45)', fontWeight: 400 }}>(optionnel)</span>
+          </label>
+          <input
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            placeholder="Ex: Marie, ou ton nom de scène"
+            maxLength={40}
+            className="zik-input"
+          />
+          <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.52)' }}>
+            C'est ce nom que les autres participants voient pendant une jam, plutôt que ton pseudo.
+          </p>
         </div>
 
         <div>
