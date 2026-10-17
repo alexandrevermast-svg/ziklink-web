@@ -290,7 +290,6 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   const handleMarkerClick = useCallback((marker: EventMarker) => {
     setSelectedJamId(marker.id);
     setReorderJamId(marker.id);
-    setExpandedJamId(marker.id);
   }, []);
 
   // Une seule card ouverte à la fois : cliquer sur une autre la déplie et

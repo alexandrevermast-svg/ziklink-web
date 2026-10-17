@@ -9,6 +9,7 @@ import { formatDistanceKm } from "@/lib/geo";
 import { joinOpensAt } from "@/lib/jamJoinWindow";
 import { getAddressParts, getMapsUrl } from "@/lib/eventLocation";
 import { genreColor } from "@/lib/musicGenres";
+import { linkifyText } from "@/lib/linkify";
 
 export interface JamCardData {
   id: string;
@@ -133,7 +134,7 @@ export default function JamCard({
             }}
           />
           {jam.description?.trim() && (
-            <p className="text-sm text-gray-300 whitespace-pre-line">{jam.description}</p>
+            <p className="text-sm text-gray-300 whitespace-pre-line">{linkifyText(jam.description)}</p>
           )}
         </div>
       </div>
