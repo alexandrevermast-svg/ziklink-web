@@ -126,7 +126,7 @@ export function SlotsTab({
                   </button>
                 )}
                 {isPast && <Check className="h-4 w-4 text-zik-muted shrink-0" />}
-                {isEditingSong ? (
+                {isEditingSong && !soloMode ? (
                   <input autoFocus value={songInputValue}
                     onChange={(e) => onSongInputChange(e.target.value)}
                     onBlur={() => onSaveSong(infoSlot!.id)}
@@ -137,7 +137,7 @@ export function SlotsTab({
                     placeholder="Ex: Wonderwall"
                     className="min-w-0 w-32 text-lg font-semibold border border-zik-grad-to/30 rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-zik-grad-to/50 bg-zik-card text-zik-text placeholder:text-zik-muted"
                   />
-                ) : infoSlot?.song ? (
+                ) : infoSlot?.song && !soloMode ? (
                   <button
                     onClick={(e) => canEditInfo ? onStartEditSong(infoSlot, e) : undefined}
                     className={`flex items-center gap-1.5 text-lg font-semibold min-w-0 truncate ${
@@ -266,7 +266,6 @@ export function SlotsTab({
             }`}>
               <div className="flex items-center gap-2 min-w-0">
                 {passageLabel}
-                {songScaleControls}
               </div>
               <div className="flex items-center min-w-32 max-w-56">
                 {renderSlotPill(soloSlot, SOLO_INSTRUMENT_KEY, isSoloMe, isSoloClaiming, isSoloPickerOpen)}
