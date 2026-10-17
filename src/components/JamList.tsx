@@ -15,6 +15,7 @@ import { useJamParticipation } from "@/hooks/useJamParticipation";
 import { useJamInterest } from "@/hooks/useJamInterest";
 import { isOwner } from "@/lib/permissions";
 import { canJoinJam } from "@/lib/jamJoinWindow";
+import { useShrinkOnScroll } from "@/hooks/useShrinkOnScroll";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
@@ -212,6 +213,8 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   const [selectedJamId, setSelectedJamId] = useState<string | null>(null);
   const [reorderJamId, setReorderJamId] = useState<string | null>(null);
   const [expandedJamId, setExpandedJamId] = useState<string | null>(null);
+  // Carte sticky qui se réduit progressivement au scroll (208px -> 132px).
+  const mapHeight = useShrinkOnScroll(208, 132, 180);
 
   const fetchParticipants = useCallback(async (jamIds: string[]) => {
     const { data } = await supabase.from("jam_participants")
@@ -409,7 +412,10 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
 
   return (
     <div className="space-y-4">
-      <div className="sticky top-16 z-20">
+      <div className="sticky top-16 z-20 bg-zik-bg">
+        {/* Hauteur fixée en px (et non une classe Tailwind) pour pouvoir la
+            faire varier au scroll via useShrinkOnScroll. */}
+        <div className="relative" style={{ height: mapHeight }}>
         <EventMap
           markers={jamMarkers}
           onJoinJam={(jamId) => handleJoin(jamId)}
@@ -417,6 +423,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
           currentUserId={currentUserId}
           emptyMessage="Aucune jam à venir 🎸"
           focusMarkerId={selectedJamId}
+          height="h-full"
         />
 
         {/* Près de moi — flottant au-dessus de la carte */}
@@ -483,6 +490,10 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
             </PopoverContent>
           </Popover>
         </div>
+        </div>
+
+        {/* Ombre de transition entre la carte sticky et la liste qui défile dessous */}
+        <div className="pointer-events-none h-3 -mt-px bg-linear-to-b from-black/20 to-transparent" />
       </div>
 
       <DayFilter

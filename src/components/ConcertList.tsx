@@ -8,6 +8,7 @@ import { ChevronDown } from "lucide-react";
 import ConcertCard from "@/components/ConcertCard";
 import type { EventMarker } from "@/components/EventMap";
 import type { Concert } from "@/types";
+import { useShrinkOnScroll } from "@/hooks/useShrinkOnScroll";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
@@ -144,6 +145,7 @@ export default function ConcertList({ initialConcerts }: ConcertListProps = {}) 
   const [isLoading, setIsLoading] = useState(!initialConcerts);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const mapHeight = useShrinkOnScroll(208, 132, 180);
 
   const fetchAll = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -223,8 +225,12 @@ const { data: concertsData } = await supabase
 
   return (
     <div className="space-y-4">
-      <div className="sticky top-16 z-20">
-        <EventMap markers={concertMarkers} currentUserId={currentUserId} emptyMessage="Aucun concert à venir 🎤" />
+      <div className="sticky top-16 z-20 bg-zik-bg">
+        <div style={{ height: mapHeight }}>
+          <EventMap markers={concertMarkers} currentUserId={currentUserId} emptyMessage="Aucun concert à venir 🎤" height="h-full" />
+        </div>
+        {/* Ombre de transition entre la carte sticky et la liste qui défile dessous */}
+        <div className="pointer-events-none h-3 -mt-px bg-linear-to-b from-black/20 to-transparent" />
       </div>
       <DayFilter selectedDate={selectedDate} onChange={setSelectedDate} availableDates={availableDates} />
       {filtered.length === 0 ? (

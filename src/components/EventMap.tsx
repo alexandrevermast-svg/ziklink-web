@@ -61,7 +61,11 @@ function InvalidateSize() {
     const t1 = setTimeout(() => map.invalidateSize(), 100);
     const t2 = setTimeout(() => map.invalidateSize(), 500);
     const t3 = setTimeout(() => map.invalidateSize(), 1000);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    // Suit aussi les redimensionnements du conteneur (ex: carte qui se
+    // réduit progressivement au scroll) pour que Leaflet se recadre.
+    const ro = new ResizeObserver(() => map.invalidateSize());
+    ro.observe(map.getContainer());
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); ro.disconnect(); };
   }, [map]);
   return null;
 }
