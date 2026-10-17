@@ -412,7 +412,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
 
   return (
     <div className="space-y-4">
-      <div className="sticky top-[calc(56px+env(safe-area-inset-top))] z-20 w-full bg-zik-bg pb-4">
+      <div className="sticky top-[calc(56px+env(safe-area-inset-top))] z-20 w-full bg-zik-bg">
         {/* Hauteur fixée en px (et non une classe Tailwind) pour pouvoir la
             faire varier au scroll via useShrinkOnScroll. */}
         <div className="relative transition-[height] duration-300 ease-out" style={{ height: mapHeight }}>
@@ -425,10 +425,6 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
           focusMarkerId={selectedJamId}
           height="h-full"
         />
-
-        {/* Fondu (opacité) entre le bas de la carte et les cards — ne touche
-            pas au rendu de la carte elle-même, juste une superposition. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-linear-to-b from-transparent to-zik-bg" />
 
         {/* Près de moi — flottant au-dessus de la carte */}
         <div className="absolute top-3 right-3 z-20">
@@ -495,6 +491,11 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
           </Popover>
         </div>
         </div>
+
+        {/* Fondu (dégradé d'opacité) sous la carte : se superpose au haut du
+            contenu qui défile dessous (grâce à -mb-6, il ne prend pas de
+            place dans le flux) au lieu d'être appliqué sur la carte. */}
+        <div className="pointer-events-none h-6 -mb-6 bg-linear-to-b from-zik-bg to-transparent" />
       </div>
 
       <DayFilter

@@ -266,20 +266,20 @@ export default function HomeFeed({
           atteint les sections Groupes / Annonces plus bas. */}
       <div className="flex flex-col gap-4">
       {/* Carte */}
-      <div className="sticky top-[calc(56px+env(safe-area-inset-top))] z-20 w-full bg-zik-bg pb-4">
-        <div className="relative">
-          <EventMap
-            markers={markers}
-            onJoinJam={(jamId) => handleJoinJam(jamId)}
-            onMarkerClick={handleMarkerClick}
-            currentUserId={currentUserId}
-            emptyMessage="Aucun événement 📍"
-            height="h-52"
-            focusMarkerId={selectedJamId}
-          />
-          {/* Fondu (opacité) entre le bas de la carte et les cards */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-linear-to-b from-transparent to-zik-bg" />
-        </div>
+      <div className="sticky top-[calc(56px+env(safe-area-inset-top))] z-20 w-full bg-zik-bg">
+        <EventMap
+          markers={markers}
+          onJoinJam={(jamId) => handleJoinJam(jamId)}
+          onMarkerClick={handleMarkerClick}
+          currentUserId={currentUserId}
+          emptyMessage="Aucun événement 📍"
+          height="h-52"
+          focusMarkerId={selectedJamId}
+        />
+        {/* Fondu (dégradé d'opacité) sous la carte, superposé au haut du
+            contenu qui défile dessous (-mb-6 ne prend pas de place dans
+            le flux) */}
+        <div className="pointer-events-none h-6 -mb-6 bg-linear-to-b from-zik-bg to-transparent" />
       </div>
 
       {/* Filtre Aujourd'hui / Demain / Voir plus — SOUS la carte */}
