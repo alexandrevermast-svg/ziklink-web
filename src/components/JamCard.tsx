@@ -38,6 +38,7 @@ interface JamCardProps {
   interestedCount?: number;
   expanded: boolean;
   onToggleExpand: (jamId: string) => void;
+  isSelected?: boolean;
   cardRef?: (el: HTMLDivElement | null) => void;
   onToggleInterest: (jamId: string, e: React.MouseEvent) => void;
   onJoin: (jamId: string, e: React.MouseEvent) => void;
@@ -55,7 +56,7 @@ const GENRE_POSTERS: Record<string, string> = {
 
 export default function JamCard({
   jam, isCreator, isParticipant, isJoining, isInterested, isInterestPending, joinOpen, distanceKm,
-  participantCount, interestedCount, expanded, onToggleExpand, cardRef,
+  participantCount, interestedCount, expanded, onToggleExpand, isSelected, cardRef,
   onToggleInterest, onJoin, onLeave,
 }: JamCardProps) {
   const router = useRouter();
@@ -68,7 +69,9 @@ export default function JamCard({
     <div
       ref={cardRef}
       onClick={() => onToggleExpand(jam.id)}
-      className="relative overflow-hidden rounded-2xl border border-white/8 p-4 bg-white/4 backdrop-blur-md hover:bg-white/6 hover:border-white/14 transition-all cursor-pointer active:scale-[0.99]"
+      className={`relative overflow-hidden rounded-2xl border p-4 backdrop-blur-md hover:bg-white/6 hover:border-white/14 transition-all cursor-pointer active:scale-[0.99] ${
+        isSelected ? "bg-white/6 border-white/14" : "bg-white/4 border-white/8"
+      }`}
     >
 
       <div className="flex items-center justify-between gap-2">

@@ -626,6 +626,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
                 interestedCount={jamInterestCounts[jam.id] ?? 0}
                 expanded={expandedJamIds.has(jam.id)}
                 onToggleExpand={handleToggleExpand}
+                isSelected={jam.id === selectedJamId}
                 cardRef={(el) => { jamCardRefs.current[jam.id] = el; }}
                 onToggleInterest={handleToggleInterest}
                 onJoin={handleJoin}
