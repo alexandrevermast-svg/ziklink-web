@@ -29,6 +29,7 @@ interface EventMapProps {
   emptyMessage?: string;
   height?: string;
   focusMarkerId?: string | null;
+  fadeBottom?: boolean;
 }
 
 function createDotIcon(background: string, glow: string, dimmed = false) {
@@ -117,6 +118,7 @@ export default function EventMap({
   emptyMessage = "Aucun événement 📍",
   height = "h-52",
   focusMarkerId,
+  fadeBottom,
 }: EventMapProps) {
   const hasJam     = useMemo(() => markers.some((m) => m.type === "jam"),     [markers]);
   const hasConcert = useMemo(() => markers.some((m) => m.type === "concert"), [markers]);
@@ -134,7 +136,14 @@ export default function EventMap({
     // ✅ Bordure et ombre adaptées
     // Bordure légèrement plus visible sur la carte
 <div
-  style={{ isolation: "isolate", borderColor: 'rgba(255,255,255,0.08)' }}
+  style={{
+    isolation: "isolate",
+    borderColor: 'rgba(255,255,255,0.08)',
+    ...(fadeBottom ? {
+      maskImage: "linear-gradient(to bottom, black 85%, transparent 100%)",
+      WebkitMaskImage: "linear-gradient(to bottom, black 85%, transparent 100%)",
+    } : {}),
+  }}
   className={`${height} rounded-2xl overflow-hidden border shadow-lg relative`}
 >
       {(hasJam || hasConcert) && (

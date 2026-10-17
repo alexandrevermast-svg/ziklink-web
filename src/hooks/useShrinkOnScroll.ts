@@ -1,20 +1,19 @@
 import { useEffect, useState } from "react";
 
-// Hauteur (px) qui diminue linéairement de maxHeight à minHeight sur les
-// `distance` premiers pixels de scroll de la page, pour un effet de carte qui
-// se réduit progressivement au lieu de rester figée à sa taille maximale.
-export function useShrinkOnScroll(maxHeight: number, minHeight: number, distance: number) {
-  const [height, setHeight] = useState(maxHeight);
+// Bascule entre une hauteur pleine et une hauteur réduite une fois un seuil
+// de scroll franchi, plutôt que d'interpoler en continu sur chaque pixel
+// défilé (ce qui recalcule le layout à chaque frame et provoquait des
+// artefacts visuels pendant le scroll). La transition reste progressive à
+// l'écran grâce à la transition CSS posée sur l'élément.
+export function useShrinkOnScroll(maxHeight: number, minHeight: number, threshold: number) {
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const ratio = Math.min(1, Math.max(0, window.scrollY / distance));
-      setHeight(maxHeight - (maxHeight - minHeight) * ratio);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > threshold);
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [maxHeight, minHeight, distance]);
+  }, [threshold]);
 
-  return height;
+  return scrolled ? minHeight : maxHeight;
 }

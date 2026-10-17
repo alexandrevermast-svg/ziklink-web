@@ -225,12 +225,10 @@ const { data: concertsData } = await supabase
 
   return (
     <div className="space-y-4">
-      <div className="sticky top-16 z-20 bg-zik-bg">
-        <div style={{ height: mapHeight }}>
-          <EventMap markers={concertMarkers} currentUserId={currentUserId} emptyMessage="Aucun concert à venir 🎤" height="h-full" />
+      <div className="sticky top-16 z-20 w-full bg-zik-bg pb-4">
+        <div className="transition-[height] duration-300 ease-out" style={{ height: mapHeight }}>
+          <EventMap markers={concertMarkers} currentUserId={currentUserId} emptyMessage="Aucun concert à venir 🎤" height="h-full" fadeBottom />
         </div>
-        {/* Ombre de transition entre la carte sticky et la liste qui défile dessous */}
-        <div className="pointer-events-none h-3 -mt-px bg-linear-to-b from-black/20 to-transparent" />
       </div>
       <DayFilter selectedDate={selectedDate} onChange={setSelectedDate} availableDates={availableDates} />
       {filtered.length === 0 ? (

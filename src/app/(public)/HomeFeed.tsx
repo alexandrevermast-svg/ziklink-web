@@ -266,7 +266,7 @@ export default function HomeFeed({
           atteint les sections Groupes / Annonces plus bas. */}
       <div className="flex flex-col gap-4">
       {/* Carte */}
-      <div className="sticky top-16 z-20 bg-zik-bg">
+      <div className="sticky top-16 z-20 w-full bg-zik-bg pb-4">
         <EventMap
           markers={markers}
           onJoinJam={(jamId) => handleJoinJam(jamId)}
@@ -275,9 +275,8 @@ export default function HomeFeed({
           emptyMessage="Aucun événement 📍"
           height="h-52"
           focusMarkerId={selectedJamId}
+          fadeBottom
         />
-        {/* Ombre de transition entre la carte sticky et la liste qui défile dessous */}
-        <div className="pointer-events-none h-3 -mt-px bg-linear-to-b from-black/20 to-transparent" />
       </div>
 
       {/* Filtre Aujourd'hui / Demain / Voir plus — SOUS la carte */}

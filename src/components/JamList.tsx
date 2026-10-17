@@ -412,10 +412,10 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
 
   return (
     <div className="space-y-4">
-      <div className="sticky top-16 z-20 bg-zik-bg">
+      <div className="sticky top-16 z-20 w-full bg-zik-bg pb-4">
         {/* Hauteur fixée en px (et non une classe Tailwind) pour pouvoir la
             faire varier au scroll via useShrinkOnScroll. */}
-        <div className="relative" style={{ height: mapHeight }}>
+        <div className="relative transition-[height] duration-300 ease-out" style={{ height: mapHeight }}>
         <EventMap
           markers={jamMarkers}
           onJoinJam={(jamId) => handleJoin(jamId)}
@@ -424,6 +424,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
           emptyMessage="Aucune jam à venir 🎸"
           focusMarkerId={selectedJamId}
           height="h-full"
+          fadeBottom
         />
 
         {/* Près de moi — flottant au-dessus de la carte */}
@@ -491,9 +492,6 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
           </Popover>
         </div>
         </div>
-
-        {/* Ombre de transition entre la carte sticky et la liste qui défile dessous */}
-        <div className="pointer-events-none h-3 -mt-px bg-linear-to-b from-black/20 to-transparent" />
       </div>
 
       <DayFilter
