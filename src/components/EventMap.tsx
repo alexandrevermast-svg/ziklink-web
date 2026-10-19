@@ -162,9 +162,11 @@ export default function EventMap({
         zoomControl={false}
       >
         <TileLayer
-  url={`https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png?key=${process.env.NEXT_PUBLIC_CARTO_API_KEY}`}
-  attribution='&copy; OpenStreetMap contributors &copy; CARTO'
-  maxZoom={19}
+  url={`https://api.mapbox.com/styles/v1/${process.env.NEXT_PUBLIC_MAPBOX_STYLE}/tiles/256/{z}/{x}/{y}{r}?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`}
+  attribution='&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; OpenStreetMap contributors'
+  maxZoom={22}
+  tileSize={256}
+  detectRetina
   crossOrigin="anonymous"
 />
         <InvalidateSize />

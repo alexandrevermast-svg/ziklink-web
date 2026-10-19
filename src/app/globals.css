@@ -294,11 +294,8 @@ textarea.zik-input {
 .leaflet-popup-close-button:hover {
   color: #A855F7 !important;
 }
-.leaflet-tile {
-  /* Teinte les tuiles CartoDB (grises par défaut) vers le violet de
-     l'identité visuelle de l'app, sans changer de fournisseur de carte. */
-  filter: brightness(2) contrast(1) saturate(1.6) hue-rotate(60deg) !important;
-}
+/* Plus de filtre de teinte ici : le style Mapbox personnalisé est déjà aux
+   couleurs de l'identité visuelle, un filtre CSS le dénaturerait. */
 
 /* Attribution OSM/CARTO — toujours visible (requis par leurs CGU), mais
    discrète : petite pastille vitrée plutôt que le bandeau blanc par défaut. */
