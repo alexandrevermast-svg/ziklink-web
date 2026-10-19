@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import moment from "moment-timezone";
-import { ChevronRight, ArrowUpRight, Music2, Megaphone } from "lucide-react";
+import { ChevronRight, ChevronDown, Music2, Megaphone } from "lucide-react";
 import { GroupAvatar } from "@/app/(protected)/groups/GroupAvatar";
 import { genreColor } from "@/lib/musicGenres";
 import type { EventMarker } from "@/components/EventMap";
@@ -45,10 +45,12 @@ function dayBounds() {
 // concert) plutôt que d'avoir sa propre card bordée. Les styles reprennent
 // le même badge coloré que sur les cards.
 // Pour les jams (onSelect fourni), le clic sur la ligne centre la carte sur
-// le pin au lieu de naviguer direct — la navigation passe par la flèche
-// dédiée, comme sur JamCard dans la page events.
-function EventRow({ href, time, timeColorClass, title, genres, onSelect, selected, rowRef }: {
-  href: string; time: string; timeColorClass: string; title: string; genres?: string[] | null; onSelect?: () => void; selected?: boolean; rowRef?: (el: HTMLDivElement | null) => void;
+// le pin ET déplie la ligne, qui donne alors accès à "Plus d'infos" (page
+// events) et "Rejoindre" (page détail, tableau des passages) — plutôt que de
+// naviguer direct au clic.
+function EventRow({ href, time, timeColorClass, title, genres, onSelect, selected, expanded, rowRef }: {
+  href: string; time: string; timeColorClass: string; title: string; genres?: string[] | null;
+  onSelect?: () => void; selected?: boolean; expanded?: boolean; rowRef?: (el: HTMLDivElement | null) => void;
 }) {
   const content = (
     <>
@@ -76,19 +78,32 @@ function EventRow({ href, time, timeColorClass, title, genres, onSelect, selecte
       <div
         ref={rowRef}
         onClick={onSelect}
-        className={`flex items-center gap-3 py-3 px-2 -mx-2 rounded-xl border-b border-white/7 last:border-b-0 cursor-pointer transition-colors ${
+        className={`py-3 px-2 -mx-2 rounded-xl border-b border-white/7 last:border-b-0 cursor-pointer transition-colors ${
           selected ? "bg-white/6" : ""
         }`}
       >
-        {content}
-        <Link
-          href={href}
-          onClick={(e) => e.stopPropagation()}
-          title="Voir la jam en détail"
-          className="shrink-0 h-7 w-7 flex items-center justify-center rounded-full text-gray-400 hover:text-zik-grad-to hover:bg-white/8 transition-colors"
-        >
-          <ArrowUpRight className="h-4 w-4" />
-        </Link>
+        <div className="flex items-center gap-3">
+          {content}
+          <ChevronDown className={`h-3.5 w-3.5 text-gray-400 shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
+        </div>
+        {expanded && (
+          <div className="flex items-center gap-2 mt-2.5 pl-17">
+            <Link
+              href="/events"
+              onClick={(e) => e.stopPropagation()}
+              className="text-xs font-medium px-3 py-1.5 rounded-full border border-white/10 text-gray-300 hover:border-white/20 hover:text-white transition-colors"
+            >
+              Plus d'infos
+            </Link>
+            <Link
+              href={href}
+              onClick={(e) => e.stopPropagation()}
+              className="text-xs font-medium px-3 py-1.5 rounded-full bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white hover:brightness-110 transition-all"
+            >
+              Rejoindre
+            </Link>
+          </div>
+        )}
       </div>
     );
   }
@@ -134,7 +149,18 @@ export default function HomeFeed({
   const { joinJam } = useJamParticipation();
   const { ensureStageName, ...stageNamePrompt } = useStageNamePrompt();
   const [selectedJamId, setSelectedJamId] = useState<string | null>(null);
+  const [expandedJamIds, setExpandedJamIds] = useState<Set<string>>(new Set());
   const jamRowRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const handleToggleJamRow = useCallback((jamId: string) => {
+    setSelectedJamId(jamId);
+    setExpandedJamIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(jamId)) next.delete(jamId);
+      else next.add(jamId);
+      return next;
+    });
+  }, []);
 
   const { today, tomorrow, dayAfterTomorrow } = useMemo(() => dayBounds(), []);
 
@@ -367,8 +393,9 @@ export default function HomeFeed({
               timeColorClass="text-amber-400"
               title={jam.title}
               genres={jam.genres}
-              onSelect={() => setSelectedJamId(jam.id)}
+              onSelect={() => handleToggleJamRow(jam.id)}
               selected={jam.id === selectedJamId}
+              expanded={expandedJamIds.has(jam.id)}
               rowRef={(el) => { jamRowRefs.current[jam.id] = el; }}
             />
           ))}
