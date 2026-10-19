@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import ReportButton from '@/components/ReportButton';
 import { Linkify } from '@/components/Linkify';
 import { parseProfileLinks } from '@/lib/profileLinks';
+import { GroupAvatar } from '@/app/(protected)/groups/GroupAvatar';
 
 const INSTRUMENTS = [
   { key: 'chant',    label: 'Chant',    emoji: '🎤' },
@@ -36,6 +37,12 @@ interface MyGroup {
   name: string;
 }
 
+interface ProfileGroup {
+  id: string;
+  name: string;
+  avatar_url: string | null;
+}
+
 interface EventItem {
   id: string;
   type: 'jam' | 'concert';
@@ -59,6 +66,7 @@ export default function PublicProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [myAdminGroups, setMyAdminGroups] = useState<MyGroup[]>([]);
+  const [profileGroups, setProfileGroups] = useState<ProfileGroup[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<EventItem[]>([]);
   const [pastEvents, setPastEvents] = useState<EventItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -81,6 +89,13 @@ export default function PublicProfilePage() {
         .eq('id', userId)
         .single();
       setProfile(profileData);
+
+      const { data: groupMemberships } = await supabase
+        .from('group_members')
+        .select('groups(id, name, avatar_url)')
+        .eq('user_id', userId)
+        .eq('status', 'confirmed');
+      setProfileGroups((groupMemberships ?? []).map((g: any) => g.groups).filter(Boolean));
 
       const { data: jamParts } = await supabase
         .from('jam_participants')
@@ -443,6 +458,39 @@ export default function PublicProfilePage() {
               >
                 <span>{inst!.emoji}</span> {inst!.label}
               </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Groupes */}
+      {profileGroups.length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold mb-2 flex items-center gap-1.5" style={{ color: '#F1F0F6' }}>
+            <Users size={15} style={{ color: '#A855F7' }} /> Groupes
+          </h2>
+          <div className="space-y-2">
+            {profileGroups.map((group) => (
+              <button
+                key={group.id}
+                onClick={() => router.push(`/groups/${group.id}`)}
+                className="w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-150"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(168,85,247,0.20)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(168,85,247,0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
+                }}
+              >
+                <GroupAvatar group={group} size="sm" />
+                <p className="text-sm font-medium truncate flex-1 min-w-0" style={{ color: '#F1F0F6' }}>
+                  {group.name}
+                </p>
+                <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.52)' }} className="shrink-0" />
+              </button>
             ))}
           </div>
         </div>
