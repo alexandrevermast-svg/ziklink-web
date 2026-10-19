@@ -48,10 +48,10 @@ function dayBounds() {
 // le pin ET déplie la ligne, qui donne alors accès à "Plus d'infos" (page
 // events) et "Rejoindre" (page détail, tableau des passages) — plutôt que de
 // naviguer direct au clic.
-function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onSelect, onToggleExpand, selected, expanded, rowRef, isCreator, isParticipant, isPending, isJoining, onJoin }: {
+function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onSelect, onToggleExpand, selected, expanded, rowRef, isOrganizer, isParticipant, isPending, isJoining, onJoin }: {
   href: string; moreInfoHref?: string; time: string; timeColorClass: string; title: string; genres?: string[] | null;
   onSelect?: () => void; onToggleExpand?: () => void; selected?: boolean; expanded?: boolean; rowRef?: (el: HTMLDivElement | null) => void;
-  isCreator?: boolean; isParticipant?: boolean; isPending?: boolean; isJoining?: boolean; onJoin?: () => void;
+  isOrganizer?: boolean; isParticipant?: boolean; isPending?: boolean; isJoining?: boolean; onJoin?: () => void;
 }) {
   const content = (
     <>
@@ -96,7 +96,7 @@ function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onS
         </div>
         {expanded && (
           <div className="flex items-center gap-2 mt-2.5 pl-17">
-            {isCreator ? (
+            {isOrganizer ? (
               <Link
                 href={href}
                 onClick={(e) => e.stopPropagation()}
@@ -116,7 +116,7 @@ function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onS
             {/* CTA jam, reflète le statut d'inscription — même logique que
                 les cards de la page Events (S'inscrire / En attente / Jouer).
                 Pas de CTA pour l'organisateur : "Gérer" suffit. */}
-            {onJoin && !isCreator && (
+            {onJoin && !isOrganizer && (
               isParticipant ? (
                 <Link
                   href={href}
@@ -207,12 +207,12 @@ export default function HomeFeed({
     if (jamIds.length === 0) return;
     const { data: partData } = await supabase
       .from("jam_participants")
-      .select("jam_id, user_id, status, profile:profiles(id, username, avatar_url)")
+      .select("jam_id, user_id, status, is_organizer, profile:profiles(id, username, avatar_url)")
       .in("jam_id", jamIds);
     const map: Record<string, ParticipantWithProfile[]> = {};
     for (const p of (partData ?? []) as any[]) {
       if (!map[p.jam_id]) map[p.jam_id] = [];
-      map[p.jam_id].push({ user_id: p.user_id, profile: p.profile ?? null, status: p.status });
+      map[p.jam_id].push({ user_id: p.user_id, profile: p.profile ?? null, status: p.status, is_organizer: !!p.is_organizer });
     }
     setParticipantsMap(map);
   }, []);
@@ -453,6 +453,10 @@ export default function HomeFeed({
           )}
           {filteredJams.map((jam) => {
             const myParticipation = (participantsMap[jam.id] ?? []).find((p) => p.user_id === currentUserId);
+            const isParticipant = myParticipation?.status === "confirmed";
+            // "Gérer" doit aussi apparaître pour les co-organisateurs, pas
+            // seulement le créateur de la jam.
+            const isOrganizer = isOwner(jam, currentUserId) || (isParticipant && myParticipation?.is_organizer === true);
             return (
               <EventRow
                 key={jam.id}
@@ -467,8 +471,8 @@ export default function HomeFeed({
                 selected={jam.id === selectedJamId}
                 expanded={expandedJamIds.has(jam.id)}
                 rowRef={(el) => { jamRowRefs.current[jam.id] = el; }}
-                isCreator={isOwner(jam, currentUserId)}
-                isParticipant={myParticipation?.status === "confirmed"}
+                isOrganizer={isOrganizer}
+                isParticipant={isParticipant}
                 isPending={myParticipation?.status === "pending"}
                 isJoining={joiningJamId === jam.id}
                 onJoin={() => handleJoinJam(jam.id)}

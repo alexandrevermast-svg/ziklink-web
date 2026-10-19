@@ -26,7 +26,7 @@ const EventMap = dynamic(() => import("@/components/EventMap"), {
 });
 
 type Profile = Pick<ProfileRow, "id" | "username" | "avatar_url">;
-interface ParticipantWithProfile { user_id: string; profile: Profile | null; status: string; }
+interface ParticipantWithProfile { user_id: string; profile: Profile | null; status: string; is_organizer: boolean; }
 
 function getLatLng(location: string | null): LatLng | null {
   if (!location) return null;
@@ -288,12 +288,12 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
 
   const fetchParticipants = useCallback(async (jamIds: string[]) => {
     const { data } = await supabase.from("jam_participants")
-      .select("jam_id, user_id, status, profile:profiles(id, username, avatar_url)").in("jam_id", jamIds);
+      .select("jam_id, user_id, status, is_organizer, profile:profiles(id, username, avatar_url)").in("jam_id", jamIds);
     if (data) {
       const map: Record<string, ParticipantWithProfile[]> = {};
       for (const p of data as any[]) {
         if (!map[p.jam_id]) map[p.jam_id] = [];
-        map[p.jam_id].push({ user_id: p.user_id, profile: p.profile ?? null, status: p.status });
+        map[p.jam_id].push({ user_id: p.user_id, profile: p.profile ?? null, status: p.status, is_organizer: !!p.is_organizer });
       }
       setParticipantsMap(map);
     }
@@ -647,13 +647,15 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
             const myParticipation = participants.find((p) => p.user_id === currentUserId);
             const isParticipant = myParticipation?.status === "confirmed";
             const isPending = myParticipation?.status === "pending";
-            const isCreator = isOwner(jam, currentUserId);
+            // "Gérer" doit aussi apparaître pour les co-organisateurs, pas
+            // seulement le créateur de la jam.
+            const isOrganizer = isOwner(jam, currentUserId) || (isParticipant && myParticipation?.is_organizer === true);
 
             return (
               <JamCard
                 key={jam.id}
                 jam={jam}
-                isCreator={isCreator}
+                isOrganizer={isOrganizer}
                 isParticipant={isParticipant}
                 isPending={isPending}
                 isJoining={joiningJamId === jam.id}

@@ -27,7 +27,7 @@ export interface JamCardData {
 
 interface JamCardProps {
   jam: JamCardData;
-  isCreator: boolean;
+  isOrganizer: boolean;
   isParticipant: boolean;
   isPending: boolean;
   isJoining: boolean;
@@ -55,7 +55,7 @@ const GENRE_POSTERS: Record<string, string> = {
 };
 
 export default function JamCard({
-  jam, isCreator, isParticipant, isPending, isJoining, isInterested, isInterestPending, joinOpen, distanceKm,
+  jam, isOrganizer, isParticipant, isPending, isJoining, isInterested, isInterestPending, joinOpen, distanceKm,
   participantCount, interestedCount, expanded, onToggleExpand, isSelected, cardRef,
   onToggleInterest, onJoin,
 }: JamCardProps) {
@@ -160,7 +160,7 @@ export default function JamCard({
           ))}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          {isCreator && (
+          {isOrganizer && (
             <button
               onClick={(e) => { e.stopPropagation(); router.push(`/events/jams/${jam.id}`); }}
               title="Gérer la jam"
@@ -175,7 +175,7 @@ export default function JamCard({
             text={jam.description ?? undefined}
             className="h-7 w-7 flex items-center justify-center rounded-full text-gray-300 hover:text-zik-grad-to hover:bg-white/8 transition-colors"
           />
-          {!isCreator && (
+          {!isOrganizer && (
             <button
               onClick={(e) => onToggleInterest(jam.id, e)}
               disabled={isInterestPending}
@@ -188,7 +188,7 @@ export default function JamCard({
           {/* Un seul bouton CTA qui reflète le statut d'inscription — pas de
               bouton "Détails" séparé pour les non-organisateurs, pour éviter
               d'avoir deux affordances qui mènent presque au même endroit. */}
-          {!isCreator && (
+          {!isOrganizer && (
             isParticipant ? (
               <Button
                 className="text-sm font-semibold bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
@@ -217,7 +217,7 @@ export default function JamCard({
               </span>
             )
           )}
-          {isCreator && (
+          {isOrganizer && (
             <span className="text-xs text-gray-300 italic">
               {participantCount ?? 0} inscrit{(participantCount ?? 0) > 1 ? "s" : ""} · {interestedCount ?? 0} intéressé{(interestedCount ?? 0) > 1 ? "s" : ""}
             </span>
