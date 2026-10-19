@@ -230,7 +230,7 @@ export function SlotsTab({
                 {isCurrentSlot && (
                   <div className="flex items-center gap-1.5 mb-1">
                     <span className="h-2 w-2 rounded-full bg-zik-emerald shadow-[0_0_0_3px_rgba(52,211,153,0.22)]" />
-                    <span className="text-xs font-extrabold tracking-wide text-zik-emerald">EN DIRECT</span>
+                    <span className="text-xs font-extrabold tracking-wide text-zik-emerald">EN COURS</span>
                   </div>
                 )}
                 {isEditingSong && !soloMode ? (
