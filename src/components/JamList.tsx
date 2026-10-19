@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import moment from "moment-timezone";
 import { ChevronDown, Drum, Piano, LocateFixed, Check } from "lucide-react";
@@ -195,6 +195,7 @@ interface JamListProps {
 export default function JamList({ initialJams, initialParticipantsMap }: JamListProps = {}) {
   const supabase = createClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [jams, setJams] = useState<JamSession[]>(initialJams ?? []);
   const [participantsMap, setParticipantsMap] = useState<Record<string, ParticipantWithProfile[]>>(initialParticipantsMap ?? {});
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -271,6 +272,19 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
 
     return () => cancelAnimationFrame(frame);
   }, [scrollTrigger]);
+
+  // Arrivée depuis l'accueil via "Plus d'infos" (?jam=<id>) : sélectionne et
+  // déplie directement la card concernée, une seule fois.
+  const appliedInitialJamRef = useRef(false);
+  useEffect(() => {
+    if (appliedInitialJamRef.current) return;
+    const targetId = searchParams.get("jam");
+    if (!targetId || !jams.some((j) => j.id === targetId)) return;
+    appliedInitialJamRef.current = true;
+    setSelectedJamId(targetId);
+    setExpandedJamIds((prev) => new Set(prev).add(targetId));
+    setScrollTrigger({ id: targetId, token: Date.now() });
+  }, [jams, searchParams]);
 
   const fetchParticipants = useCallback(async (jamIds: string[]) => {
     const { data } = await supabase.from("jam_participants")

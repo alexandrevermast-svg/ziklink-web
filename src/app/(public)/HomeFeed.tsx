@@ -48,8 +48,8 @@ function dayBounds() {
 // le pin ET déplie la ligne, qui donne alors accès à "Plus d'infos" (page
 // events) et "Rejoindre" (page détail, tableau des passages) — plutôt que de
 // naviguer direct au clic.
-function EventRow({ href, time, timeColorClass, title, genres, onSelect, selected, expanded, rowRef }: {
-  href: string; time: string; timeColorClass: string; title: string; genres?: string[] | null;
+function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onSelect, selected, expanded, rowRef }: {
+  href: string; moreInfoHref?: string; time: string; timeColorClass: string; title: string; genres?: string[] | null;
   onSelect?: () => void; selected?: boolean; expanded?: boolean; rowRef?: (el: HTMLDivElement | null) => void;
 }) {
   const content = (
@@ -89,7 +89,7 @@ function EventRow({ href, time, timeColorClass, title, genres, onSelect, selecte
         {expanded && (
           <div className="flex items-center gap-2 mt-2.5 pl-17">
             <Link
-              href="/events"
+              href={moreInfoHref ?? "/events"}
               onClick={(e) => e.stopPropagation()}
               className="text-xs font-medium px-3 py-1.5 rounded-full border border-white/10 text-gray-300 hover:border-white/20 hover:text-white transition-colors"
             >
@@ -389,6 +389,7 @@ export default function HomeFeed({
             <EventRow
               key={jam.id}
               href={`/events/jams/${jam.id}`}
+              moreInfoHref={`/events?jam=${jam.id}`}
               time={formatTime(jam.start_time)}
               timeColorClass="text-amber-400"
               title={jam.title}
