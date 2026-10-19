@@ -314,7 +314,7 @@ export function SlotsTab({
               <div className="pt-0.5">{marker}</div>
               <div className={cardClass}>
                 {header}
-                {!isCurrentSlot && songScaleControls}
+                {songScaleControls}
                 <div className="flex flex-col gap-1.5 p-3">
                   {instruments.map((inst) => {
                     const slot = getSlot(inst.key, rowIdx);
