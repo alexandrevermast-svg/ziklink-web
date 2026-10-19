@@ -295,7 +295,9 @@ textarea.zik-input {
   color: #A855F7 !important;
 }
 .leaflet-tile {
-  filter: brightness(2) contrast(1) saturate(1.2) !important;
+  /* Teinte les tuiles CartoDB (grises par défaut) vers le violet de
+     l'identité visuelle de l'app, sans changer de fournisseur de carte. */
+  filter: brightness(2) contrast(1) saturate(1.6) hue-rotate(60deg) !important;
 }
 
 /* Attribution OSM/CARTO — toujours visible (requis par leurs CGU), mais
