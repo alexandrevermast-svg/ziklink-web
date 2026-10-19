@@ -99,30 +99,34 @@ export default function JamCard({
             {formatTime(jam.start_time)}
             {jam.end_at && ` → ${formatTime(jam.end_at)}`}
           </span>
-          {distanceKm !== undefined && (
-            <span className="flex items-center gap-1 text-zik-grad-to font-medium">
-              <LocateFixed className="h-3.5 w-3.5" />
-              {formatDistanceKm(distanceKm)}
-            </span>
-          )}
         </div>
-        {addressParts && (addressParts.name || addressParts.detail) && (
-          <MapLink
-            address={[addressParts.name, addressParts.detail].filter(Boolean).join(", ")}
-            mapsUrl={mapsUrl}
-            className="group flex items-start gap-1.5 mt-2 text-left"
-          >
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-gray-300 mt-0.5 group-hover:text-zik-grad-to transition-colors" />
-            <span className="min-w-0 leading-tight">
-              {addressParts.name && <span className="block text-sm text-gray-200">{addressParts.name}</span>}
-              {addressParts.detail && (
-                <span className={`block line-clamp-2 text-gray-400 ${addressParts.name ? "text-xs mt-0.5" : "text-sm"}`}>
-                  {addressParts.detail}
+        {(addressParts && (addressParts.name || addressParts.detail)) || distanceKm !== undefined ? (
+          <div className="flex items-start justify-between gap-2 mt-2">
+            {addressParts && (addressParts.name || addressParts.detail) && (
+              <MapLink
+                address={[addressParts.name, addressParts.detail].filter(Boolean).join(", ")}
+                mapsUrl={mapsUrl}
+                className="group flex items-start gap-1.5 text-left min-w-0 flex-1"
+              >
+                <MapPin className="h-3.5 w-3.5 shrink-0 text-gray-300 mt-0.5 group-hover:text-zik-grad-to transition-colors" />
+                <span className="min-w-0 leading-tight">
+                  {addressParts.name && <span className="block text-sm text-gray-200">{addressParts.name}</span>}
+                  {addressParts.detail && (
+                    <span className={`block line-clamp-2 text-gray-400 ${addressParts.name ? "text-xs mt-0.5" : "text-sm"}`}>
+                      {addressParts.detail}
+                    </span>
+                  )}
                 </span>
-              )}
-            </span>
-          </MapLink>
-        )}
+              </MapLink>
+            )}
+            {distanceKm !== undefined && (
+              <span className="flex items-center gap-1 text-sm text-white font-medium shrink-0">
+                <LocateFixed className="h-3.5 w-3.5" />
+                {formatDistanceKm(distanceKm)}
+              </span>
+            )}
+          </div>
+        ) : null}
       </div>
 
       <div className={`grid overflow-hidden transition-all duration-300 ease-in-out ${
