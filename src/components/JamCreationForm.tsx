@@ -85,10 +85,11 @@ function formatDateShort(d: Date) {
 export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormProps) {
   const supabase = createClient();
   const [formData, setFormData] = useState<JamFormData>({
-    title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true, solo_mode: false,
+    title: "", description: "", date: "", start_hour: "19:00", end_hour: "", is_open: true, has_drums: true, has_keyboard: true, solo_mode: false,
     genres: [],
     location: { lat: 48.8566, lng: 2.3522, address: "" },
   });
+  const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
@@ -244,7 +245,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
           .in("id", (createdJams ?? []).map((j: any) => j.jam_id));
       }
 
-      setFormData({ title: "", description: "", date: "", start_hour: "", end_hour: "", is_open: true, has_drums: true, has_keyboard: true, solo_mode: false, genres: [], location: { lat: 48.8566, lng: 2.3522, address: "" } });
+      setFormData({ title: "", description: "", date: "", start_hour: "19:00", end_hour: "", is_open: true, has_drums: true, has_keyboard: true, solo_mode: false, genres: [], location: { lat: 48.8566, lng: 2.3522, address: "" } });
       setPosterFile(null);
       setPosterPreview(null);
       setSelectedLocation(null);
@@ -320,7 +321,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
     <label className="text-sm font-medium text-zik-text">
       Date <span className="text-zik-red">*</span>
     </label>
-    <Popover>
+    <Popover open={isDatePopoverOpen} onOpenChange={setIsDatePopoverOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -350,6 +351,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
               const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
               const day = String(selectedDate.getDate()).padStart(2, '0');
               setFormData((prev) => ({ ...prev, date: `${year}-${month}-${day}` }));
+              setIsDatePopoverOpen(false);
             }
           }}
           locale={fr}

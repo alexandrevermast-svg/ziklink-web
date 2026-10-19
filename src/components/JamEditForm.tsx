@@ -53,6 +53,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
   const [title, setTitle] = useState(jam.title);
   const [description, setDescription] = useState(jam.description);
   const [date, setDate] = useState(startLocal.format('YYYY-MM-DD'));
+  const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false);
   const [startHour, setStartHour] = useState(startLocal.format('HH:mm'));
   const [endHour, setEndHour] = useState(endLocal ? endLocal.format('HH:mm') : "");
   const [isOpen, setIsOpen] = useState(jam.is_open);
@@ -216,7 +217,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
         {/* Date */}
         <div>
           <label className="text-sm font-medium text-zik-text mb-1 block">Date</label>
-          <Popover>
+          <Popover open={isDatePopoverOpen} onOpenChange={setIsDatePopoverOpen}>
             <PopoverTrigger asChild>
               <Button
                 type="button"
@@ -247,6 +248,7 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
                     const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
                     const day = String(selectedDate.getDate()).padStart(2, '0');
                     setDate(`${year}-${month}-${day}`);
+                    setIsDatePopoverOpen(false);
                   }
                 }}
                 locale={fr}
