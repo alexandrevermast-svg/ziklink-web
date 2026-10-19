@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { MapPin, Clock, UserPlus, Check, Drum, Piano, LocateFixed, Heart, ArrowUpRight } from "lucide-react";
+import { MapPin, Clock, UserPlus, Check, Drum, Piano, LocateFixed, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ShareButton from "@/components/ShareButton";
 import { MapLink } from "@/components/MapLink";
@@ -163,9 +163,9 @@ export default function JamCard({
           <button
             onClick={(e) => { e.stopPropagation(); router.push(`/events/jams/${jam.id}`); }}
             title="Voir la jam en détail"
-            className="h-7 w-7 flex items-center justify-center rounded-full text-gray-300 hover:text-zik-grad-to hover:bg-white/8 transition-colors"
+            className="text-xs font-medium px-3 py-1.5 rounded-full border border-white/10 text-gray-300 hover:border-white/20 hover:text-white transition-colors"
           >
-            <ArrowUpRight className="h-4 w-4" />
+            Détails
           </button>
           <ShareButton
             url={`/events/jams/${jam.id}`}
