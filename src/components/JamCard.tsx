@@ -193,12 +193,11 @@ export default function JamCard({
               </Button>
             ) : joinOpen ? (
               <Button
-                size="sm"
-                className="text-xs bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white"
+                className="text-sm font-semibold bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
                 onClick={(e) => onJoin(jam.id, e)}
                 disabled={isJoining}
               >
-                <UserPlus className="h-3.5 w-3.5 mr-1" />
+                <UserPlus className="h-4 w-4 mr-1.5" />
                 {isJoining ? "..." : "Rejoindre"}
               </Button>
             ) : (
