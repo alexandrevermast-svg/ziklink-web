@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Lock, Unlock, Repeat2, Users, MapPin, CalendarDays, Clock, Drum, Piano, Upload, X, Mic } from "lucide-react";
+import { Lock, Unlock, Repeat2, Users, MapPin, CalendarDays, Clock, Drum, Piano, Upload, X, Mic, Guitar } from "lucide-react";
 import AddressSearchInput from '@/components/AddressSearchInput';
 import { toUtcDateTime, resolveEndDateTime } from '@/lib/eventDateTime';
 import { Calendar } from "@/components/ui/calendar";
@@ -564,26 +564,40 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         />
       </div>
 
-      {/* Mode solo */}
-      <div className="flex items-center justify-between rounded-lg border border-zik-border p-4 bg-zik-card/50">
-        <div className="flex items-center gap-3">
-          <Mic className={`h-5 w-5 ${formData.solo_mode ? "text-zik-grad-to" : "text-zik-muted"}`} />
-          <div>
-            <p className="text-sm font-medium text-zik-text">
-              {formData.solo_mode ? "Un·e musicien·ne à la fois" : "Plusieurs musiciens par passage"}
-            </p>
-            <p className="text-xs text-zik-muted">
-              {formData.solo_mode
-                ? "Un seul créneau par passage, sans distinction d'instrument"
-                : "Chaque passage se remplit instrument par instrument"}
-            </p>
-          </div>
+      {/* Format : jam classique ou open mic (mode solo) */}
+      <div className="rounded-lg border border-zik-border p-4 bg-zik-card/50">
+        <label className="text-sm font-medium text-zik-text mb-2 block">Format</label>
+        <div className="grid grid-cols-2 gap-1 bg-zik-bg p-1 rounded-full border border-zik-border">
+          <button
+            type="button"
+            onClick={() => setFormData((prev) => ({ ...prev, solo_mode: false }))}
+            className={cn(
+              "flex items-center justify-center gap-1.5 py-2 rounded-full text-sm font-medium transition-all",
+              !formData.solo_mode
+                ? "bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
+                : "text-zik-muted hover:text-zik-text"
+            )}
+          >
+            <Guitar className="h-4 w-4" /> Jam
+          </button>
+          <button
+            type="button"
+            onClick={() => setFormData((prev) => ({ ...prev, solo_mode: true }))}
+            className={cn(
+              "flex items-center justify-center gap-1.5 py-2 rounded-full text-sm font-medium transition-all",
+              formData.solo_mode
+                ? "bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
+                : "text-zik-muted hover:text-zik-text"
+            )}
+          >
+            <Mic className="h-4 w-4" /> Open mic
+          </button>
         </div>
-        <Switch
-          checked={formData.solo_mode}
-          onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, solo_mode: checked }))}
-          className="data-[state=checked]:bg-zik-grad-to data-[state=unchecked]:bg-zik-card-hover"
-        />
+        <p className="text-xs text-zik-muted mt-2">
+          {formData.solo_mode
+            ? "Un·e seul·e musicien·ne à la fois, à tour de rôle"
+            : "Plusieurs musiciens jouent en même temps, un par instrument"}
+        </p>
       </div>
 
       {/* Batterie */}
