@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useRef } from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -193,6 +193,20 @@ export default function HomeFeed({
   const selectedDay = dayFilter === "today" ? today : tomorrow;
   const selectedDayEnd = new Date(selectedDay.getTime() + 86400000);
 
+  const refetchParticipants = useCallback(async (jamIds: string[]) => {
+    if (jamIds.length === 0) return;
+    const { data: partData } = await supabase
+      .from("jam_participants")
+      .select("jam_id, user_id, status, profile:profiles(id, username, avatar_url)")
+      .in("jam_id", jamIds);
+    const map: Record<string, ParticipantWithProfile[]> = {};
+    for (const p of (partData ?? []) as any[]) {
+      if (!map[p.jam_id]) map[p.jam_id] = [];
+      map[p.jam_id].push({ user_id: p.user_id, profile: p.profile ?? null, status: p.status });
+    }
+    setParticipantsMap(map);
+  }, []);
+
   // Re-fetch après une action (rejoindre une jam depuis la carte) — le rendu
   // initial vient du serveur.
   const refetch = useCallback(async () => {
@@ -211,17 +225,7 @@ export default function HomeFeed({
     setJams(jamsData ?? []);
 
     if (jamsData && jamsData.length > 0) {
-      const ids = jamsData.map((j) => j.id);
-      const { data: partData } = await supabase
-        .from("jam_participants")
-        .select("jam_id, user_id, status, profile:profiles(id, username, avatar_url)")
-        .in("jam_id", ids);
-      const map: Record<string, ParticipantWithProfile[]> = {};
-      for (const p of (partData ?? []) as any[]) {
-        if (!map[p.jam_id]) map[p.jam_id] = [];
-        map[p.jam_id].push({ user_id: p.user_id, profile: p.profile ?? null, status: p.status });
-      }
-      setParticipantsMap(map);
+      await refetchParticipants(jamsData.map((j) => j.id));
     }
 
     const { data: concertsData } = await supabase
@@ -243,7 +247,27 @@ export default function HomeFeed({
       }
       setMyInterests(mySet);
     }
-  }, [dayAfterTomorrow]);
+  }, [dayAfterTomorrow, refetchParticipants]);
+
+  // Statuts d'inscription (S'inscrire / En attente / Jouer) en temps réel —
+  // même logique que la liste de la page Events.
+  const jamIdsKey = useMemo(() => jams.map((j) => j.id).join(","), [jams]);
+  useEffect(() => {
+    const jamIds = jamIdsKey ? jamIdsKey.split(",") : [];
+    if (jamIds.length === 0) return;
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    const refetchSoon = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => refetchParticipants(jamIds), 250);
+    };
+    const channel = supabase.channel(`home-jams-participants-${jamIdsKey}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "jam_participants", filter: `jam_id=in.(${jamIdsKey})` }, refetchSoon)
+      .subscribe();
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      supabase.removeChannel(channel);
+    };
+  }, [jamIdsKey, refetchParticipants]);
 
   const handleJoinJam = useCallback(async (jamId: string) => {
     if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${jamId}`)}`); return; }

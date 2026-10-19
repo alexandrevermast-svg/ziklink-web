@@ -334,6 +334,27 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
     fetchAll();
   }, [fetchParticipants]);
 
+  // Statuts d'inscription (S'inscrire / En attente / Jouer) en temps réel —
+  // sinon une approbation faite par l'organisateur ailleurs (ou depuis un
+  // autre appareil) ne se reflète sur cette liste qu'au prochain chargement.
+  const jamIdsKey = useMemo(() => jams.map((j) => j.id).join(","), [jams]);
+  useEffect(() => {
+    const jamIds = jamIdsKey ? jamIdsKey.split(",") : [];
+    if (jamIds.length === 0) return;
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    const refetchSoon = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => fetchParticipants(jamIds), 250);
+    };
+    const channel = supabase.channel(`jams-list-participants-${jamIdsKey}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "jam_participants", filter: `jam_id=in.(${jamIdsKey})` }, refetchSoon)
+      .subscribe();
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      supabase.removeChannel(channel);
+    };
+  }, [jamIdsKey, fetchParticipants]);
+
   const handleJoin = useCallback(async (jamId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${jamId}`)}`); return; }
