@@ -7,10 +7,10 @@ import type { JamSlot, JamInstrument, Profile } from "../types";
 import { getDisplayName } from "../types";
 
 function InstrumentIcon({ instKey, emoji }: { instKey: string; emoji: string }) {
-  if (instKey === "guitare") return <GuitarHeadstockIcon className="h-7 w-7 object-contain shrink-0" />;
-  if (instKey === "basse") return <BassHeadstockIcon className="h-7 w-7 object-contain shrink-0" />;
-  if (instKey === "guitare_acoustique") return <Guitar className="h-7 w-7 shrink-0" />;
-  return <span className="text-2xl leading-none shrink-0">{emoji}</span>;
+  if (instKey === "guitare") return <GuitarHeadstockIcon className="h-8 w-8 object-contain shrink-0" />;
+  if (instKey === "basse") return <BassHeadstockIcon className="h-8 w-8 object-contain shrink-0" />;
+  if (instKey === "guitare_acoustique") return <Guitar className="h-8 w-8 shrink-0" />;
+  return <span className="text-3xl leading-none shrink-0">{emoji}</span>;
 }
 
 // Clé technique utilisée comme "instrument" quand la jam est en mode solo —
