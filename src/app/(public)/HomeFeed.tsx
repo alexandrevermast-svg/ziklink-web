@@ -119,12 +119,12 @@ function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onS
                 Pas de CTA pour l'organisateur : "Gérer" suffit. */}
             {onJoin && !isOrganizer && (
               isParticipant ? (
-                <Button asChild
-                  className="text-sm font-semibold bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
+                <Button asChild size="sm"
+                  className="text-xs font-semibold bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Link href={href}>
-                    <Play className="h-4 w-4 mr-1.5 fill-current" />
+                    <Play className="h-3 w-3 mr-1 fill-current" />
                     Jouer
                   </Link>
                 </Button>
@@ -133,12 +133,12 @@ function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onS
                   <Clock className="h-3 w-3" /> En attente
                 </span>
               ) : (
-                <Button
-                  className="text-sm font-semibold bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
+                <Button size="sm"
+                  className="text-xs font-semibold bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
                   onClick={(e) => { e.stopPropagation(); onJoin(); }}
                   disabled={isJoining}
                 >
-                  <UserPlus className="h-4 w-4 mr-1.5" />
+                  <UserPlus className="h-3 w-3 mr-1" />
                   {isJoining ? "..." : "S'inscrire"}
                 </Button>
               )
