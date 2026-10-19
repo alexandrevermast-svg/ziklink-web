@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import moment from "moment-timezone";
-import { ChevronRight, ChevronDown, Music2, Megaphone } from "lucide-react";
+import { ChevronRight, ChevronDown, Music2, Megaphone, UserPlus, Play, Clock } from "lucide-react";
 import { GroupAvatar } from "@/app/(protected)/groups/GroupAvatar";
 import { genreColor } from "@/lib/musicGenres";
 import type { EventMarker } from "@/components/EventMap";
@@ -48,9 +48,10 @@ function dayBounds() {
 // le pin ET déplie la ligne, qui donne alors accès à "Plus d'infos" (page
 // events) et "Rejoindre" (page détail, tableau des passages) — plutôt que de
 // naviguer direct au clic.
-function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onSelect, onToggleExpand, selected, expanded, rowRef }: {
+function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onSelect, onToggleExpand, selected, expanded, rowRef, isCreator, isParticipant, isPending, isJoining, onJoin }: {
   href: string; moreInfoHref?: string; time: string; timeColorClass: string; title: string; genres?: string[] | null;
   onSelect?: () => void; onToggleExpand?: () => void; selected?: boolean; expanded?: boolean; rowRef?: (el: HTMLDivElement | null) => void;
+  isCreator?: boolean; isParticipant?: boolean; isPending?: boolean; isJoining?: boolean; onJoin?: () => void;
 }) {
   const content = (
     <>
@@ -102,13 +103,32 @@ function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onS
             >
               Plus d'infos
             </Link>
-            <Link
-              href={href}
-              onClick={(e) => e.stopPropagation()}
-              className="text-xs font-medium px-3 py-1.5 rounded-full bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white hover:brightness-110 transition-all"
-            >
-              Rejoindre
-            </Link>
+            {/* CTA jam, reflète le statut d'inscription — même logique que
+                les cards de la page Events (S'inscrire / En attente / Jouer).
+                Pas de CTA pour l'organisateur : "Plus d'infos" suffit. */}
+            {onJoin && !isCreator && (
+              isParticipant ? (
+                <Link
+                  href={href}
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white hover:brightness-110 transition-all"
+                >
+                  <Play className="h-3 w-3 fill-current" /> Jouer
+                </Link>
+              ) : isPending ? (
+                <span className="flex items-center gap-1 text-xs font-medium text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full">
+                  <Clock className="h-3 w-3" /> En attente
+                </span>
+              ) : (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onJoin(); }}
+                  disabled={isJoining}
+                  className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white hover:brightness-110 transition-all disabled:opacity-50"
+                >
+                  <UserPlus className="h-3 w-3" /> {isJoining ? "..." : "S'inscrire"}
+                </button>
+              )
+            )}
           </div>
         )}
       </div>
@@ -153,7 +173,7 @@ export default function HomeFeed({
   const [participantsMap, setParticipantsMap] = useState(initialParticipantsMap);
   const [myInterests, setMyInterests] = useState<Set<string>>(new Set(initialMyInterests));
   const [dayFilter, setDayFilter] = useState<DayFilter>("today");
-  const { joinJam } = useJamParticipation();
+  const { joinJam, pendingJamId: joiningJamId } = useJamParticipation();
   const { ensureStageName, ...stageNamePrompt } = useStageNamePrompt();
   const [selectedJamId, setSelectedJamId] = useState<string | null>(null);
   const [expandedJamIds, setExpandedJamIds] = useState<Set<string>>(new Set());
@@ -194,12 +214,12 @@ export default function HomeFeed({
       const ids = jamsData.map((j) => j.id);
       const { data: partData } = await supabase
         .from("jam_participants")
-        .select("jam_id, user_id, profile:profiles(id, username, avatar_url)")
+        .select("jam_id, user_id, status, profile:profiles(id, username, avatar_url)")
         .in("jam_id", ids);
       const map: Record<string, ParticipantWithProfile[]> = {};
       for (const p of (partData ?? []) as any[]) {
         if (!map[p.jam_id]) map[p.jam_id] = [];
-        map[p.jam_id].push({ user_id: p.user_id, profile: p.profile ?? null });
+        map[p.jam_id].push({ user_id: p.user_id, profile: p.profile ?? null, status: p.status });
       }
       setParticipantsMap(map);
     }
@@ -391,22 +411,30 @@ export default function HomeFeed({
           {filteredJams.length > 0 && (
             <p className="mb-0.5 text-[11px] font-bold tracking-wide text-amber-400 uppercase">Jams</p>
           )}
-          {filteredJams.map((jam) => (
-            <EventRow
-              key={jam.id}
-              href={`/events/jams/${jam.id}`}
-              moreInfoHref={`/events?jam=${jam.id}`}
-              time={formatTime(jam.start_time)}
-              timeColorClass="text-amber-400"
-              title={jam.title}
-              genres={jam.genres}
-              onSelect={() => setSelectedJamId(jam.id)}
-              onToggleExpand={() => handleToggleExpandJamRow(jam.id)}
-              selected={jam.id === selectedJamId}
-              expanded={expandedJamIds.has(jam.id)}
-              rowRef={(el) => { jamRowRefs.current[jam.id] = el; }}
-            />
-          ))}
+          {filteredJams.map((jam) => {
+            const myParticipation = (participantsMap[jam.id] ?? []).find((p) => p.user_id === currentUserId);
+            return (
+              <EventRow
+                key={jam.id}
+                href={`/events/jams/${jam.id}`}
+                moreInfoHref={`/events?jam=${jam.id}`}
+                time={formatTime(jam.start_time)}
+                timeColorClass="text-amber-400"
+                title={jam.title}
+                genres={jam.genres}
+                onSelect={() => setSelectedJamId(jam.id)}
+                onToggleExpand={() => handleToggleExpandJamRow(jam.id)}
+                selected={jam.id === selectedJamId}
+                expanded={expandedJamIds.has(jam.id)}
+                rowRef={(el) => { jamRowRefs.current[jam.id] = el; }}
+                isCreator={isOwner(jam, currentUserId)}
+                isParticipant={myParticipation?.status === "confirmed"}
+                isPending={myParticipation?.status === "pending"}
+                isJoining={joiningJamId === jam.id}
+                onJoin={() => handleJoinJam(jam.id)}
+              />
+            );
+          })}
 
           {filteredConcerts.length > 0 && (
             <>

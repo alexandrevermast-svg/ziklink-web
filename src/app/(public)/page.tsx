@@ -8,6 +8,7 @@ export type Concert = Pick<ConcertRow, "id" | "title" | "artist" | "start_time" 
 export interface ParticipantWithProfile {
   user_id: string;
   profile: Pick<Profile, "id" | "username" | "avatar_url"> | null;
+  status: string;
 }
 export interface RecruitingAd {
   id: string;
@@ -41,11 +42,11 @@ export default async function HomePage() {
     const ids = jams.map((j) => j.id);
     const { data: partData } = await supabase
       .from("jam_participants")
-      .select("jam_id, user_id, profile:profiles(id, username, avatar_url)")
+      .select("jam_id, user_id, status, profile:profiles(id, username, avatar_url)")
       .in("jam_id", ids);
     for (const p of (partData ?? []) as any[]) {
       if (!participantsMap[p.jam_id]) participantsMap[p.jam_id] = [];
-      participantsMap[p.jam_id].push({ user_id: p.user_id, profile: p.profile ?? null });
+      participantsMap[p.jam_id].push({ user_id: p.user_id, profile: p.profile ?? null, status: p.status });
     }
   }
 
