@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { MapPin, Clock, UserPlus, Check, Drum, Piano, LocateFixed, Heart } from "lucide-react";
+import { MapPin, Clock, UserPlus, Play, Drum, Piano, LocateFixed, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ShareButton from "@/components/ShareButton";
 import { MapLink } from "@/components/MapLink";
@@ -29,6 +29,7 @@ interface JamCardProps {
   jam: JamCardData;
   isCreator: boolean;
   isParticipant: boolean;
+  isPending: boolean;
   isJoining: boolean;
   isInterested: boolean;
   isInterestPending: boolean;
@@ -42,7 +43,6 @@ interface JamCardProps {
   cardRef?: (el: HTMLDivElement | null) => void;
   onToggleInterest: (jamId: string, e: React.MouseEvent) => void;
   onJoin: (jamId: string, e: React.MouseEvent) => void;
-  onLeave: (jamId: string, e: React.MouseEvent) => void;
 }
 
 function formatTime(d: string) {
@@ -55,9 +55,9 @@ const GENRE_POSTERS: Record<string, string> = {
 };
 
 export default function JamCard({
-  jam, isCreator, isParticipant, isJoining, isInterested, isInterestPending, joinOpen, distanceKm,
+  jam, isCreator, isParticipant, isPending, isJoining, isInterested, isInterestPending, joinOpen, distanceKm,
   participantCount, interestedCount, expanded, onToggleExpand, isSelected, cardRef,
-  onToggleInterest, onJoin, onLeave,
+  onToggleInterest, onJoin,
 }: JamCardProps) {
   const router = useRouter();
   const addressParts = getAddressParts(jam.location);
@@ -160,13 +160,15 @@ export default function JamCard({
           ))}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            onClick={(e) => { e.stopPropagation(); router.push(`/events/jams/${jam.id}`); }}
-            title="Voir la jam en détail"
-            className="text-xs font-medium px-3 py-1.5 rounded-full border border-white/10 text-gray-300 hover:border-white/20 hover:text-white transition-colors"
-          >
-            Détails
-          </button>
+          {isCreator && (
+            <button
+              onClick={(e) => { e.stopPropagation(); router.push(`/events/jams/${jam.id}`); }}
+              title="Voir la jam en détail"
+              className="text-xs font-medium px-3 py-1.5 rounded-full border border-white/10 text-gray-300 hover:border-white/20 hover:text-white transition-colors"
+            >
+              Détails
+            </button>
+          )}
           <ShareButton
             url={`/events/jams/${jam.id}`}
             title={jam.title}
@@ -183,18 +185,23 @@ export default function JamCard({
               <Heart className={`h-4 w-4 ${isInterested ? "text-zik-red fill-zik-red" : ""}`} />
             </button>
           )}
+          {/* Un seul bouton CTA qui reflète le statut d'inscription — pas de
+              bouton "Détails" séparé pour les non-organisateurs, pour éviter
+              d'avoir deux affordances qui mènent presque au même endroit. */}
           {!isCreator && (
             isParticipant ? (
               <Button
-                size="sm"
-                variant="outline"
-                className="text-xs border-zik-emerald/30 text-zik-emerald hover:bg-zik-red/10 hover:border-zik-red/30 hover:text-zik-red transition-colors"
-                onClick={(e) => onLeave(jam.id, e)}
-                disabled={isJoining}
+                className="text-sm font-semibold bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
+                onClick={(e) => { e.stopPropagation(); router.push(`/events/jams/${jam.id}`); }}
               >
-                <Check className="h-3.5 w-3.5 mr-1" />
-                {isJoining ? "..." : "Inscrit"}
+                <Play className="h-4 w-4 mr-1.5 fill-current" />
+                Jouer
               </Button>
+            ) : isPending ? (
+              <span className="flex items-center gap-1 text-xs font-medium text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full">
+                <Clock className="h-3.5 w-3.5" />
+                En attente
+              </span>
             ) : joinOpen ? (
               <Button
                 className="text-sm font-semibold bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
@@ -202,7 +209,7 @@ export default function JamCard({
                 disabled={isJoining}
               >
                 <UserPlus className="h-4 w-4 mr-1.5" />
-                {isJoining ? "..." : "Rejoindre"}
+                {isJoining ? "..." : "S'inscrire"}
               </Button>
             ) : (
               <span className="text-[10px] text-gray-300 italic">

@@ -26,7 +26,7 @@ const EventMap = dynamic(() => import("@/components/EventMap"), {
 });
 
 type Profile = Pick<ProfileRow, "id" | "username" | "avatar_url">;
-interface ParticipantWithProfile { user_id: string; profile: Profile | null; }
+interface ParticipantWithProfile { user_id: string; profile: Profile | null; status: string; }
 
 function getLatLng(location: string | null): LatLng | null {
   if (!location) return null;
@@ -199,7 +199,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
   const [jams, setJams] = useState<JamSession[]>(initialJams ?? []);
   const [participantsMap, setParticipantsMap] = useState<Record<string, ParticipantWithProfile[]>>(initialParticipantsMap ?? {});
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const { joinJam, leaveJam, pendingJamId: joiningJamId } = useJamParticipation();
+  const { joinJam, pendingJamId: joiningJamId } = useJamParticipation();
   const { markInterested, unmarkInterested, pendingJamId: interestPendingId } = useJamInterest();
   const { ensureStageName, ...stageNamePrompt } = useStageNamePrompt();
   const [myJamInterests, setMyJamInterests] = useState<Set<string>>(new Set());
@@ -288,12 +288,12 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
 
   const fetchParticipants = useCallback(async (jamIds: string[]) => {
     const { data } = await supabase.from("jam_participants")
-      .select("jam_id, user_id, profile:profiles(id, username, avatar_url)").in("jam_id", jamIds);
+      .select("jam_id, user_id, status, profile:profiles(id, username, avatar_url)").in("jam_id", jamIds);
     if (data) {
       const map: Record<string, ParticipantWithProfile[]> = {};
       for (const p of data as any[]) {
         if (!map[p.jam_id]) map[p.jam_id] = [];
-        map[p.jam_id].push({ user_id: p.user_id, profile: p.profile ?? null });
+        map[p.jam_id].push({ user_id: p.user_id, profile: p.profile ?? null, status: p.status });
       }
       setParticipantsMap(map);
     }
@@ -347,13 +347,6 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
     await joinJam(jamId, currentUserId, status);
     await fetchParticipants(jams.map((j) => j.id));
   }, [currentUserId, jams, fetchParticipants, joinJam, router, ensureStageName]);
-
-  const handleLeave = useCallback(async (jamId: string, e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    if (!currentUserId) return;
-    await leaveJam(jamId, currentUserId);
-    setParticipantsMap((prev) => ({ ...prev, [jamId]: (prev[jamId] ?? []).filter((p) => p.user_id !== currentUserId) }));
-  }, [currentUserId, leaveJam]);
 
   const handleToggleInterest = useCallback(async (jamId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -625,7 +618,9 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
         <div className="space-y-3">
           {displayJams.map((jam) => {
             const participants = participantsMap[jam.id] ?? [];
-            const isParticipant = participants.some((p) => p.user_id === currentUserId);
+            const myParticipation = participants.find((p) => p.user_id === currentUserId);
+            const isParticipant = myParticipation?.status === "confirmed";
+            const isPending = myParticipation?.status === "pending";
             const isCreator = isOwner(jam, currentUserId);
 
             return (
@@ -634,6 +629,7 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
                 jam={jam}
                 isCreator={isCreator}
                 isParticipant={isParticipant}
+                isPending={isPending}
                 isJoining={joiningJamId === jam.id}
                 isInterested={myJamInterests.has(jam.id)}
                 isInterestPending={interestPendingId === jam.id}
@@ -647,7 +643,6 @@ export default function JamList({ initialJams, initialParticipantsMap }: JamList
                 cardRef={(el) => { jamCardRefs.current[jam.id] = el; }}
                 onToggleInterest={handleToggleInterest}
                 onJoin={handleJoin}
-                onLeave={handleLeave}
               />
             );
           })}
