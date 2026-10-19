@@ -30,13 +30,13 @@ function NotifItem({
   onRead,
 }: {
   notif: Notification;
-  onRead: (id: string, link: string | null) => void;
+  onRead: (notif: Notification) => void;
 }) {
   const config = TYPE_CONFIG[notif.type] ?? { icon: '🔔', color: '#818CF8' };
 
   return (
     <button
-      onClick={() => onRead(notif.id, notif.link)}
+      onClick={() => onRead(notif)}
       className="w-full flex items-start gap-3 px-4 py-3 text-left transition-all duration-150"
       style={{
         background: notif.read ? 'transparent' : 'rgba(168,85,247,0.05)',
@@ -133,10 +133,15 @@ export default function NotificationBell({ userId }: { userId: string | null }) 
     setIsOpen((prev) => !prev);
   };
 
-  const handleRead = async (id: string, link: string | null) => {
-    await markRead(id);
+  const handleRead = async (notif: Notification) => {
+    await markRead(notif.id);
     setIsOpen(false);
-    if (link) router.push(link);
+    if (!notif.link) return;
+    // Une demande de participation renvoie vers la jam avec la modale des
+    // participants déjà ouverte, plutôt que de laisser l'organisateur la
+    // rechercher lui-même.
+    const destination = notif.type === 'jam_request' ? `${notif.link}?participants=1` : notif.link;
+    router.push(destination);
   };
 
   return (

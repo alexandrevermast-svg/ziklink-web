@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -42,6 +42,7 @@ interface JamDetailClientProps {
 export default function JamDetailClient({ jamId, initialJam, initialParticipants, initialSlots, initialInstruments }: JamDetailClientProps) {
   const id = jamId;
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const [jam, setJam] = useState<JamSession | null>(initialJam);
@@ -81,6 +82,18 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
   const isPending = participants.some((p) => p.user_id === currentUserId && p.status === "pending");
   const canInteract = isParticipant || isOrganizer;
   const joinOpen = jam ? canJoinJam(jam.start_time) : false;
+
+  // Arrivée depuis une notification de demande de participation
+  // (?participants=1) : ouvre directement la modale des participants.
+  const appliedParticipantsParamRef = useRef(false);
+  useEffect(() => {
+    if (appliedParticipantsParamRef.current) return;
+    if (currentUserId === null) return;
+    if (searchParams.get("participants") !== "1") return;
+    if (!isOrganizer) return;
+    appliedParticipantsParamRef.current = true;
+    setIsParticipantsModalOpen(true);
+  }, [currentUserId, isOrganizer, searchParams]);
 
   const numRows = useMemo(() => {
     if (jam?.last_slot_index != null) return jam.last_slot_index + 1;
