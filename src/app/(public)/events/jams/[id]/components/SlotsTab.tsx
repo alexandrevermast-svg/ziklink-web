@@ -209,7 +209,7 @@ export function SlotsTab({
         // (grille par instrument, ou créneau unique fusionné en mode solo).
         const renderSlotPill = (slot: JamSlot | null, instrumentKey: string, isMe: boolean, isClaiming: boolean, isPickerOpen: boolean) => (
           slot ? (
-            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-base font-semibold flex-1 min-w-0 ${
+            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-lg font-semibold flex-1 min-w-0 ${
               isMe && isCurrentSlot
                 ? "bg-zik-emerald/10 text-zik-emerald border border-zik-emerald/30"
                 : isMe
@@ -233,7 +233,7 @@ export function SlotsTab({
             <button
               onClick={(e) => onEmptyCellClick(instrumentKey, rowIdx, e)}
               title={isOrganizer ? "Assigner" : "Rejoindre"}
-              className={`flex items-center justify-center gap-1 flex-1 py-0.5 rounded-full text-sm font-medium border border-dashed transition-colors ${
+              className={`flex items-center justify-center gap-1 flex-1 py-0.5 rounded-full text-base font-medium border border-dashed transition-colors ${
                 isClaiming || isPickerOpen
                   ? "border-zik-grad-to/50 bg-zik-grad-to/10 text-zik-grad-to"
                   : "border-zik-border text-zik-muted hover:border-zik-grad-to/50 hover:text-zik-grad-to"
@@ -302,7 +302,7 @@ export function SlotsTab({
 
                 return (
                   <div key={inst.key} className="flex items-center gap-1.5 rounded-lg border border-zik-border/60 px-2 py-1 min-w-0">
-                    <span className="flex items-center gap-1 text-sm text-zik-text/80 shrink-0 w-32 truncate">
+                    <span className="flex items-center gap-1 text-base text-zik-text/80 shrink-0 w-36 truncate">
                       <InstrumentIcon instKey={inst.key} emoji={inst.emoji} />
                       <span className="truncate">{inst.label}</span>
                     </span>
