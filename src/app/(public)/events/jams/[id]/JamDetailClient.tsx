@@ -155,11 +155,31 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
         setJam((prev) => prev ? {
           ...prev,
           current_slot_index: (payload.new as any).current_slot_index,
+          last_slot_index: (payload.new as any).last_slot_index,
           poster_url: (payload.new as any).poster_url ?? prev.poster_url,
         } : prev);
       }).subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [id]);
+
+  // Tours et inscriptions des autres participants — groupés sur un seul canal
+  // avec un léger anti-rebond pour éviter plusieurs refetch quand plusieurs
+  // évènements arrivent d'un coup (ex: plusieurs créneaux libérés ensemble).
+  useEffect(() => {
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    const refetchSoon = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => fetchAll(), 250);
+    };
+    const channel = supabase.channel(`jam-live-${id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "jam_slots", filter: `jam_id=eq.${id}` }, refetchSoon)
+      .on("postgres_changes", { event: "*", schema: "public", table: "jam_participants", filter: `jam_id=eq.${id}` }, refetchSoon)
+      .subscribe();
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      supabase.removeChannel(channel);
+    };
+  }, [id, fetchAll]);
 
   useEffect(() => {
     if (!conversationId) return;
@@ -486,7 +506,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
         {myActiveSlot && (
           <div className="mt-3 flex items-center gap-2 bg-zik-emerald/10 border border-zik-emerald/30 rounded-lg px-3 py-2">
             <Radio className="h-4 w-4 text-zik-emerald animate-pulse shrink-0" />
-            <p className="text-sm font-semibold text-zik-emerald">C'est ton passage ! 🎸</p>
+            <p className="text-sm font-semibold text-zik-emerald">C'est ton tour ! 🎸</p>
           </div>
         )}
 
@@ -554,7 +574,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
             value="slots"
             className="text-gray-400 data-[state=active]:bg-linear-to-br data-[state=active]:from-zik-grad-from data-[state=active]:to-zik-grad-to data-[state=active]:text-white data-[state=active]:shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)] rounded-full transition-all"
           >
-            Passages
+            Tours
             {totalSlotsTaken > 0 && (
               <span className="ml-1.5 bg-white/20 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                 {totalSlotsTaken}
@@ -640,7 +660,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
 
       <Modal open={showDeleteConfirm} onClose={() => { setShowDeleteConfirm(false); setDeleteError(null); }} title="Supprimer la jam ?">
         <p className="text-sm text-zik-muted mb-4">
-          Cette action est irréversible. Tous les participants, passages et messages seront définitivement supprimés.
+          Cette action est irréversible. Tous les participants, tours et messages seront définitivement supprimés.
         </p>
         {deleteError && <p className="text-zik-red text-sm mb-4">{deleteError}</p>}
         <div className="flex gap-2 justify-end">

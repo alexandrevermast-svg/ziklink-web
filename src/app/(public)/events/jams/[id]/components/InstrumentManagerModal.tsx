@@ -64,7 +64,7 @@ function InstrumentRow({ instrument, onUpdate, onRemove }: {
   };
 
   const handleRemove = async () => {
-    if (!confirm(`Supprimer l'instrument "${instrument.label}" ? Les musiciens déjà inscrits dessus seront retirés de leurs passages.`)) return;
+    if (!confirm(`Supprimer l'instrument "${instrument.label}" ? Les musiciens déjà inscrits dessus seront retirés de leurs tours.`)) return;
     setIsRemoving(true);
     await onRemove(instrument);
   };
@@ -191,7 +191,7 @@ export function InstrumentManagerModal({ open, onClose, instruments, onAdd, onUp
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Gérer les instruments" description="Ajoute, renomme ou retire un instrument des passages.">
+    <Modal open={open} onClose={onClose} title="Gérer les instruments" description="Ajoute, renomme ou retire un instrument des tours.">
       <div className="divide-y divide-zik-border/60">
         {instruments.map((inst) => (
           <InstrumentRow key={inst.id} instrument={inst} onUpdate={onUpdate} onRemove={onRemove} />

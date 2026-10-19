@@ -73,7 +73,7 @@ export function SlotsTab({
         <button onClick={() => setShowPast((s) => !s)}
           className="flex items-center gap-1.5 text-sm font-medium text-zik-muted hover:text-zik-grad-to transition-colors mb-1">
           {showPast ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-          {showPast ? "Masquer" : "Afficher"} les {pastCount} passage{pastCount > 1 ? "s" : ""} déjà effectué{pastCount > 1 ? "s" : ""}
+          {showPast ? "Masquer" : "Afficher"} les {pastCount} tour{pastCount > 1 ? "s" : ""} déjà effectué{pastCount > 1 ? "s" : ""}
         </button>
       )}
 
@@ -105,7 +105,7 @@ export function SlotsTab({
           <div className="flex items-center gap-2 min-w-0 shrink-0">
             {isOrganizer && (
                   <button onClick={() => onSetCurrentSlot(rowIdx)}
-                    title={isCurrentSlot ? "Désactiver ce passage" : "Marquer comme en cours"}
+                    title={isCurrentSlot ? "Désactiver ce tour" : "Marquer comme en cours"}
                     className={`h-7 w-7 flex items-center justify-center rounded-full shrink-0 transition-all duration-150 ${
                       isCurrentSlot
                         ? "bg-zik-emerald text-white shadow-md shadow-zik-emerald/20 hover:bg-zik-red"
@@ -116,7 +116,7 @@ export function SlotsTab({
                 )}
                 {isOrganizer && (
                   <button onClick={() => onSetLastSlot(rowIdx)}
-                    title={isLastSlot ? "Retirer la limite" : "Marquer comme dernier passage"}
+                    title={isLastSlot ? "Retirer la limite" : "Marquer comme dernier tour"}
                     className={`h-7 w-7 flex items-center justify-center rounded-full shrink-0 transition-all duration-150 ${
                       isLastSlot
                         ? "bg-zik-orange text-white shadow-md shadow-zik-orange/20"
@@ -150,7 +150,7 @@ export function SlotsTab({
                   <span className={`text-lg font-semibold ${
                     isCurrentSlot ? "text-zik-emerald" : isLastSlot ? "text-zik-orange" : isTrailing ? "text-zik-muted" : "text-zik-text"
                   }`}>
-                    Passage {rowIdx + 1}
+                    Tour {rowIdx + 1}
                   </span>
                 )}
                 {isLastSlot && (
@@ -317,7 +317,7 @@ export function SlotsTab({
 
       {isOrganizer && (
         <p className="text-base text-zik-muted text-center mt-1">
-          ▶️ passage en cours · 🏁 dernier passage (ferme les inscriptions après)
+          ▶️ tour en cours · 🏁 dernier tour (ferme les inscriptions après)
         </p>
       )}
     </TabsContent>
