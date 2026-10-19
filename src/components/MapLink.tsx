@@ -38,7 +38,7 @@ export function MapLink({ address, mapsUrl, className, children }: MapLinkProps)
         <div className="absolute z-30 mt-1.5 left-0 min-w-55 bg-zik-card border border-zik-border rounded-xl shadow-xl p-1.5">
           <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium text-zik-grad-to hover:bg-zik-grad-to/10 transition-colors">
+            className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium text-white hover:bg-zik-grad-to/10 transition-colors">
             <ExternalLink className="h-4 w-4 shrink-0" /> Ouvrir dans Google Maps
           </a>
         </div>
