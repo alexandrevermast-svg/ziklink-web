@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import moment from "moment-timezone";
 import { ChevronRight, ChevronDown, Music2, Megaphone, UserPlus, Play, Clock } from "lucide-react";
 import { GroupAvatar } from "@/app/(protected)/groups/GroupAvatar";
+import { Button } from "@/components/ui/button";
 import { genreColor } from "@/lib/musicGenres";
 import type { EventMarker } from "@/components/EventMap";
 import type { JamSession, Concert, ParticipantWithProfile, RecruitingAd, MusicianAd, LatestMusician } from "./page";
@@ -118,25 +119,28 @@ function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onS
                 Pas de CTA pour l'organisateur : "Gérer" suffit. */}
             {onJoin && !isOrganizer && (
               isParticipant ? (
-                <Link
-                  href={href}
+                <Button asChild
+                  className="text-sm font-semibold bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
                   onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white hover:brightness-110 transition-all"
                 >
-                  <Play className="h-3 w-3 fill-current" /> Jouer
-                </Link>
+                  <Link href={href}>
+                    <Play className="h-4 w-4 mr-1.5 fill-current" />
+                    Jouer
+                  </Link>
+                </Button>
               ) : isPending ? (
                 <span className="flex items-center gap-1 text-xs font-medium text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full">
                   <Clock className="h-3 w-3" /> En attente
                 </span>
               ) : (
-                <button
+                <Button
+                  className="text-sm font-semibold bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
                   onClick={(e) => { e.stopPropagation(); onJoin(); }}
                   disabled={isJoining}
-                  className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white hover:brightness-110 transition-all disabled:opacity-50"
                 >
-                  <UserPlus className="h-3 w-3" /> {isJoining ? "..." : "S'inscrire"}
-                </button>
+                  <UserPlus className="h-4 w-4 mr-1.5" />
+                  {isJoining ? "..." : "S'inscrire"}
+                </Button>
               )
             )}
           </div>
