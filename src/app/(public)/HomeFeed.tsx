@@ -249,10 +249,16 @@ export default function HomeFeed({
     }
   }, [dayAfterTomorrow, refetchParticipants]);
 
-  // Statuts d'inscription (S'inscrire / En attente / Jouer) en temps réel —
-  // même logique que la liste de la page Events.
+  // Statut d'inscription (S'inscrire / En attente / Jouer) en temps réel.
+  // Filtré sur user_id plutôt que sur la liste des jams affichées : un
+  // filtre jam_id=in.(...) avec toutes les jams en cours (une centaine en
+  // prod, ~3800 caractères) dépasse une limite de longueur côté Realtime et
+  // ne délivre alors plus aucun évènement, sans erreur visible — alors que
+  // ce qui nous intéresse ici (ma propre inscription) se filtre très bien
+  // sur un seul user_id, quel que soit le nombre de jams.
   const jamIdsKey = useMemo(() => jams.map((j) => j.id).join(","), [jams]);
   useEffect(() => {
+    if (!currentUserId) return;
     const jamIds = jamIdsKey ? jamIdsKey.split(",") : [];
     if (jamIds.length === 0) return;
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -260,14 +266,14 @@ export default function HomeFeed({
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => refetchParticipants(jamIds), 250);
     };
-    const channel = supabase.channel(`home-jams-participants-${jamIdsKey}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "jam_participants", filter: `jam_id=in.(${jamIdsKey})` }, refetchSoon)
+    const channel = supabase.channel(`home-jams-my-participation-${currentUserId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "jam_participants", filter: `user_id=eq.${currentUserId}` }, refetchSoon)
       .subscribe();
     return () => {
       if (debounceTimer) clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
-  }, [jamIdsKey, refetchParticipants]);
+  }, [currentUserId, jamIdsKey, refetchParticipants]);
 
   const handleJoinJam = useCallback(async (jamId: string) => {
     if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${jamId}`)}`); return; }
