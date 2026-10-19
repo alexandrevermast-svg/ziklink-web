@@ -22,6 +22,9 @@ export function useJamParticipation() {
 
   const leaveJam = useCallback(async (jamId: string, userId: string) => {
     setPendingJamId(jamId);
+    // Libère aussi les tours pris par ce musicien — sinon il reste assigné à
+    // des créneaux d'une jam qu'il a quittée.
+    await supabase.from("jam_slots").delete().eq("jam_id", jamId).eq("user_id", userId);
     const { error } = await supabase
       .from("jam_participants")
       .delete()

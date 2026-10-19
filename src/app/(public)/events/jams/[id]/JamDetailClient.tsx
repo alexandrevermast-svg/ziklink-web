@@ -272,6 +272,9 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
   };
 
   const handleReject = async (userId: string) => {
+    // Libère aussi ses tours — pour un refus de demande en attente, ce
+    // musicien n'en a de toute façon jamais pris.
+    await supabase.from("jam_slots").delete().eq("jam_id", id).eq("user_id", userId);
     await supabase.from("jam_participants").delete().eq("jam_id", id).eq("user_id", userId);
     await fetchAll();
   };
