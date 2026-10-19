@@ -96,16 +96,26 @@ function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onS
         </div>
         {expanded && (
           <div className="flex items-center gap-2 mt-2.5 pl-17">
-            <Link
-              href={moreInfoHref ?? "/events"}
-              onClick={(e) => e.stopPropagation()}
-              className="text-xs font-medium px-3 py-1.5 rounded-full border border-white/10 text-gray-300 hover:border-white/20 hover:text-white transition-colors"
-            >
-              Plus d'infos
-            </Link>
+            {isCreator ? (
+              <Link
+                href={href}
+                onClick={(e) => e.stopPropagation()}
+                className="text-xs font-semibold px-3 py-1.5 rounded-full bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white hover:brightness-110 transition-all"
+              >
+                Gérer
+              </Link>
+            ) : (
+              <Link
+                href={moreInfoHref ?? "/events"}
+                onClick={(e) => e.stopPropagation()}
+                className="text-xs font-medium px-3 py-1.5 rounded-full border border-white/10 text-gray-300 hover:border-white/20 hover:text-white transition-colors"
+              >
+                Plus d'infos
+              </Link>
+            )}
             {/* CTA jam, reflète le statut d'inscription — même logique que
                 les cards de la page Events (S'inscrire / En attente / Jouer).
-                Pas de CTA pour l'organisateur : "Plus d'infos" suffit. */}
+                Pas de CTA pour l'organisateur : "Gérer" suffit. */}
             {onJoin && !isCreator && (
               isParticipant ? (
                 <Link

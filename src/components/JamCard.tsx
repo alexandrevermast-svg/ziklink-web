@@ -163,10 +163,10 @@ export default function JamCard({
           {isCreator && (
             <button
               onClick={(e) => { e.stopPropagation(); router.push(`/events/jams/${jam.id}`); }}
-              title="Voir la jam en détail"
-              className="text-xs font-medium px-3 py-1.5 rounded-full border border-white/10 text-gray-300 hover:border-white/20 hover:text-white transition-colors"
+              title="Gérer la jam"
+              className="text-xs font-semibold px-3 py-1.5 rounded-full bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white hover:brightness-110 transition-all"
             >
-              Détails
+              Gérer
             </button>
           )}
           <ShareButton
