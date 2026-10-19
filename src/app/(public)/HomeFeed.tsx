@@ -48,9 +48,9 @@ function dayBounds() {
 // le pin ET déplie la ligne, qui donne alors accès à "Plus d'infos" (page
 // events) et "Rejoindre" (page détail, tableau des passages) — plutôt que de
 // naviguer direct au clic.
-function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onSelect, selected, expanded, rowRef }: {
+function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onSelect, onToggleExpand, selected, expanded, rowRef }: {
   href: string; moreInfoHref?: string; time: string; timeColorClass: string; title: string; genres?: string[] | null;
-  onSelect?: () => void; selected?: boolean; expanded?: boolean; rowRef?: (el: HTMLDivElement | null) => void;
+  onSelect?: () => void; onToggleExpand?: () => void; selected?: boolean; expanded?: boolean; rowRef?: (el: HTMLDivElement | null) => void;
 }) {
   const content = (
     <>
@@ -84,7 +84,14 @@ function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onS
       >
         <div className="flex items-center gap-3">
           {content}
-          <ChevronDown className={`h-3.5 w-3.5 text-gray-400 shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onToggleExpand?.(); }}
+            title={expanded ? "Replier" : "Déplier"}
+            className="shrink-0 -m-1.5 p-1.5 rounded-full hover:bg-white/8 transition-colors"
+          >
+            <ChevronDown className={`h-3.5 w-3.5 text-gray-400 transition-transform ${expanded ? "rotate-180" : ""}`} />
+          </button>
         </div>
         {expanded && (
           <div className="flex items-center gap-2 mt-2.5 pl-17">
@@ -152,8 +159,7 @@ export default function HomeFeed({
   const [expandedJamIds, setExpandedJamIds] = useState<Set<string>>(new Set());
   const jamRowRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const handleToggleJamRow = useCallback((jamId: string) => {
-    setSelectedJamId(jamId);
+  const handleToggleExpandJamRow = useCallback((jamId: string) => {
     setExpandedJamIds((prev) => {
       const next = new Set(prev);
       if (next.has(jamId)) next.delete(jamId);
@@ -394,7 +400,8 @@ export default function HomeFeed({
               timeColorClass="text-amber-400"
               title={jam.title}
               genres={jam.genres}
-              onSelect={() => handleToggleJamRow(jam.id)}
+              onSelect={() => setSelectedJamId(jam.id)}
+              onToggleExpand={() => handleToggleExpandJamRow(jam.id)}
               selected={jam.id === selectedJamId}
               expanded={expandedJamIds.has(jam.id)}
               rowRef={(el) => { jamRowRefs.current[jam.id] = el; }}
