@@ -315,7 +315,7 @@ export function SlotsTab({
               <div className={cardClass}>
                 {header}
                 {!isCurrentSlot && songScaleControls}
-                <div className="grid grid-cols-2 gap-1.5 p-3">
+                <div className="flex flex-col gap-1.5 p-3">
                   {instruments.map((inst) => {
                     const slot = getSlot(inst.key, rowIdx);
                     const isMe = slot?.user_id === currentUserId;
