@@ -16,6 +16,7 @@ import { useJamParticipation } from "@/hooks/useJamParticipation";
 import { useStageNamePrompt } from "@/hooks/useStageNamePrompt";
 import StageNamePromptModal from "@/components/StageNamePromptModal";
 import { isOwner } from "@/lib/permissions";
+import { canJoinJam, joinOpensAt } from "@/lib/jamJoinWindow";
 
 const EventMap = dynamic(() => import("@/components/EventMap"), {
   ssr: false,
@@ -49,10 +50,10 @@ function dayBounds() {
 // le pin ET déplie la ligne, qui donne alors accès à "Plus d'infos" (page
 // events) et "Rejoindre" (page détail, tableau des passages) — plutôt que de
 // naviguer direct au clic.
-function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onSelect, onToggleExpand, selected, expanded, rowRef, isOrganizer, isParticipant, isPending, isJoining, onJoin }: {
+function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onSelect, onToggleExpand, selected, expanded, rowRef, isOrganizer, isParticipant, isPending, isJoining, joinOpen, startTime, onJoin }: {
   href: string; moreInfoHref?: string; time: string; timeColorClass: string; title: string; genres?: string[] | null;
   onSelect?: () => void; onToggleExpand?: () => void; selected?: boolean; expanded?: boolean; rowRef?: (el: HTMLDivElement | null) => void;
-  isOrganizer?: boolean; isParticipant?: boolean; isPending?: boolean; isJoining?: boolean; onJoin?: () => void;
+  isOrganizer?: boolean; isParticipant?: boolean; isPending?: boolean; isJoining?: boolean; joinOpen?: boolean; startTime?: string; onJoin?: () => void;
 }) {
   const content = (
     <>
@@ -119,12 +120,12 @@ function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onS
                 Pas de CTA pour l'organisateur : "Gérer" suffit. */}
             {onJoin && !isOrganizer && (
               isParticipant ? (
-                <Button asChild size="sm"
-                  className="text-xs font-semibold bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
+                <Button asChild
+                  className="h-auto gap-1 px-3 py-1.5 text-xs font-semibold bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Link href={href}>
-                    <Play className="h-3 w-3 mr-1 fill-current" />
+                    <Play className="h-3 w-3 fill-current" />
                     Jouer
                   </Link>
                 </Button>
@@ -132,15 +133,19 @@ function EventRow({ href, moreInfoHref, time, timeColorClass, title, genres, onS
                 <span className="flex items-center gap-1 text-xs font-medium text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full">
                   <Clock className="h-3 w-3" /> En attente
                 </span>
-              ) : (
-                <Button size="sm"
-                  className="text-xs font-semibold bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
+              ) : joinOpen ? (
+                <Button
+                  className="h-auto gap-1 px-3 py-1.5 text-xs font-semibold bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
                   onClick={(e) => { e.stopPropagation(); onJoin(); }}
                   disabled={isJoining}
                 >
-                  <UserPlus className="h-3 w-3 mr-1" />
+                  <UserPlus className="h-3 w-3" />
                   {isJoining ? "..." : "S'inscrire"}
                 </Button>
+              ) : (
+                <span className="text-[10px] text-gray-400 italic">
+                  Inscriptions dès {formatTime(joinOpensAt(startTime!).toISOString())}
+                </span>
               )
             )}
           </div>
@@ -479,6 +484,8 @@ export default function HomeFeed({
                 isParticipant={isParticipant}
                 isPending={myParticipation?.status === "pending"}
                 isJoining={joiningJamId === jam.id}
+                joinOpen={canJoinJam(jam.start_time)}
+                startTime={jam.start_time}
                 onJoin={() => handleJoinJam(jam.id)}
               />
             );
