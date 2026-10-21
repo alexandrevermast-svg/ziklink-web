@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { TabsContent } from "@/components/ui/tabs";
-import { UserPlus, Play, X, Plus, Flag, Check, Guitar, ChevronDown, ChevronUp, Music2 } from "lucide-react";
+import { UserPlus, Play, X, Plus, Flag, Check, Guitar, ChevronDown, ChevronUp, Music2, Settings2 } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { GuitarHeadstockIcon, BassHeadstockIcon } from "./InstrumentIcons";
+import { RowInstrumentMenu } from "./RowInstrumentMenu";
 import type { JamSlot, JamInstrument, Profile } from "../types";
 import { getDisplayName } from "../types";
 
@@ -28,6 +29,9 @@ interface SlotsTabProps {
   currentSlotIndex: number | null;
   lastSlotIndex: number | null;
   onSetLastSlot: (rowIdx: number) => void;
+  hiddenInstrumentsByRow: Record<string, string[]>;
+  onInsertTourBefore: (rowIdx: number) => void;
+  onToggleRowInstrument: (rowIdx: number, instrumentKey: string) => void;
   claimingCell: { instrument: string; slot_index: number } | null;
   pickerCell: { instrument: string; slot_index: number; anchorEl: HTMLElement } | null;
   editingSongSlotId: string | null;
@@ -51,6 +55,7 @@ interface SlotsTabProps {
 export function SlotsTab({
   canInteract, isOrganizer, soloMode, currentUserId, instruments, slots, numRows, currentSlotIndex,
   lastSlotIndex, onSetLastSlot,
+  hiddenInstrumentsByRow, onInsertTourBefore, onToggleRowInstrument,
   claimingCell, pickerCell,
   editingSongSlotId, songInputValue, onSongInputChange,
   editingScaleSlotId, scaleInputValue, onScaleInputChange,
@@ -64,6 +69,7 @@ export function SlotsTab({
   const maxOccupiedIndex = slots.length > 0 ? Math.max(...slots.map((s) => s.slot_index)) : -1;
   const pastCount = currentSlotIndex ?? 0;
   const [showPast, setShowPast] = useState(false);
+  const [openInstrumentMenu, setOpenInstrumentMenu] = useState<{ rowIdx: number; anchorEl: HTMLElement } | null>(null);
 
   return (
     <TabsContent value="slots" className="flex-1 overflow-auto px-3 py-3">
@@ -87,6 +93,13 @@ export function SlotsTab({
           const isLastSlot = lastSlotIndex === rowIdx;
           const isPast = currentSlotIndex !== null && rowIdx < currentSlotIndex;
           if (isPast && !showPast) return null;
+          // Instruments masqués pour ce tour précis (personnalisation par
+          // tour) — un instrument déjà occupé sur ce tour reste verrouillé
+          // tant qu'il n'est pas libéré, pour ne jamais faire disparaître un
+          // musicien déjà assigné.
+          const hiddenForRow = hiddenInstrumentsByRow[String(rowIdx)] ?? [];
+          const lockedForRow = instruments.filter((inst) => !!getSlot(inst.key, rowIdx)).map((inst) => inst.key);
+          const visibleInstruments = instruments.filter((inst) => !hiddenForRow.includes(inst.key));
           // Créneau représentatif du tour — le même pour tout le monde, pour que le
           // morceau/la gamme affichés soient partagés plutôt que propres à chaque visiteur.
           const rowSlots = slots.filter((s) => s.slot_index === rowIdx && !!s.user_id);
@@ -125,6 +138,20 @@ export function SlotsTab({
               }`}
             >
               {isCurrentSlot ? <Play className="h-3.5 w-3.5 fill-current" /> : isPast ? <Check className="h-3.5 w-3.5" /> : rowIdx + 1}
+            </button>
+          );
+
+          // Insère un tour vide à cette position — tout ce qui était prévu
+          // ici (et après) se décale d'un tour. Pas de sens sur un tour déjà
+          // effectué, donc masqué pour les tours passés.
+          const insertButton = isOrganizer && !isPast && (
+            <button
+              type="button"
+              onClick={() => onInsertTourBefore(rowIdx)}
+              title="Insérer un tour vide avant celui-ci"
+              className="relative z-10 h-4 w-4 -mb-1 shrink-0 rounded-full flex items-center justify-center text-zik-muted/30 hover:text-zik-grad-to hover:bg-white/10 transition-colors"
+            >
+              <Plus className="h-3 w-3" />
             </button>
           );
 
@@ -270,6 +297,13 @@ export function SlotsTab({
                 {isPast && (
                   <span className="text-xs font-semibold text-zik-muted bg-white/5 px-2 py-0.5 rounded-full">Terminé</span>
                 )}
+                {isOrganizer && !soloMode && (
+                  <button onClick={(e) => setOpenInstrumentMenu({ rowIdx, anchorEl: e.currentTarget })}
+                    title="Personnaliser les instruments de ce tour"
+                    className="h-7 w-7 rounded-full flex items-center justify-center text-zik-muted/50 hover:text-zik-grad-to hover:bg-zik-grad-to/10 transition-colors shrink-0">
+                    <Settings2 className="h-4 w-4" />
+                  </button>
+                )}
                 {isOrganizer && (
                   <button onClick={() => onSetLastSlot(rowIdx)}
                     title={isLastSlot ? "Retirer la limite" : "Marquer comme dernier tour"}
@@ -298,7 +332,10 @@ export function SlotsTab({
           if (soloMode) {
             return (
               <div key={rowIdx} className="relative z-10 flex gap-3 pb-3.5">
-                <div className="pt-0.5">{marker}</div>
+                <div className="pt-0.5 flex flex-col items-center">
+                  {insertButton}
+                  {marker}
+                </div>
                 <div className={cardClass}>
                   {header}
                   <div className="px-3.5 pt-2 pb-3">
@@ -311,12 +348,15 @@ export function SlotsTab({
 
           return (
             <div key={rowIdx} className="relative z-10 flex gap-3 pb-3.5">
-              <div className="pt-0.5">{marker}</div>
+              <div className="pt-0.5 flex flex-col items-center">
+                {insertButton}
+                {marker}
+              </div>
               <div className={cardClass}>
                 {header}
                 {songScaleControls}
                 <div className="flex flex-col gap-1.5 p-3">
-                  {instruments.map((inst) => {
+                  {visibleInstruments.map((inst) => {
                     const slot = getSlot(inst.key, rowIdx);
                     const isMe = slot?.user_id === currentUserId;
                     const isClaiming = claimingCell?.instrument === inst.key && claimingCell?.slot_index === rowIdx;
@@ -329,6 +369,16 @@ export function SlotsTab({
                   })}
                 </div>
               </div>
+              {openInstrumentMenu?.rowIdx === rowIdx && (
+                <RowInstrumentMenu
+                  instruments={instruments}
+                  hiddenKeys={hiddenForRow}
+                  lockedKeys={lockedForRow}
+                  anchorEl={openInstrumentMenu.anchorEl}
+                  onToggle={(key) => onToggleRowInstrument(rowIdx, key)}
+                  onClose={() => setOpenInstrumentMenu(null)}
+                />
+              )}
             </div>
           );
         })}

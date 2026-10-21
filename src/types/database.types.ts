@@ -596,6 +596,7 @@ export type Database = {
           group_id: string | null
           has_drums: boolean
           has_keyboard: boolean
+          hidden_instruments_by_row: Json
           id: string
           is_open: boolean
           last_slot_index: number | null
@@ -616,6 +617,7 @@ export type Database = {
           group_id?: string | null
           has_drums?: boolean
           has_keyboard?: boolean
+          hidden_instruments_by_row?: Json
           id?: string
           is_open?: boolean
           last_slot_index?: number | null
@@ -636,6 +638,7 @@ export type Database = {
           group_id?: string | null
           has_drums?: boolean
           has_keyboard?: boolean
+          hidden_instruments_by_row?: Json
           id?: string
           is_open?: boolean
           last_slot_index?: number | null

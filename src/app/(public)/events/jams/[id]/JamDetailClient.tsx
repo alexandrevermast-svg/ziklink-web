@@ -170,6 +170,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           current_slot_index: (payload.new as any).current_slot_index,
           last_slot_index: (payload.new as any).last_slot_index,
           poster_url: (payload.new as any).poster_url ?? prev.poster_url,
+          hidden_instruments_by_row: (payload.new as any).hidden_instruments_by_row ?? prev.hidden_instruments_by_row,
         } : prev);
       }).subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -236,6 +237,50 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
     setJam((prev) => prev ? { ...prev, last_slot_index: newIndex } : prev);
     await supabase.from("jam_sessions").update({ last_slot_index: newIndex }).eq("id", id);
   }, [isOrganizer, jam, id]);
+
+  // Insère un tour vide à la position rowIdx : tout ce qui s'y trouvait (et
+  // ce qui suit) se décale d'une position. Les créneaux déjà pris sont
+  // déplacés en partant du plus grand index, pour ne jamais écraser
+  // momentanément une case encore occupée (contrainte d'unicité
+  // jam_id+instrument+slot_index).
+  const handleInsertTourBefore = useCallback(async (rowIdx: number) => {
+    if (!isOrganizer || !jam) return;
+    const toShift = slots.filter((s) => s.slot_index >= rowIdx).sort((a, b) => b.slot_index - a.slot_index);
+    for (const slot of toShift) {
+      await supabase.from("jam_slots").update({ slot_index: slot.slot_index + 1 }).eq("id", slot.id);
+    }
+
+    const hiddenByRow = (jam.hidden_instruments_by_row as Record<string, string[]> | null) ?? {};
+    const shiftedHidden: Record<string, string[]> = {};
+    for (const [key, value] of Object.entries(hiddenByRow)) {
+      const idx = Number(key);
+      shiftedHidden[idx >= rowIdx ? String(idx + 1) : key] = value;
+    }
+
+    const updates: { hidden_instruments_by_row: Record<string, string[]>; current_slot_index?: number; last_slot_index?: number } = {
+      hidden_instruments_by_row: shiftedHidden,
+    };
+    if (jam.current_slot_index !== null && jam.current_slot_index >= rowIdx) updates.current_slot_index = jam.current_slot_index + 1;
+    if (jam.last_slot_index !== null && jam.last_slot_index >= rowIdx) updates.last_slot_index = jam.last_slot_index + 1;
+
+    await supabase.from("jam_sessions").update(updates).eq("id", id);
+    await fetchAll();
+  }, [isOrganizer, jam, slots, id, fetchAll]);
+
+  const handleToggleRowInstrument = useCallback(async (rowIdx: number, instrumentKey: string) => {
+    if (!isOrganizer || !jam) return;
+    const hiddenByRow = (jam.hidden_instruments_by_row as Record<string, string[]> | null) ?? {};
+    const currentHidden = hiddenByRow[String(rowIdx)] ?? [];
+    const isHidden = currentHidden.includes(instrumentKey);
+    // Un instrument déjà occupé sur ce tour (par un musicien ou un invité)
+    // ne peut pas être caché tant qu'il n'a pas été libéré.
+    const isLocked = slots.some((s) => s.slot_index === rowIdx && s.instrument === instrumentKey && !!(s.user_id || s.guest_name));
+    if (isLocked && !isHidden) return;
+    const nextHidden = isHidden ? currentHidden.filter((k) => k !== instrumentKey) : [...currentHidden, instrumentKey];
+    const nextByRow = { ...hiddenByRow, [String(rowIdx)]: nextHidden };
+    setJam((prev) => prev ? { ...prev, hidden_instruments_by_row: nextByRow } : prev);
+    await supabase.from("jam_sessions").update({ hidden_instruments_by_row: nextByRow }).eq("id", id);
+  }, [isOrganizer, jam, slots, id]);
 
   const handleJoin = async () => {
     if (!currentUserId) { router.push(`/login?next=${encodeURIComponent(`/events/jams/${id}`)}`); return; }
@@ -621,6 +666,9 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
           currentSlotIndex={currentSlotIndex}
           lastSlotIndex={jam.last_slot_index}
           onSetLastSlot={handleSetLastSlot}
+          hiddenInstrumentsByRow={(jam.hidden_instruments_by_row as Record<string, string[]> | null) ?? {}}
+          onInsertTourBefore={handleInsertTourBefore}
+          onToggleRowInstrument={handleToggleRowInstrument}
           claimingCell={claimingCell}
           pickerCell={pickerCell}
           editingSongSlotId={editingSongSlotId}
