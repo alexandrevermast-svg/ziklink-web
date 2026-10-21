@@ -149,7 +149,7 @@ export function SlotsTab({
               type="button"
               onClick={() => onInsertTourBefore(rowIdx)}
               title="Insérer un tour vide avant celui-ci"
-              className="relative z-10 h-4 w-4 -mb-1 shrink-0 rounded-full flex items-center justify-center text-zik-muted/30 hover:text-zik-grad-to hover:bg-white/10 transition-colors"
+              className="relative z-10 h-5 w-5 shrink-0 rounded-full flex items-center justify-center bg-zik-bg border border-white/15 text-zik-muted/60 hover:border-zik-grad-to/50 hover:text-zik-grad-to transition-colors"
             >
               <Plus className="h-3 w-3" />
             </button>
@@ -348,9 +348,13 @@ export function SlotsTab({
 
           return (
             <div key={rowIdx} className="relative z-10 flex gap-3 pb-3.5">
-              <div className="pt-0.5 flex flex-col items-center">
-                {insertButton}
+              <div className="pt-0.5 relative">
                 {marker}
+                {insertButton && (
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                    {insertButton}
+                  </div>
+                )}
               </div>
               <div className={cardClass}>
                 {header}
