@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import TimePicker from '@/components/ui/TimePicker';
 import { DEFAULT_INSTRUMENTS } from "@/app/(public)/events/jams/[id]/types";
 import { MUSIC_GENRES, genreColor } from "@/lib/musicGenres";
-import { DAYS_OF_WEEK, RecurrenceData, defaultRecurrence, generateOccurrences, formatDateShort } from "@/lib/jamRecurrence";
+import { DAYS_OF_WEEK, MONTHLY_ORDINALS, RecurrenceData, defaultRecurrence, generateOccurrences, formatDateShort } from "@/lib/jamRecurrence";
 
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
@@ -117,7 +117,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
       const occurrencesPayload: { start_time: string; end_at: string | null }[] = [];
 
       if (recurrence.enabled && occurrences.length > 0) {
-        if (recurrence.days.length === 0) { setError("Sélectionnez au moins un jour"); setIsLoading(false); return; }
+        if (recurrence.type === "weekly" && recurrence.days.length === 0) { setError("Sélectionnez au moins un jour"); setIsLoading(false); return; }
         for (const occ of occurrences) {
           const dateStr = occ.toISOString().split("T")[0];
           const occStart = toUtcDateTime(dateStr, formData.start_hour);
@@ -382,6 +382,34 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
         </div>
         {recurrence.enabled && (
           <div className="border-t border-zik-border bg-zik-card/30 p-4 space-y-4">
+            {/* Type de récurrence */}
+            <div className="grid grid-cols-2 gap-1 bg-zik-bg p-1 rounded-full border border-zik-border">
+              <button
+                type="button"
+                onClick={() => setRecurrence((prev) => ({ ...prev, type: "weekly" }))}
+                className={cn(
+                  "py-1.5 rounded-full text-sm font-medium transition-all",
+                  recurrence.type === "weekly"
+                    ? "bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
+                    : "text-zik-muted hover:text-zik-text"
+                )}
+              >
+                Chaque semaine
+              </button>
+              <button
+                type="button"
+                onClick={() => setRecurrence((prev) => ({ ...prev, type: "monthly" }))}
+                className={cn(
+                  "py-1.5 rounded-full text-sm font-medium transition-all",
+                  recurrence.type === "monthly"
+                    ? "bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
+                    : "text-zik-muted hover:text-zik-text"
+                )}
+              >
+                Chaque mois
+              </button>
+            </div>
+
             {/* Fréquence */}
             <div className="flex items-center gap-3">
               <span className="text-sm text-zik-text">Toutes les</span>
@@ -392,30 +420,53 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
               >
                 {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
-              <span className="text-sm text-zik-text">semaine{recurrence.frequency > 1 ? "s" : ""}</span>
+              <span className="text-sm text-zik-text">
+                {recurrence.type === "monthly" ? "mois" : `semaine${recurrence.frequency > 1 ? "s" : ""}`}
+              </span>
             </div>
 
-            {/* Jours de répétition */}
-            <div>
-              <p className="text-xs text-zik-muted mb-2">Jours de répétition</p>
-              <div className="flex gap-1.5">
-                {DAYS_OF_WEEK.map((day) => (
-                  <button
-                    key={day.value}
-                    type="button"
-                    title={day.full}
-                    onClick={() => toggleDay(day.value)}
-                    className={`h-8 w-8 rounded-full text-xs font-semibold transition-colors ${
-                      recurrence.days.includes(day.value)
-                        ? "bg-zik-grad-to text-white"
-                        : "bg-zik-card border border-zik-border text-zik-muted hover:border-zik-grad-to hover:text-zik-grad-to"
-                    }`}
-                  >
-                    {day.label}
-                  </button>
-                ))}
+            {/* Jours de répétition (hebdo) ou jour du mois (mensuel) */}
+            {recurrence.type === "weekly" ? (
+              <div>
+                <p className="text-xs text-zik-muted mb-2">Jours de répétition</p>
+                <div className="flex gap-1.5">
+                  {DAYS_OF_WEEK.map((day) => (
+                    <button
+                      key={day.value}
+                      type="button"
+                      title={day.full}
+                      onClick={() => toggleDay(day.value)}
+                      className={`h-8 w-8 rounded-full text-xs font-semibold transition-colors ${
+                        recurrence.days.includes(day.value)
+                          ? "bg-zik-grad-to text-white"
+                          : "bg-zik-card border border-zik-border text-zik-muted hover:border-zik-grad-to hover:text-zik-grad-to"
+                      }`}
+                    >
+                      {day.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm text-zik-text">Le</span>
+                <select
+                  value={recurrence.monthlyOrdinal}
+                  onChange={(e) => setRecurrence((prev) => ({ ...prev, monthlyOrdinal: Number(e.target.value) }))}
+                  className="border-zik-border rounded-md text-sm px-2 py-1.5 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-grad-to"
+                >
+                  {MONTHLY_ORDINALS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+                <select
+                  value={recurrence.monthlyWeekday}
+                  onChange={(e) => setRecurrence((prev) => ({ ...prev, monthlyWeekday: Number(e.target.value) }))}
+                  className="border-zik-border rounded-md text-sm px-2 py-1.5 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-grad-to"
+                >
+                  {DAYS_OF_WEEK.map((day) => <option key={day.value} value={day.value}>{day.full}</option>)}
+                </select>
+                <span className="text-sm text-zik-text">du mois</span>
+              </div>
+            )}
 
             {/* Fin de la récurrence */}
             <div className="space-y-2">
@@ -486,7 +537,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
                 </div>
               </div>
             )}
-            {recurrence.days.length === 0 && (
+            {recurrence.type === "weekly" && recurrence.days.length === 0 && (
               <p className="text-xs text-zik-orange">⚠️ Sélectionnez au moins un jour</p>
             )}
           </div>

@@ -18,7 +18,7 @@ import AddressSearchInput from "@/components/AddressSearchInput";
 import moment from 'moment-timezone';
 import { toUtcDateTime, resolveEndDateTime } from '@/lib/eventDateTime';
 import { MUSIC_GENRES, genreColor } from "@/lib/musicGenres";
-import { DAYS_OF_WEEK, RecurrenceData, defaultRecurrence, generateOccurrences, formatDateShort } from "@/lib/jamRecurrence";
+import { DAYS_OF_WEEK, MONTHLY_ORDINALS, RecurrenceData, defaultRecurrence, generateOccurrences, formatDateShort } from "@/lib/jamRecurrence";
 import { DEFAULT_INSTRUMENTS } from "@/app/(public)/events/jams/[id]/types";
 import Link from "next/link";
 
@@ -127,7 +127,7 @@ export default function JamEditForm({ jam, onSuccess, onClose, onExtended }: Jam
   const handleExtend = async () => {
     setExtendError(null);
     setExtendSuccess(null);
-    if (extend.days.length === 0) { setExtendError("Sélectionnez au moins un jour"); return; }
+    if (extend.type === "weekly" && extend.days.length === 0) { setExtendError("Sélectionnez au moins un jour"); return; }
     if (extendOccurrences.length === 0) { setExtendError("Aucune nouvelle date à créer avec ces paramètres"); return; }
     setIsExtending(true);
     try {
@@ -659,6 +659,34 @@ export default function JamEditForm({ jam, onSuccess, onClose, onExtended }: Jam
         </div>
         {extend.enabled && (
           <div className="border-t border-zik-border bg-zik-card/30 p-4 space-y-4">
+            {/* Type de récurrence */}
+            <div className="grid grid-cols-2 gap-1 bg-zik-bg p-1 rounded-full border border-zik-border">
+              <button
+                type="button"
+                onClick={() => setExtend((prev) => ({ ...prev, type: "weekly" }))}
+                className={cn(
+                  "py-1.5 rounded-full text-sm font-medium transition-all",
+                  extend.type === "weekly"
+                    ? "bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
+                    : "text-zik-muted hover:text-zik-text"
+                )}
+              >
+                Chaque semaine
+              </button>
+              <button
+                type="button"
+                onClick={() => setExtend((prev) => ({ ...prev, type: "monthly" }))}
+                className={cn(
+                  "py-1.5 rounded-full text-sm font-medium transition-all",
+                  extend.type === "monthly"
+                    ? "bg-linear-to-br from-zik-grad-from to-zik-grad-to text-white shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]"
+                    : "text-zik-muted hover:text-zik-text"
+                )}
+              >
+                Chaque mois
+              </button>
+            </div>
+
             {/* Fréquence */}
             <div className="flex items-center gap-3">
               <span className="text-sm text-zik-text">Toutes les</span>
@@ -669,30 +697,53 @@ export default function JamEditForm({ jam, onSuccess, onClose, onExtended }: Jam
               >
                 {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
-              <span className="text-sm text-zik-text">semaine{extend.frequency > 1 ? "s" : ""}</span>
+              <span className="text-sm text-zik-text">
+                {extend.type === "monthly" ? "mois" : `semaine${extend.frequency > 1 ? "s" : ""}`}
+              </span>
             </div>
 
-            {/* Jours de répétition */}
-            <div>
-              <p className="text-xs text-zik-muted mb-2">Jours de répétition</p>
-              <div className="flex gap-1.5">
-                {DAYS_OF_WEEK.map((day) => (
-                  <button
-                    key={day.value}
-                    type="button"
-                    title={day.full}
-                    onClick={() => toggleExtendDay(day.value)}
-                    className={`h-8 w-8 rounded-full text-xs font-semibold transition-colors ${
-                      extend.days.includes(day.value)
-                        ? "bg-zik-grad-to text-white"
-                        : "bg-zik-card border border-zik-border text-zik-muted hover:border-zik-grad-to hover:text-zik-grad-to"
-                    }`}
-                  >
-                    {day.label}
-                  </button>
-                ))}
+            {/* Jours de répétition (hebdo) ou jour du mois (mensuel) */}
+            {extend.type === "weekly" ? (
+              <div>
+                <p className="text-xs text-zik-muted mb-2">Jours de répétition</p>
+                <div className="flex gap-1.5">
+                  {DAYS_OF_WEEK.map((day) => (
+                    <button
+                      key={day.value}
+                      type="button"
+                      title={day.full}
+                      onClick={() => toggleExtendDay(day.value)}
+                      className={`h-8 w-8 rounded-full text-xs font-semibold transition-colors ${
+                        extend.days.includes(day.value)
+                          ? "bg-zik-grad-to text-white"
+                          : "bg-zik-card border border-zik-border text-zik-muted hover:border-zik-grad-to hover:text-zik-grad-to"
+                      }`}
+                    >
+                      {day.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm text-zik-text">Le</span>
+                <select
+                  value={extend.monthlyOrdinal}
+                  onChange={(e) => setExtend((prev) => ({ ...prev, monthlyOrdinal: Number(e.target.value) }))}
+                  className="border-zik-border rounded-md text-sm px-2 py-1.5 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-grad-to"
+                >
+                  {MONTHLY_ORDINALS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+                <select
+                  value={extend.monthlyWeekday}
+                  onChange={(e) => setExtend((prev) => ({ ...prev, monthlyWeekday: Number(e.target.value) }))}
+                  className="border-zik-border rounded-md text-sm px-2 py-1.5 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-grad-to"
+                >
+                  {DAYS_OF_WEEK.map((day) => <option key={day.value} value={day.value}>{day.full}</option>)}
+                </select>
+                <span className="text-sm text-zik-text">du mois</span>
+              </div>
+            )}
 
             {/* Fin de la récurrence */}
             <div className="space-y-2">
@@ -761,7 +812,7 @@ export default function JamEditForm({ jam, onSuccess, onClose, onExtended }: Jam
                 </div>
               </div>
             )}
-            {extend.days.length === 0 && (
+            {extend.type === "weekly" && extend.days.length === 0 && (
               <p className="text-xs text-zik-orange">⚠️ Sélectionnez au moins un jour</p>
             )}
 
@@ -775,7 +826,7 @@ export default function JamEditForm({ jam, onSuccess, onClose, onExtended }: Jam
             <Button
               type="button"
               onClick={handleExtend}
-              disabled={isExtending || extend.days.length === 0}
+              disabled={isExtending || (extend.type === "weekly" && extend.days.length === 0)}
               className="w-full bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white disabled:opacity-50 gap-2"
             >
               {isExtending && <Loader2 className="h-4 w-4 animate-spin" />}
