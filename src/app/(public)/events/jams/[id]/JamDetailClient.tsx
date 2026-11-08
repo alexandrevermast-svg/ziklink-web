@@ -719,7 +719,7 @@ export default function JamDetailClient({ jamId, initialJam, initialParticipants
       </Modal>
 
       <Modal open={isEditOpen} onClose={() => setIsEditOpen(false)} title="Modifier la jam">
-        <JamEditForm jam={jam} onSuccess={() => { setIsEditOpen(false); fetchAll(); }} onClose={() => setIsEditOpen(false)} />
+        <JamEditForm jam={jam} onSuccess={() => { setIsEditOpen(false); fetchAll(); }} onClose={() => setIsEditOpen(false)} onExtended={fetchAll} />
       </Modal>
 
       <Modal open={showDeleteConfirm} onClose={() => { setShowDeleteConfirm(false); setDeleteError(null); }} title="Supprimer la jam ?">

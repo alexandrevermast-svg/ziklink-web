@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Lock, Unlock, CalendarDays, MapPin, Drum, Piano, Upload, X, Mic, Guitar } from "lucide-react";
+import { Lock, Unlock, CalendarDays, MapPin, Drum, Piano, Upload, X, Mic, Guitar, Repeat2, ArrowRight, Loader2 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { fr } from "date-fns/locale";
 import { format } from "date-fns";
@@ -18,6 +18,9 @@ import AddressSearchInput from "@/components/AddressSearchInput";
 import moment from 'moment-timezone';
 import { toUtcDateTime, resolveEndDateTime } from '@/lib/eventDateTime';
 import { MUSIC_GENRES, genreColor } from "@/lib/musicGenres";
+import { DAYS_OF_WEEK, RecurrenceData, defaultRecurrence, generateOccurrences, formatDateShort } from "@/lib/jamRecurrence";
+import { DEFAULT_INSTRUMENTS } from "@/app/(public)/events/jams/[id]/types";
+import Link from "next/link";
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
@@ -32,12 +35,17 @@ interface JamEditFormProps {
     genres?: string[] | null;
     poster_url?: string | null;
     recurrence_id?: string | null;
+    created_by: string;
+    group_id?: string | null;
   };
   onSuccess?: () => void;
   onClose?: () => void;
+  onExtended?: () => void;
 }
 
-export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProps) {
+interface SimilarJam { id: string; title: string; start_time: string; }
+
+export default function JamEditForm({ jam, onSuccess, onClose, onExtended }: JamEditFormProps) {
   const supabase = createClient();
 
   const parsedLoc = (() => {
@@ -72,12 +80,113 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
   const [seriesCount, setSeriesCount] = useState(0);
   const [applyToSeries, setApplyToSeries] = useState(false);
 
+  const [similarJams, setSimilarJams] = useState<SimilarJam[]>([]);
+  const [similarLoading, setSimilarLoading] = useState(true);
+
+  const [extend, setExtend] = useState<RecurrenceData>(defaultRecurrence());
+  const [isExtending, setIsExtending] = useState(false);
+  const [extendError, setExtendError] = useState<string | null>(null);
+  const [extendSuccess, setExtendSuccess] = useState<string | null>(null);
+
+  const refetchSimilarJams = React.useCallback(() => {
+    setSimilarLoading(true);
+    supabase.from("jam_sessions")
+      .select("id, title, start_time")
+      .eq("created_by", jam.created_by)
+      .neq("id", jam.id)
+      .gt("start_time", new Date().toISOString())
+      .order("start_time", { ascending: true })
+      .limit(10)
+      .then(({ data }) => {
+        setSimilarJams(data ?? []);
+        setSimilarLoading(false);
+      });
+  }, [jam.created_by, jam.id]);
+
   useEffect(() => {
     if (!jam.recurrence_id) { setSeriesCount(0); return; }
     supabase.from("jam_sessions").select("id", { count: "exact", head: true })
       .eq("recurrence_id", jam.recurrence_id)
       .then(({ count }) => setSeriesCount(count ?? 0));
   }, [jam.recurrence_id]);
+
+  useEffect(() => { refetchSimilarJams(); }, [refetchSimilarJams]);
+
+  const extendOccurrences = React.useMemo(() => {
+    if (!extend.enabled || !date) return [];
+    return generateOccurrences(date, extend).filter((d) => d.toISOString().split("T")[0] !== date);
+  }, [extend, date]);
+
+  const toggleExtendDay = (day: number) => {
+    setExtend((prev) => ({
+      ...prev,
+      days: prev.days.includes(day) ? prev.days.filter((d) => d !== day) : [...prev.days, day],
+    }));
+  };
+
+  const handleExtend = async () => {
+    setExtendError(null);
+    setExtendSuccess(null);
+    if (extend.days.length === 0) { setExtendError("Sélectionnez au moins un jour"); return; }
+    if (extendOccurrences.length === 0) { setExtendError("Aucune nouvelle date à créer avec ces paramètres"); return; }
+    setIsExtending(true);
+    try {
+      const occurrencesPayload = extendOccurrences.map((occ) => {
+        const dateStr = occ.toISOString().split("T")[0];
+        return {
+          start_time: toUtcDateTime(dateStr, startHour),
+          end_at: endHour ? resolveEndDateTime(dateStr, startHour, endHour) : null,
+        };
+      });
+
+      const { data: createdJams, error: rpcError } = await supabase.rpc('create_jam_sessions', {
+        p_title: title,
+        p_description: description,
+        p_location: JSON.stringify(location),
+        p_is_open: isOpen,
+        p_group_id: jam.group_id ?? null,
+        p_occurrences: occurrencesPayload,
+        p_has_drums: hasDrums,
+        p_has_keyboard: hasKeyboard,
+      } as any);
+
+      if (rpcError) { setExtendError(`Erreur : ${rpcError.message}`); setIsExtending(false); return; }
+
+      const newIds: string[] = (createdJams ?? []).map((j: any) => j.jam_id);
+
+      const instrumentDefaults = DEFAULT_INSTRUMENTS
+        .filter((inst) => inst.key !== "clavier" || hasKeyboard)
+        .map((inst, position) => inst.key === "batterie" && !hasDrums
+          ? { key: inst.key, label: "Percussions", emoji: "🪘", position }
+          : { key: inst.key, label: inst.label, emoji: inst.emoji, position }
+        );
+      const instrumentRows = newIds.flatMap((jamId) =>
+        instrumentDefaults.map((inst) => ({ jam_id: jamId, ...inst }))
+      );
+      if (instrumentRows.length > 0) {
+        await supabase.from("jam_instruments").insert(instrumentRows);
+      }
+
+      // Rattache les nouvelles occurrences à la série existante, ou en crée une
+      // (incluant la jam actuelle) si elle n'en faisait pas encore partie.
+      const recurrenceId = jam.recurrence_id ?? crypto.randomUUID();
+      const idsToTag = jam.recurrence_id ? newIds : [...newIds, jam.id];
+      await supabase.from("jam_sessions").update({ recurrence_id: recurrenceId }).in("id", idsToTag);
+
+      if (genres.length > 0) await supabase.from("jam_sessions").update({ genres }).in("id", newIds);
+      if (jam.poster_url) await supabase.from("jam_sessions").update({ poster_url: jam.poster_url }).in("id", newIds);
+      if (soloMode) await supabase.from("jam_sessions").update({ solo_mode: true }).in("id", newIds);
+
+      setExtendSuccess(`${newIds.length} jam${newIds.length > 1 ? "s" : ""} créée${newIds.length > 1 ? "s" : ""}`);
+      setExtend(defaultRecurrence());
+      refetchSimilarJams();
+      onExtended?.();
+    } catch {
+      setExtendError("Une erreur s'est produite");
+    } finally {
+      setIsExtending(false);
+    }
+  };
 
   const handlePosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -165,6 +274,31 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+
+      {/* Jams à venir du même organisateur */}
+      {!similarLoading && similarJams.length > 0 && (
+        <div className="rounded-lg border border-zik-border p-4 bg-zik-card/50 space-y-2">
+          <p className="text-sm font-medium text-zik-text">
+            Tes autres jams à venir ({similarJams.length})
+          </p>
+          <div className="space-y-1.5 max-h-36 overflow-y-auto">
+            {similarJams.map((j) => (
+              <Link
+                key={j.id}
+                href={`/events/jams/${j.id}`}
+                target="_blank"
+                className="flex items-center justify-between gap-2 text-sm text-zik-muted hover:text-zik-grad-to transition-colors"
+              >
+                <span className="truncate">{j.title}</span>
+                <span className="shrink-0 flex items-center gap-1 text-xs">
+                  {format(new Date(j.start_time), "d MMM, HH'h'mm", { locale: fr })}
+                  <ArrowRight className="h-3 w-3" />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Titre */}
       <div>
@@ -506,6 +640,154 @@ export default function JamEditForm({ jam, onSuccess, onClose }: JamEditFormProp
           )}
         </div>
       )}
+
+      {/* Prolonger sur plusieurs dates */}
+      <div className="rounded-lg border border-zik-border overflow-hidden bg-zik-card/50">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-3">
+            <Repeat2 className={`h-5 w-5 ${extend.enabled ? "text-zik-grad-to" : "text-zik-muted"}`} />
+            <div>
+              <p className="text-sm font-medium text-zik-text">Prolonger cette jam</p>
+              <p className="text-xs text-zik-muted">Créer de nouvelles dates à partir de celle-ci</p>
+            </div>
+          </div>
+          <Switch
+            checked={extend.enabled}
+            onCheckedChange={(checked) => { setExtend((prev) => ({ ...prev, enabled: checked })); setExtendError(null); setExtendSuccess(null); }}
+            className="data-[state=checked]:bg-zik-grad-to data-[state=unchecked]:bg-zik-card-hover"
+          />
+        </div>
+        {extend.enabled && (
+          <div className="border-t border-zik-border bg-zik-card/30 p-4 space-y-4">
+            {/* Fréquence */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-zik-text">Toutes les</span>
+              <select
+                value={extend.frequency}
+                onChange={(e) => setExtend((prev) => ({ ...prev, frequency: Number(e.target.value) }))}
+                className="border-zik-border rounded-md text-sm px-2 py-1.5 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-grad-to"
+              >
+                {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
+              <span className="text-sm text-zik-text">semaine{extend.frequency > 1 ? "s" : ""}</span>
+            </div>
+
+            {/* Jours de répétition */}
+            <div>
+              <p className="text-xs text-zik-muted mb-2">Jours de répétition</p>
+              <div className="flex gap-1.5">
+                {DAYS_OF_WEEK.map((day) => (
+                  <button
+                    key={day.value}
+                    type="button"
+                    title={day.full}
+                    onClick={() => toggleExtendDay(day.value)}
+                    className={`h-8 w-8 rounded-full text-xs font-semibold transition-colors ${
+                      extend.days.includes(day.value)
+                        ? "bg-zik-grad-to text-white"
+                        : "bg-zik-card border border-zik-border text-zik-muted hover:border-zik-grad-to hover:text-zik-grad-to"
+                    }`}
+                  >
+                    {day.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Fin de la récurrence */}
+            <div className="space-y-2">
+              <p className="text-xs text-zik-muted">Fin de la prolongation</p>
+              <div className="flex gap-3">
+                <label className="flex items-center gap-1.5 text-sm cursor-pointer text-zik-text">
+                  <input
+                    type="radio"
+                    checked={extend.endType === "count"}
+                    onChange={() => setExtend((prev) => ({ ...prev, endType: "count" }))}
+                    className="accent-zik-grad-to"
+                  />
+                  Après
+                </label>
+                {extend.endType === "count" && (
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="number"
+                      min={1}
+                      max={52}
+                      value={extend.count}
+                      onChange={(e) => setExtend((prev) => ({ ...prev, count: Math.max(1, Number(e.target.value)) }))}
+                      className="w-16 border-zik-border rounded-md text-sm px-2 py-1 bg-zik-card text-zik-text focus:outline-none focus:ring-2 focus:ring-zik-grad-to"
+                    />
+                    <span className="text-sm text-zik-text">occurrence{extend.count > 1 ? "s" : ""}</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5">
+                <label className="flex items-center gap-1.5 text-sm cursor-pointer text-zik-text">
+                  <input
+                    type="radio"
+                    checked={extend.endType === "date"}
+                    onChange={() => setExtend((prev) => ({ ...prev, endType: "date" }))}
+                    className="accent-zik-grad-to"
+                  />
+                  Jusqu'au
+                </label>
+                {extend.endType === "date" && (
+                  <Input
+                    type="date"
+                    value={extend.endDate}
+                    onChange={(e) => setExtend((prev) => ({ ...prev, endDate: e.target.value }))}
+                    className="w-auto text-sm bg-zik-card border-zik-border text-zik-text scheme-dark"
+                    min={date}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Aperçu des occurrences */}
+            {extendOccurrences.length > 0 && (
+              <div className="bg-zik-grad-to/10 rounded-lg p-3">
+                <p className="text-xs font-medium text-zik-grad-to mb-2">
+                  {extendOccurrences.length} jam{extendOccurrences.length > 1 ? "s" : ""} seront créées :
+                </p>
+                <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                  {extendOccurrences.map((d, i) => (
+                    <span
+                      key={i}
+                      className="text-xs bg-zik-card border border-zik-grad-to/20 text-zik-grad-to px-2 py-0.5 rounded-full"
+                    >
+                      {formatDateShort(d)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {extend.days.length === 0 && (
+              <p className="text-xs text-zik-orange">⚠️ Sélectionnez au moins un jour</p>
+            )}
+
+            {extendError && (
+              <p className="text-sm text-zik-red">{extendError}</p>
+            )}
+            {extendSuccess && (
+              <p className="text-sm text-zik-emerald">{extendSuccess}</p>
+            )}
+
+            <Button
+              type="button"
+              onClick={handleExtend}
+              disabled={isExtending || extend.days.length === 0}
+              className="w-full bg-linear-to-br from-zik-grad-from to-zik-grad-to hover:brightness-110 border-0 text-white disabled:opacity-50 gap-2"
+            >
+              {isExtending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isExtending
+                ? "Création..."
+                : extendOccurrences.length > 0
+                  ? `Créer ${extendOccurrences.length} jam${extendOccurrences.length > 1 ? "s" : ""} supplémentaire${extendOccurrences.length > 1 ? "s" : ""}`
+                  : "Créer les occurrences"}
+            </Button>
+          </div>
+        )}
+      </div>
 
       {/* Erreur */}
       {error && (

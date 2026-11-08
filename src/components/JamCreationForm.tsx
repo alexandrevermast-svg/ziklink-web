@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import TimePicker from '@/components/ui/TimePicker';
 import { DEFAULT_INSTRUMENTS } from "@/app/(public)/events/jams/[id]/types";
 import { MUSIC_GENRES, genreColor } from "@/lib/musicGenres";
+import { DAYS_OF_WEEK, RecurrenceData, defaultRecurrence, generateOccurrences, formatDateShort } from "@/lib/jamRecurrence";
 
 
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
@@ -25,21 +26,6 @@ const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap")
   // ✅ Loading avec ton thème
   loading: () => <div className="h-64 w-full bg-zik-card animate-pulse rounded-lg" />,
 });
-
-const DAYS_OF_WEEK = [
-  { label: "L", value: 1, full: "Lundi" },
-  { label: "M", value: 2, full: "Mardi" },
-  { label: "M", value: 3, full: "Mercredi" },
-  { label: "J", value: 4, full: "Jeudi" },
-  { label: "V", value: 5, full: "Vendredi" },
-  { label: "S", value: 6, full: "Samedi" },
-  { label: "D", value: 0, full: "Dimanche" },
-];
-
-interface RecurrenceData {
-  enabled: boolean; frequency: number; days: number[];
-  endType: "date" | "count"; endDate: string; count: number;
-}
 
 interface JamFormData {
   title: string; description: string; date: string;
@@ -52,35 +38,6 @@ interface JamFormData {
 interface UserGroup { id: string; name: string; avatar_url: string | null; }
 
 interface JamCreationFormProps { onSuccess?: () => void; onClose?: () => void; }
-
-function generateOccurrences(startDate: string, recurrence: RecurrenceData): Date[] {
-  if (!recurrence.enabled || recurrence.days.length === 0) return [];
-  const base = new Date(startDate);
-  const results: Date[] = [];
-  const maxCount = recurrence.endType === "count" ? recurrence.count : 365;
-  const endDate = recurrence.endType === "date" && recurrence.endDate ? new Date(recurrence.endDate) : null;
-  let cursor = new Date(base);
-  cursor.setDate(cursor.getDate() - cursor.getDay() + (cursor.getDay() === 0 ? -6 : 1));
-  let weekOffset = 0;
-  while (results.length < maxCount) {
-    for (const dayValue of recurrence.days) {
-      const dayOffset = dayValue === 0 ? 6 : dayValue - 1;
-      const d = new Date(cursor);
-      d.setDate(cursor.getDate() + dayOffset + weekOffset * 7 * recurrence.frequency);
-      if (d < base) continue;
-      if (endDate && d > endDate) return results;
-      if (results.length >= maxCount) return results;
-      results.push(new Date(d));
-    }
-    weekOffset++;
-    if (weekOffset > 200) break;
-  }
-  return results.sort((a, b) => a.getTime() - b.getTime());
-}
-
-function formatDateShort(d: Date) {
-  return d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
-}
 
 export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormProps) {
   const supabase = createClient();
@@ -95,9 +52,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [recurrence, setRecurrence] = useState<RecurrenceData>({
-    enabled: false, frequency: 1, days: [], endType: "count", endDate: "", count: 8,
-  });
+  const [recurrence, setRecurrence] = useState<RecurrenceData>(defaultRecurrence());
 
   const [userGroups, setUserGroups] = useState<UserGroup[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
@@ -250,7 +205,7 @@ export default function JamCreationForm({ onSuccess, onClose }: JamCreationFormP
       setPosterPreview(null);
       setSelectedLocation(null);
       setSelectedGroupId("");
-      setRecurrence({ enabled: false, frequency: 1, days: [], endType: "count", endDate: "", count: 8 });
+      setRecurrence(defaultRecurrence());
       if (onSuccess) onSuccess();
       if (onClose) onClose();
     } catch (err) {
