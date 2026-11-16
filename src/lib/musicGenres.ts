@@ -1,6 +1,6 @@
 export const MUSIC_GENRES = [
   "Rock", "Jazz", "Blues", "Metal", "Pop", "Électro",
-  "Folk", "Classique", "Hip-Hop", "Reggae", "Funk", "Soul", "Autre",
+  "Folk", "Classique", "Hip-Hop", "Reggae", "Funk", "Soul", "Tous", "Autre",
 ] as const;
 
 export type MusicGenre = typeof MUSIC_GENRES[number];
@@ -21,6 +21,7 @@ export const GENRE_COLORS: Record<string, string> = {
   "Reggae": "#A3E635",
   "Funk": "#2DD4BF",
   "Soul": "#FDBA74",
+  "Tous": "#818CF8",
   "Autre": "#9CA3AF",
 };
 
